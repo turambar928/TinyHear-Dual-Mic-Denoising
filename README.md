@@ -96,12 +96,17 @@ PYTHONPATH=src python scripts/train.py --data data/public_small --on-the-fly --e
 
 `rir` 目录是可选的。RIR wav 如果是双通道，会被当成双麦房间响应；如果是单通道，会与 TDOA/衰减模拟组合使用。
 
-更适配双麦训练的公开数据组合是 **Mini LibriSpeech/LibriSpeech clean speech + DEMAND 多通道环境噪声**：
+更适配双麦训练的公开数据组合是 **LibriSpeech/CMU ARCTIC clean speech + DEMAND 多通道环境噪声**：
 
 ```bash
-# LibriSpeech/Mini LibriSpeech FLAC -> clean wav
+# 推荐路线 A：LibriSpeech/Mini LibriSpeech FLAC -> clean wav
 PYTHONPATH=src python scripts/prepare_librispeech_wavs.py \
   --src downloads/mini_librispeech \
+  --out data/libri_demand \
+  --train-count 500 --val-count 80
+
+# 推荐路线 B：Hugging Face LibriSpeech streaming -> clean wav
+PYTHONPATH=src python scripts/prepare_hf_librispeech.py \
   --out data/libri_demand \
   --train-count 500 --val-count 80
 
@@ -118,6 +123,29 @@ PYTHONPATH=src python scripts/train.py \
   --epochs 30 \
   --batch-size 8 \
   --out runs/libri_demand
+```
+
+如果 LibriSpeech 下载受限，可用 CMU ARCTIC 作为更小但比 YESNO 丰富得多的 clean speech baseline：
+
+```bash
+PYTHONPATH=src python scripts/prepare_wav_dataset.py \
+  --clean-root downloads/cmu_arctic/extracted \
+  --noise-root data/yesno_demand/train/noise \
+  --out data/arctic_demand \
+  --train-clean 800 --train-noise 1 --val-clean 160 --val-noise 1
+
+PYTHONPATH=src python scripts/prepare_demand_noise.py \
+  --src downloads/demand \
+  --out data/arctic_demand \
+  --train-count 800 --val-count 160
+
+PYTHONPATH=src python scripts/train.py \
+  --data data/arctic_demand \
+  --on-the-fly \
+  --seconds 2 \
+  --epochs 20 \
+  --batch-size 8 \
+  --out runs/arctic_demand
 ```
 
 `--on-the-fly` 训练集如果要固定评估样本，可以先 materialize：
@@ -139,6 +167,7 @@ PYTHONPATH=src python scripts/evaluate.py --checkpoint runs/public_small/best.pt
 - `scripts/verify_int8_reference.py`：INT8 权重 + int32 卷积累加 reference。
 - `scripts/calibrate_int8.py`：统计每层输入 activation scale 并写入 `model_int8.json`。
 - `scripts/prepare_librispeech_wavs.py`：将 LibriSpeech/Mini LibriSpeech FLAC 转成 clean wav。
+- `scripts/prepare_hf_librispeech.py`：从 Hugging Face 数据集导出 LibriSpeech clean wav。
 - `scripts/prepare_demand_noise.py`：将 DEMAND 多通道噪声整理成双通道 noise wav。
 - `scripts/enhance_wav.py`：离线增强。
 - `scripts/evaluate.py`：SI-SDR improvement 和 mask MSE 评估。
