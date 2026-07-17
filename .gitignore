@@ -6,7 +6,7 @@ __pycache__/
 venv/
 
 # Local datasets and downloads
-data/
+data/*
 downloads/
 
 # Training outputs are ignored by default.
@@ -29,6 +29,14 @@ runs/yesno_public/int8/*
 !runs/yesno_public/int8/model_int8.h
 !runs/yesno_public/int8/model_int8.json
 !runs/yesno_public/int8/calibration_report.json
+
+# Tracked DEMAND baseline artifacts.
+!data/yesno_demand/
+!data/yesno_demand/**
+!data/yesno_demand_eval/
+!data/yesno_demand_eval/**
+!runs/yesno_demand/
+!runs/yesno_demand/**
 
 # C build output
 c_reference/tiny_tcn_ref

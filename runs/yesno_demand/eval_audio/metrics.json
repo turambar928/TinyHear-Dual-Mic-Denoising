@@ -1,0 +1,347 @@
+{
+  "summary": {
+    "items": 48,
+    "mean_noisy_si_sdr": 5.9568006582558155,
+    "mean_enhanced_si_sdr": 11.975179682175318,
+    "mean_si_sdr_improvement": 6.018379023919502,
+    "mean_mask_mse": 0.045445856638252735
+  },
+  "items": [
+    {
+      "file": "mix_0000.wav",
+      "noisy_si_sdr": 14.008561134338379,
+      "enhanced_si_sdr": 16.31770133972168,
+      "si_sdr_improvement": 2.309140205383301,
+      "mask_mse": 0.03335844725370407
+    },
+    {
+      "file": "mix_0001.wav",
+      "noisy_si_sdr": 6.502141952514648,
+      "enhanced_si_sdr": 12.72755241394043,
+      "si_sdr_improvement": 6.225410461425781,
+      "mask_mse": 0.04720067232847214
+    },
+    {
+      "file": "mix_0002.wav",
+      "noisy_si_sdr": 7.276434898376465,
+      "enhanced_si_sdr": 11.119190216064453,
+      "si_sdr_improvement": 3.8427553176879883,
+      "mask_mse": 0.03672252967953682
+    },
+    {
+      "file": "mix_0003.wav",
+      "noisy_si_sdr": 1.2909166812896729,
+      "enhanced_si_sdr": 14.160171508789062,
+      "si_sdr_improvement": 12.86925482749939,
+      "mask_mse": 0.03488529473543167
+    },
+    {
+      "file": "mix_0004.wav",
+      "noisy_si_sdr": 7.820680141448975,
+      "enhanced_si_sdr": 11.794037818908691,
+      "si_sdr_improvement": 3.973357677459717,
+      "mask_mse": 0.044170621782541275
+    },
+    {
+      "file": "mix_0005.wav",
+      "noisy_si_sdr": 9.097188949584961,
+      "enhanced_si_sdr": 15.729126930236816,
+      "si_sdr_improvement": 6.6319379806518555,
+      "mask_mse": 0.024181198328733444
+    },
+    {
+      "file": "mix_0006.wav",
+      "noisy_si_sdr": 12.821640014648438,
+      "enhanced_si_sdr": 16.668561935424805,
+      "si_sdr_improvement": 3.846921920776367,
+      "mask_mse": 0.028300683945417404
+    },
+    {
+      "file": "mix_0007.wav",
+      "noisy_si_sdr": 13.32812213897705,
+      "enhanced_si_sdr": 15.500782012939453,
+      "si_sdr_improvement": 2.1726598739624023,
+      "mask_mse": 0.05435957387089729
+    },
+    {
+      "file": "mix_0008.wav",
+      "noisy_si_sdr": 6.568302154541016,
+      "enhanced_si_sdr": 11.671427726745605,
+      "si_sdr_improvement": 5.10312557220459,
+      "mask_mse": 0.05545909330248833
+    },
+    {
+      "file": "mix_0009.wav",
+      "noisy_si_sdr": 7.434263706207275,
+      "enhanced_si_sdr": 10.846190452575684,
+      "si_sdr_improvement": 3.411926746368408,
+      "mask_mse": 0.045222215354442596
+    },
+    {
+      "file": "mix_0010.wav",
+      "noisy_si_sdr": 4.378407955169678,
+      "enhanced_si_sdr": 9.467523574829102,
+      "si_sdr_improvement": 5.089115619659424,
+      "mask_mse": 0.040275800973176956
+    },
+    {
+      "file": "mix_0011.wav",
+      "noisy_si_sdr": 11.009760856628418,
+      "enhanced_si_sdr": 12.81447982788086,
+      "si_sdr_improvement": 1.8047189712524414,
+      "mask_mse": 0.047415319830179214
+    },
+    {
+      "file": "mix_0012.wav",
+      "noisy_si_sdr": -4.776534080505371,
+      "enhanced_si_sdr": 1.5785081386566162,
+      "si_sdr_improvement": 6.355042219161987,
+      "mask_mse": 0.0402509868144989
+    },
+    {
+      "file": "mix_0013.wav",
+      "noisy_si_sdr": 13.433761596679688,
+      "enhanced_si_sdr": 12.788312911987305,
+      "si_sdr_improvement": -0.6454486846923828,
+      "mask_mse": 0.11783595383167267
+    },
+    {
+      "file": "mix_0014.wav",
+      "noisy_si_sdr": 8.257649421691895,
+      "enhanced_si_sdr": 15.096989631652832,
+      "si_sdr_improvement": 6.8393402099609375,
+      "mask_mse": 0.03536137565970421
+    },
+    {
+      "file": "mix_0015.wav",
+      "noisy_si_sdr": 4.038442611694336,
+      "enhanced_si_sdr": 10.614566802978516,
+      "si_sdr_improvement": 6.57612419128418,
+      "mask_mse": 0.04865007475018501
+    },
+    {
+      "file": "mix_0016.wav",
+      "noisy_si_sdr": 13.067570686340332,
+      "enhanced_si_sdr": 14.353876113891602,
+      "si_sdr_improvement": 1.2863054275512695,
+      "mask_mse": 0.04093693569302559
+    },
+    {
+      "file": "mix_0017.wav",
+      "noisy_si_sdr": -4.947498321533203,
+      "enhanced_si_sdr": 2.7297770977020264,
+      "si_sdr_improvement": 7.6772754192352295,
+      "mask_mse": 0.04418855533003807
+    },
+    {
+      "file": "mix_0018.wav",
+      "noisy_si_sdr": -4.078120231628418,
+      "enhanced_si_sdr": 11.691018104553223,
+      "si_sdr_improvement": 15.76913833618164,
+      "mask_mse": 0.0365048386156559
+    },
+    {
+      "file": "mix_0019.wav",
+      "noisy_si_sdr": 6.624977111816406,
+      "enhanced_si_sdr": 10.38545036315918,
+      "si_sdr_improvement": 3.7604732513427734,
+      "mask_mse": 0.038605764508247375
+    },
+    {
+      "file": "mix_0020.wav",
+      "noisy_si_sdr": 4.523900508880615,
+      "enhanced_si_sdr": 7.557443618774414,
+      "si_sdr_improvement": 3.033543109893799,
+      "mask_mse": 0.04303734004497528
+    },
+    {
+      "file": "mix_0021.wav",
+      "noisy_si_sdr": -2.1891226768493652,
+      "enhanced_si_sdr": 3.4727540016174316,
+      "si_sdr_improvement": 5.661876678466797,
+      "mask_mse": 0.05679276958107948
+    },
+    {
+      "file": "mix_0022.wav",
+      "noisy_si_sdr": -1.117676019668579,
+      "enhanced_si_sdr": 13.702861785888672,
+      "si_sdr_improvement": 14.820537805557251,
+      "mask_mse": 0.03327684849500656
+    },
+    {
+      "file": "mix_0023.wav",
+      "noisy_si_sdr": 10.422411918640137,
+      "enhanced_si_sdr": 13.456411361694336,
+      "si_sdr_improvement": 3.033999443054199,
+      "mask_mse": 0.03561348468065262
+    },
+    {
+      "file": "mix_0024.wav",
+      "noisy_si_sdr": 4.85835075378418,
+      "enhanced_si_sdr": 9.366982460021973,
+      "si_sdr_improvement": 4.508631706237793,
+      "mask_mse": 0.04992174729704857
+    },
+    {
+      "file": "mix_0025.wav",
+      "noisy_si_sdr": 1.758266568183899,
+      "enhanced_si_sdr": 10.928045272827148,
+      "si_sdr_improvement": 9.16977870464325,
+      "mask_mse": 0.04206893593072891
+    },
+    {
+      "file": "mix_0026.wav",
+      "noisy_si_sdr": -1.5197843313217163,
+      "enhanced_si_sdr": 4.417210578918457,
+      "si_sdr_improvement": 5.936994910240173,
+      "mask_mse": 0.04446757584810257
+    },
+    {
+      "file": "mix_0027.wav",
+      "noisy_si_sdr": 9.206169128417969,
+      "enhanced_si_sdr": 15.20081615447998,
+      "si_sdr_improvement": 5.994647026062012,
+      "mask_mse": 0.03267180174589157
+    },
+    {
+      "file": "mix_0028.wav",
+      "noisy_si_sdr": -2.318486213684082,
+      "enhanced_si_sdr": 12.313648223876953,
+      "si_sdr_improvement": 14.632134437561035,
+      "mask_mse": 0.03383994102478027
+    },
+    {
+      "file": "mix_0029.wav",
+      "noisy_si_sdr": 1.0783050060272217,
+      "enhanced_si_sdr": 13.884622573852539,
+      "si_sdr_improvement": 12.806317567825317,
+      "mask_mse": 0.039024416357278824
+    },
+    {
+      "file": "mix_0030.wav",
+      "noisy_si_sdr": -1.4272993803024292,
+      "enhanced_si_sdr": 3.163209915161133,
+      "si_sdr_improvement": 4.590509295463562,
+      "mask_mse": 0.06004945561289787
+    },
+    {
+      "file": "mix_0031.wav",
+      "noisy_si_sdr": -0.7573240995407104,
+      "enhanced_si_sdr": 12.636463165283203,
+      "si_sdr_improvement": 13.393787264823914,
+      "mask_mse": 0.04661093279719353
+    },
+    {
+      "file": "mix_0032.wav",
+      "noisy_si_sdr": 11.978521347045898,
+      "enhanced_si_sdr": 13.90851879119873,
+      "si_sdr_improvement": 1.929997444152832,
+      "mask_mse": 0.06401698291301727
+    },
+    {
+      "file": "mix_0033.wav",
+      "noisy_si_sdr": 7.438683032989502,
+      "enhanced_si_sdr": 13.370803833007812,
+      "si_sdr_improvement": 5.9321208000183105,
+      "mask_mse": 0.10328749567270279
+    },
+    {
+      "file": "mix_0034.wav",
+      "noisy_si_sdr": 6.148447036743164,
+      "enhanced_si_sdr": 13.351393699645996,
+      "si_sdr_improvement": 7.202946662902832,
+      "mask_mse": 0.037100836634635925
+    },
+    {
+      "file": "mix_0035.wav",
+      "noisy_si_sdr": 2.1324057579040527,
+      "enhanced_si_sdr": 14.597826957702637,
+      "si_sdr_improvement": 12.465421199798584,
+      "mask_mse": 0.04247187077999115
+    },
+    {
+      "file": "mix_0036.wav",
+      "noisy_si_sdr": 0.73737633228302,
+      "enhanced_si_sdr": 9.84113597869873,
+      "si_sdr_improvement": 9.10375964641571,
+      "mask_mse": 0.04079294949769974
+    },
+    {
+      "file": "mix_0037.wav",
+      "noisy_si_sdr": 14.297351837158203,
+      "enhanced_si_sdr": 13.165201187133789,
+      "si_sdr_improvement": -1.132150650024414,
+      "mask_mse": 0.07715841382741928
+    },
+    {
+      "file": "mix_0038.wav",
+      "noisy_si_sdr": 12.14484977722168,
+      "enhanced_si_sdr": 16.363676071166992,
+      "si_sdr_improvement": 4.2188262939453125,
+      "mask_mse": 0.057680923491716385
+    },
+    {
+      "file": "mix_0039.wav",
+      "noisy_si_sdr": 7.085583686828613,
+      "enhanced_si_sdr": 10.550570487976074,
+      "si_sdr_improvement": 3.464986801147461,
+      "mask_mse": 0.0463179349899292
+    },
+    {
+      "file": "mix_0040.wav",
+      "noisy_si_sdr": 8.629039764404297,
+      "enhanced_si_sdr": 15.943427085876465,
+      "si_sdr_improvement": 7.314387321472168,
+      "mask_mse": 0.032021746039390564
+    },
+    {
+      "file": "mix_0041.wav",
+      "noisy_si_sdr": 12.579065322875977,
+      "enhanced_si_sdr": 16.06336784362793,
+      "si_sdr_improvement": 3.484302520751953,
+      "mask_mse": 0.04643460363149643
+    },
+    {
+      "file": "mix_0042.wav",
+      "noisy_si_sdr": 10.418435096740723,
+      "enhanced_si_sdr": 12.924304962158203,
+      "si_sdr_improvement": 2.5058698654174805,
+      "mask_mse": 0.044919081032276154
+    },
+    {
+      "file": "mix_0043.wav",
+      "noisy_si_sdr": 14.955223083496094,
+      "enhanced_si_sdr": 16.417741775512695,
+      "si_sdr_improvement": 1.4625186920166016,
+      "mask_mse": 0.02598879113793373
+    },
+    {
+      "file": "mix_0044.wav",
+      "noisy_si_sdr": 8.11392879486084,
+      "enhanced_si_sdr": 13.320402145385742,
+      "si_sdr_improvement": 5.206473350524902,
+      "mask_mse": 0.03590933233499527
+    },
+    {
+      "file": "mix_0045.wav",
+      "noisy_si_sdr": -0.5221948027610779,
+      "enhanced_si_sdr": 13.005935668945312,
+      "si_sdr_improvement": 13.52813047170639,
+      "mask_mse": 0.041415248066186905
+    },
+    {
+      "file": "mix_0046.wav",
+      "noisy_si_sdr": 12.794142723083496,
+      "enhanced_si_sdr": 17.68171501159668,
+      "si_sdr_improvement": 4.887572288513184,
+      "mask_mse": 0.040879786014556885
+    },
+    {
+      "file": "mix_0047.wav",
+      "noisy_si_sdr": 1.3211922645568848,
+      "enhanced_si_sdr": 6.1468892097473145,
+      "si_sdr_improvement": 4.82569694519043,
+      "mask_mse": 0.03374393656849861
+    }
+  ]
+}
