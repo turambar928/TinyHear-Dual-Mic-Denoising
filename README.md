@@ -1,4 +1,8 @@
-# 双麦端侧上行降噪原型
+# TinyHear Dual-Mic Denoising
+
+[![CI](https://github.com/turambar928/TinyHear-Dual-Mic-Denoising/actions/workflows/ci.yml/badge.svg)](https://github.com/turambar928/TinyHear-Dual-Mic-Denoising/actions/workflows/ci.yml)
+
+双麦端侧上行降噪原型。
 
 这个项目实现一个面向助听器/耳戴设备的双麦上行降噪原型：双通道音频输入，模型预测 32 个频带的软掩蔽，最后对参考麦克风频谱做增强重构。
 
