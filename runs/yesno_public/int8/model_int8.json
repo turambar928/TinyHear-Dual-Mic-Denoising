@@ -1,0 +1,365 @@
+{
+  "config": {
+    "sample_rate": 16000,
+    "n_fft": 256,
+    "hop_length": 64,
+    "bands": 32,
+    "feature_dim": 96,
+    "channels": 112,
+    "blocks": 8,
+    "kernel_size": 5
+  },
+  "parameters": 121104,
+  "layers": [
+    {
+      "name": "stem.0",
+      "array_name": "stem_0",
+      "weight_shape": [
+        112,
+        96,
+        1
+      ],
+      "bias_shape": [
+        112
+      ],
+      "weight_scale": 0.0014419820834332565,
+      "bias_scale_without_activation": 0.0014419820834332565,
+      "groups": 1,
+      "kernel_size": 1,
+      "dilation": 1,
+      "padding": 0
+    },
+    {
+      "name": "tcn.0.depthwise",
+      "array_name": "tcn_0_depthwise",
+      "weight_shape": [
+        112,
+        1,
+        5
+      ],
+      "bias_shape": [
+        112
+      ],
+      "weight_scale": 0.0037454373723878635,
+      "bias_scale_without_activation": 0.0037454373723878635,
+      "groups": 112,
+      "kernel_size": 5,
+      "dilation": 1,
+      "padding": 0
+    },
+    {
+      "name": "tcn.0.pointwise",
+      "array_name": "tcn_0_pointwise",
+      "weight_shape": [
+        112,
+        112,
+        1
+      ],
+      "bias_shape": [
+        112
+      ],
+      "weight_scale": 0.0013060956958710678,
+      "bias_scale_without_activation": 0.0013060956958710678,
+      "groups": 1,
+      "kernel_size": 1,
+      "dilation": 1,
+      "padding": 0
+    },
+    {
+      "name": "tcn.1.depthwise",
+      "array_name": "tcn_1_depthwise",
+      "weight_shape": [
+        112,
+        1,
+        5
+      ],
+      "bias_shape": [
+        112
+      ],
+      "weight_scale": 0.003937875661324328,
+      "bias_scale_without_activation": 0.003937875661324328,
+      "groups": 112,
+      "kernel_size": 5,
+      "dilation": 2,
+      "padding": 0
+    },
+    {
+      "name": "tcn.1.pointwise",
+      "array_name": "tcn_1_pointwise",
+      "weight_shape": [
+        112,
+        112,
+        1
+      ],
+      "bias_shape": [
+        112
+      ],
+      "weight_scale": 0.0013889429841454574,
+      "bias_scale_without_activation": 0.0013889429841454574,
+      "groups": 1,
+      "kernel_size": 1,
+      "dilation": 1,
+      "padding": 0
+    },
+    {
+      "name": "tcn.2.depthwise",
+      "array_name": "tcn_2_depthwise",
+      "weight_shape": [
+        112,
+        1,
+        5
+      ],
+      "bias_shape": [
+        112
+      ],
+      "weight_scale": 0.004206193244363379,
+      "bias_scale_without_activation": 0.004206193244363379,
+      "groups": 112,
+      "kernel_size": 5,
+      "dilation": 4,
+      "padding": 0
+    },
+    {
+      "name": "tcn.2.pointwise",
+      "array_name": "tcn_2_pointwise",
+      "weight_shape": [
+        112,
+        112,
+        1
+      ],
+      "bias_shape": [
+        112
+      ],
+      "weight_scale": 0.0017117740601066528,
+      "bias_scale_without_activation": 0.0017117740601066528,
+      "groups": 1,
+      "kernel_size": 1,
+      "dilation": 1,
+      "padding": 0
+    },
+    {
+      "name": "tcn.3.depthwise",
+      "array_name": "tcn_3_depthwise",
+      "weight_shape": [
+        112,
+        1,
+        5
+      ],
+      "bias_shape": [
+        112
+      ],
+      "weight_scale": 0.004162589396078755,
+      "bias_scale_without_activation": 0.004162589396078755,
+      "groups": 112,
+      "kernel_size": 5,
+      "dilation": 8,
+      "padding": 0
+    },
+    {
+      "name": "tcn.3.pointwise",
+      "array_name": "tcn_3_pointwise",
+      "weight_shape": [
+        112,
+        112,
+        1
+      ],
+      "bias_shape": [
+        112
+      ],
+      "weight_scale": 0.0016940893150690034,
+      "bias_scale_without_activation": 0.0016940893150690034,
+      "groups": 1,
+      "kernel_size": 1,
+      "dilation": 1,
+      "padding": 0
+    },
+    {
+      "name": "tcn.4.depthwise",
+      "array_name": "tcn_4_depthwise",
+      "weight_shape": [
+        112,
+        1,
+        5
+      ],
+      "bias_shape": [
+        112
+      ],
+      "weight_scale": 0.004017558623486617,
+      "bias_scale_without_activation": 0.004017558623486617,
+      "groups": 112,
+      "kernel_size": 5,
+      "dilation": 1,
+      "padding": 0
+    },
+    {
+      "name": "tcn.4.pointwise",
+      "array_name": "tcn_4_pointwise",
+      "weight_shape": [
+        112,
+        112,
+        1
+      ],
+      "bias_shape": [
+        112
+      ],
+      "weight_scale": 0.001702575233038955,
+      "bias_scale_without_activation": 0.001702575233038955,
+      "groups": 1,
+      "kernel_size": 1,
+      "dilation": 1,
+      "padding": 0
+    },
+    {
+      "name": "tcn.5.depthwise",
+      "array_name": "tcn_5_depthwise",
+      "weight_shape": [
+        112,
+        1,
+        5
+      ],
+      "bias_shape": [
+        112
+      ],
+      "weight_scale": 0.004176550962793546,
+      "bias_scale_without_activation": 0.004176550962793546,
+      "groups": 112,
+      "kernel_size": 5,
+      "dilation": 2,
+      "padding": 0
+    },
+    {
+      "name": "tcn.5.pointwise",
+      "array_name": "tcn_5_pointwise",
+      "weight_shape": [
+        112,
+        112,
+        1
+      ],
+      "bias_shape": [
+        112
+      ],
+      "weight_scale": 0.0016691627230231217,
+      "bias_scale_without_activation": 0.0016691627230231217,
+      "groups": 1,
+      "kernel_size": 1,
+      "dilation": 1,
+      "padding": 0
+    },
+    {
+      "name": "tcn.6.depthwise",
+      "array_name": "tcn_6_depthwise",
+      "weight_shape": [
+        112,
+        1,
+        5
+      ],
+      "bias_shape": [
+        112
+      ],
+      "weight_scale": 0.003783430874817015,
+      "bias_scale_without_activation": 0.003783430874817015,
+      "groups": 112,
+      "kernel_size": 5,
+      "dilation": 4,
+      "padding": 0
+    },
+    {
+      "name": "tcn.6.pointwise",
+      "array_name": "tcn_6_pointwise",
+      "weight_shape": [
+        112,
+        112,
+        1
+      ],
+      "bias_shape": [
+        112
+      ],
+      "weight_scale": 0.0016141333213941318,
+      "bias_scale_without_activation": 0.0016141333213941318,
+      "groups": 1,
+      "kernel_size": 1,
+      "dilation": 1,
+      "padding": 0
+    },
+    {
+      "name": "tcn.7.depthwise",
+      "array_name": "tcn_7_depthwise",
+      "weight_shape": [
+        112,
+        1,
+        5
+      ],
+      "bias_shape": [
+        112
+      ],
+      "weight_scale": 0.0036545656328126203,
+      "bias_scale_without_activation": 0.0036545656328126203,
+      "groups": 112,
+      "kernel_size": 5,
+      "dilation": 8,
+      "padding": 0
+    },
+    {
+      "name": "tcn.7.pointwise",
+      "array_name": "tcn_7_pointwise",
+      "weight_shape": [
+        112,
+        112,
+        1
+      ],
+      "bias_shape": [
+        112
+      ],
+      "weight_scale": 0.0016191211037748442,
+      "bias_scale_without_activation": 0.0016191211037748442,
+      "groups": 1,
+      "kernel_size": 1,
+      "dilation": 1,
+      "padding": 0
+    },
+    {
+      "name": "head",
+      "array_name": "head",
+      "weight_shape": [
+        32,
+        112,
+        1
+      ],
+      "bias_shape": [
+        32
+      ],
+      "weight_scale": 0.001037751009145121,
+      "bias_scale_without_activation": 0.001037751009145121,
+      "groups": 1,
+      "kernel_size": 1,
+      "dilation": 1,
+      "padding": 0
+    }
+  ],
+  "activation_scales": {
+    "head": 0.0872777764478069,
+    "stem.0": 0.05642706056279469,
+    "tcn.0.depthwise": 0.044923467384549984,
+    "tcn.0.pointwise": 0.03084308859307075,
+    "tcn.1.depthwise": 0.047999149149798054,
+    "tcn.1.pointwise": 0.028505873864092004,
+    "tcn.2.depthwise": 0.05098727969672819,
+    "tcn.2.pointwise": 0.031377110364869606,
+    "tcn.3.depthwise": 0.05772619633411829,
+    "tcn.3.pointwise": 0.07209929783888695,
+    "tcn.4.depthwise": 0.06673949402336354,
+    "tcn.4.pointwise": 0.04518865228262486,
+    "tcn.5.depthwise": 0.06891216515368463,
+    "tcn.5.pointwise": 0.05110367111896919,
+    "tcn.6.depthwise": 0.07116058728826483,
+    "tcn.6.pointwise": 0.08530660214762063,
+    "tcn.7.depthwise": 0.08041308811518395,
+    "tcn.7.pointwise": 0.047343910664085435
+  },
+  "calibration": {
+    "data": "data/yesno_public_eval",
+    "split": "val",
+    "items": 24,
+    "percentile": 99.9
+  }
+}

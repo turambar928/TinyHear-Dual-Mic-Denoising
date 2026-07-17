@@ -1,0 +1,34 @@
+# Python/cache
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+
+# Local datasets and downloads
+data/
+downloads/
+
+# Training outputs are ignored by default.
+runs/*
+*.pt
+*.pth
+*.ckpt
+*.wav
+*.flac
+*.tar
+*.tar.gz
+*.zip
+
+# Keep the small quantized reference package needed by c_reference.
+!runs/yesno_public/
+runs/yesno_public/*
+!runs/yesno_public/int8/
+
+runs/yesno_public/int8/*
+!runs/yesno_public/int8/model_int8.h
+!runs/yesno_public/int8/model_int8.json
+!runs/yesno_public/int8/calibration_report.json
+
+# C build output
+c_reference/tiny_tcn_ref

@@ -1,0 +1,118 @@
+{
+  "calibration": {
+    "data": "data/yesno_public_eval",
+    "split": "val",
+    "items": 24,
+    "percentile": 99.9
+  },
+  "layers": [
+    {
+      "name": "head",
+      "input_scale": 0.0872777764478069,
+      "observed_max_abs": 15.179949760437012,
+      "percentile": 99.9
+    },
+    {
+      "name": "stem.0",
+      "input_scale": 0.05642706056279469,
+      "observed_max_abs": 9.42028522491455,
+      "percentile": 99.9
+    },
+    {
+      "name": "tcn.0.depthwise",
+      "input_scale": 0.044923467384549984,
+      "observed_max_abs": 7.430770397186279,
+      "percentile": 99.9
+    },
+    {
+      "name": "tcn.0.pointwise",
+      "input_scale": 0.03084308859307075,
+      "observed_max_abs": 5.20976448059082,
+      "percentile": 99.9
+    },
+    {
+      "name": "tcn.1.depthwise",
+      "input_scale": 0.047999149149798054,
+      "observed_max_abs": 7.987137317657471,
+      "percentile": 99.9
+    },
+    {
+      "name": "tcn.1.pointwise",
+      "input_scale": 0.028505873864092004,
+      "observed_max_abs": 5.037749290466309,
+      "percentile": 99.9
+    },
+    {
+      "name": "tcn.2.depthwise",
+      "input_scale": 0.05098727969672819,
+      "observed_max_abs": 8.783622741699219,
+      "percentile": 99.9
+    },
+    {
+      "name": "tcn.2.pointwise",
+      "input_scale": 0.031377110364869606,
+      "observed_max_abs": 6.3691534996032715,
+      "percentile": 99.9
+    },
+    {
+      "name": "tcn.3.depthwise",
+      "input_scale": 0.05772619633411829,
+      "observed_max_abs": 10.268813133239746,
+      "percentile": 99.9
+    },
+    {
+      "name": "tcn.3.pointwise",
+      "input_scale": 0.07209929783888695,
+      "observed_max_abs": 13.212656021118164,
+      "percentile": 99.9
+    },
+    {
+      "name": "tcn.4.depthwise",
+      "input_scale": 0.06673949402336354,
+      "observed_max_abs": 12.040318489074707,
+      "percentile": 99.9
+    },
+    {
+      "name": "tcn.4.pointwise",
+      "input_scale": 0.04518865228262486,
+      "observed_max_abs": 7.246044635772705,
+      "percentile": 99.9
+    },
+    {
+      "name": "tcn.5.depthwise",
+      "input_scale": 0.06891216515368463,
+      "observed_max_abs": 12.040318489074707,
+      "percentile": 99.9
+    },
+    {
+      "name": "tcn.5.pointwise",
+      "input_scale": 0.05110367111896919,
+      "observed_max_abs": 9.32596492767334,
+      "percentile": 99.9
+    },
+    {
+      "name": "tcn.6.depthwise",
+      "input_scale": 0.07116058728826483,
+      "observed_max_abs": 12.3989896774292,
+      "percentile": 99.9
+    },
+    {
+      "name": "tcn.6.pointwise",
+      "input_scale": 0.08530660214762063,
+      "observed_max_abs": 15.476241111755371,
+      "percentile": 99.9
+    },
+    {
+      "name": "tcn.7.depthwise",
+      "input_scale": 0.08041308811518395,
+      "observed_max_abs": 13.807868957519531,
+      "percentile": 99.9
+    },
+    {
+      "name": "tcn.7.pointwise",
+      "input_scale": 0.047343910664085435,
+      "observed_max_abs": 8.047574043273926,
+      "percentile": 99.9
+    }
+  ]
+}
