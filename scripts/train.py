@@ -48,6 +48,8 @@ def main() -> None:
     parser.add_argument("--seconds", type=float, default=2.0)
     parser.add_argument("--on-the-fly", action="store_true")
     parser.add_argument("--device", default="cpu")
+    parser.add_argument("--resume", help="Optional checkpoint to initialize model weights from.")
+    parser.add_argument("--start-epoch", type=int, default=0)
     args = parser.parse_args()
 
     out = Path(args.out)
@@ -59,12 +61,18 @@ def main() -> None:
     val_loader = DataLoader(val_ds, batch_size=args.batch_size, shuffle=False, collate_fn=pad_sequence_batch)
 
     model = TinyCausalTCN(feature_dim=cfg.bands * 3, bands=cfg.bands)
+    best = float("inf")
+    if args.resume:
+        ckpt = torch.load(args.resume, map_location="cpu")
+        model.load_state_dict(ckpt["model"])
+        if ckpt.get("val_mse") is not None:
+            best = float(ckpt["val_mse"])
+        print(f"resumed_from={args.resume}")
     params = count_parameters(model)
     print(f"parameters={params} int8_weight_bytes~={params}")
     model.to(args.device)
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=1e-4)
-    best = float("inf")
-    for epoch in range(1, args.epochs + 1):
+    for epoch in range(args.start_epoch + 1, args.start_epoch + args.epochs + 1):
         train_loss = run_epoch(model, train_loader, optimizer, args.device)
         val_loss = run_epoch(model, val_loader, None, args.device)
         print(f"epoch={epoch} train_mse={train_loss:.6f} val_mse={val_loss:.6f}")
@@ -80,6 +88,8 @@ def main() -> None:
                 "blocks": model.blocks,
                 "kernel_size": model.kernel_size,
             },
+            "epoch": epoch,
+            "val_mse": val_loss,
         }
         torch.save(state, out / "last.pt")
         if val_loss < best:

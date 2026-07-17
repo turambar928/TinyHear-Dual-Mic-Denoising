@@ -112,15 +112,36 @@ PYTHONPATH=src python scripts/train.py \
   --device cpu
 ```
 
+Fine-tuning/resume:
+
+```bash
+PYTHONPATH=src CUDA_VISIBLE_DEVICES= python3 scripts/train.py \
+  --data data/arctic_demand \
+  --on-the-fly \
+  --seconds 2.0 \
+  --epochs 20 \
+  --batch-size 8 \
+  --lr 3e-4 \
+  --out runs/arctic_demand \
+  --device cpu \
+  --resume runs/arctic_demand/best.pt \
+  --start-epoch 20
+```
+
+Best checkpoint after 40 total epochs:
+
+- Epoch: 40.
+- Validation mask MSE during training: 0.880537.
+
 Evaluation:
 
 ```json
 {
   "items": 160,
   "mean_noisy_si_sdr": 4.331035113846883,
-  "mean_enhanced_si_sdr": 8.800652068853378,
-  "mean_si_sdr_improvement": 4.469616955006495,
-  "mean_mask_mse": 0.13468557110754772
+  "mean_enhanced_si_sdr": 9.080238467641175,
+  "mean_si_sdr_improvement": 4.749203353794292,
+  "mean_mask_mse": 0.12110779838403687
 }
 ```
 
@@ -130,16 +151,23 @@ INT8 fixed-scale reference:
 {
   "frames": 16,
   "fixed_scales": true,
-  "max_abs_diff": 0.026933491230010986,
-  "mean_abs_diff": 0.006992296781390905
+  "max_abs_diff": 0.020154237747192383,
+  "mean_abs_diff": 0.004160087089985609
 }
 ```
+
+Deployment package:
+
+- INT8 weights only: about 121 KB.
+- Exported weights and biases: 126,912 bytes.
+- Tracked C reference model header: `runs/arctic_demand/int8/model_int8.h`.
+- C reference test vector, Q15 integer path: max abs diff 0.150506899, mean abs diff 0.028929325.
 
 Comparison:
 
 | Experiment | Clean speech | DEMAND envs | Eval items | SI-SDR improvement | Notes |
 | --- | --- | ---: | ---: | ---: | --- |
 | YESNO + DEMAND | YESNO, 60 clips | 2 | 48 | 6.02 dB | Easier, limited speech diversity |
-| ARCTIC + DEMAND | CMU ARCTIC, 2 speakers | 6 | 160 | 4.47 dB | Harder and more representative |
+| ARCTIC + DEMAND | CMU ARCTIC, 2 speakers | 6 | 160 | 4.75 dB | Harder and more representative |
 
 The ARCTIC baseline is the recommended current baseline despite lower SI-SDR improvement because it uses a larger and more diverse clean speech distribution and a broader noise set.

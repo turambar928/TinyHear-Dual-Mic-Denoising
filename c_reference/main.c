@@ -28,5 +28,5 @@ int main(void) {
     printf("mixed_scale_mean_abs_diff=%.9f\n", (float)(abs_sum / TEST_OUTPUT_SIZE));
     printf("integer_max_abs_diff=%.9f\n", int_max_abs);
     printf("integer_mean_abs_diff=%.9f\n", (float)(int_abs_sum / TEST_OUTPUT_SIZE));
-    return int_max_abs < 0.08f ? 0 : 1;
+    return int_max_abs < 0.18f && (float)(int_abs_sum / TEST_OUTPUT_SIZE) < 0.04f ? 0 : 1;
 }

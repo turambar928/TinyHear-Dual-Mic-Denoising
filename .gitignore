@@ -38,5 +38,14 @@ runs/yesno_public/int8/*
 !runs/yesno_demand/
 !runs/yesno_demand/**
 
+# Tracked ARCTIC + DEMAND quantized deployment package.
+!runs/arctic_demand/
+runs/arctic_demand/*
+!runs/arctic_demand/int8/
+runs/arctic_demand/int8/*
+!runs/arctic_demand/int8/model_int8.h
+!runs/arctic_demand/int8/model_int8.json
+!runs/arctic_demand/int8/calibration_report.json
+
 # C build output
 c_reference/tiny_tcn_ref

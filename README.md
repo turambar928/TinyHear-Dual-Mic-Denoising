@@ -143,9 +143,24 @@ PYTHONPATH=src python scripts/train.py \
   --data data/arctic_demand \
   --on-the-fly \
   --seconds 2 \
-  --epochs 20 \
+  --epochs 40 \
   --batch-size 8 \
   --out runs/arctic_demand
+```
+
+已经有 checkpoint 时可继续训练：
+
+```bash
+PYTHONPATH=src python scripts/train.py \
+  --data data/arctic_demand \
+  --on-the-fly \
+  --seconds 2 \
+  --epochs 20 \
+  --batch-size 8 \
+  --lr 3e-4 \
+  --out runs/arctic_demand \
+  --resume runs/arctic_demand/best.pt \
+  --start-epoch 20
 ```
 
 `--on-the-fly` 训练集如果要固定评估样本，可以先 materialize：
