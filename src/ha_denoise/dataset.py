@@ -49,10 +49,10 @@ def synthesize_dual_mic(
 ) -> tuple[np.ndarray, np.ndarray]:
     rng = rng or random
     clean = clean[:, 0] if clean.ndim == 2 else clean
-    noise = noise[:, 0] if noise.ndim == 2 else noise
     n = min(clean.shape[0], noise.shape[0])
     clean = clean[:n].astype(np.float32)
     noise = noise[:n].astype(np.float32)
+    noise_is_stereo = noise.ndim == 2 and noise.shape[1] >= 2
     clean = clean / max(rms(clean), 1e-4) * 0.08
     noise = noise / max(rms(noise), 1e-4)
     noise = noise * (rms(clean) / (10.0 ** (snr_db / 20.0)))
@@ -77,8 +77,12 @@ def synthesize_dual_mic(
             noise_0 = convolve_rir(noise, noise_rir)
             noise_1 = fractional_delay(noise_0, delay) * rng.uniform(0.8, 1.05)
     else:
-        noise_0 = noise
-        noise_1 = fractional_delay(noise, delay) * rng.uniform(0.8, 1.05)
+        if noise_is_stereo:
+            noise_0 = noise[:, 0]
+            noise_1 = noise[:, 1]
+        else:
+            noise_0 = noise
+            noise_1 = fractional_delay(noise, delay) * rng.uniform(0.8, 1.05)
     mix = np.stack([clean_0 + noise_0, clean_1 + noise_1], axis=0)
     clean_pair = np.stack([clean_0, clean_1], axis=0)
     scale = max(float(np.max(np.abs(mix))), float(np.max(np.abs(clean_pair))), 1e-4)
@@ -133,7 +137,8 @@ class WavPairDataset(Dataset):
             _, clean = read_wav(self.clean_files[idx % len(self.clean_files)], self.cfg.sample_rate)
             _, noise = read_wav(self.rng.choice(self.noise_files), self.cfg.sample_rate)
             clean = crop_or_tile(clean[:, 0], self.length, self.rng)
-            noise = crop_or_tile(noise[:, 0], self.length, self.rng)
+            noise_src = noise[:, :2] if noise.shape[1] >= 2 else noise[:, 0]
+            noise = crop_or_tile(noise_src, self.length, self.rng)
             clean_rir = None
             noise_rir = None
             if self.rir_files:

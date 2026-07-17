@@ -96,6 +96,30 @@ PYTHONPATH=src python scripts/train.py --data data/public_small --on-the-fly --e
 
 `rir` 目录是可选的。RIR wav 如果是双通道，会被当成双麦房间响应；如果是单通道，会与 TDOA/衰减模拟组合使用。
 
+更适配双麦训练的公开数据组合是 **Mini LibriSpeech/LibriSpeech clean speech + DEMAND 多通道环境噪声**：
+
+```bash
+# LibriSpeech/Mini LibriSpeech FLAC -> clean wav
+PYTHONPATH=src python scripts/prepare_librispeech_wavs.py \
+  --src downloads/mini_librispeech \
+  --out data/libri_demand \
+  --train-count 500 --val-count 80
+
+# DEMAND 多通道噪声 -> stereo noise wav
+PYTHONPATH=src python scripts/prepare_demand_noise.py \
+  --src downloads/demand \
+  --out data/libri_demand \
+  --train-count 500 --val-count 100
+
+PYTHONPATH=src python scripts/train.py \
+  --data data/libri_demand \
+  --on-the-fly \
+  --seconds 2 \
+  --epochs 30 \
+  --batch-size 8 \
+  --out runs/libri_demand
+```
+
 `--on-the-fly` 训练集如果要固定评估样本，可以先 materialize：
 
 ```bash
@@ -106,6 +130,7 @@ PYTHONPATH=src python scripts/evaluate.py --checkpoint runs/public_small/best.pt
 ## 目录
 
 - `docs/implementation_plan.md`：完整实现方案、端侧映射和下一步路线。
+- `docs/experiments.md`：训练数据选择、实验记录和指标。
 - `src/ha_denoise/model.py`：100-150KB 目标模型。
 - `src/ha_denoise/features.py`：双麦 STFT 特征、mask 标签、重构。
 - `src/ha_denoise/dataset.py`：合成双麦数据与训练数据集。
@@ -113,6 +138,8 @@ PYTHONPATH=src python scripts/evaluate.py --checkpoint runs/public_small/best.pt
 - `scripts/export_int8.py`：INT8 权重导出。
 - `scripts/verify_int8_reference.py`：INT8 权重 + int32 卷积累加 reference。
 - `scripts/calibrate_int8.py`：统计每层输入 activation scale 并写入 `model_int8.json`。
+- `scripts/prepare_librispeech_wavs.py`：将 LibriSpeech/Mini LibriSpeech FLAC 转成 clean wav。
+- `scripts/prepare_demand_noise.py`：将 DEMAND 多通道噪声整理成双通道 noise wav。
 - `scripts/enhance_wav.py`：离线增强。
 - `scripts/evaluate.py`：SI-SDR improvement 和 mask MSE 评估。
 - `scripts/materialize_mixes.py`：将 on-the-fly clean/noise 数据固化为可复现 mix/clean 样本。
