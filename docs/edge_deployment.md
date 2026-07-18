@@ -173,3 +173,20 @@ PYTHONPATH=src python scripts/compare_realtime.py \
 
 - Q15 模型 streaming 和 batch 输出完全一致。
 - 完整 C realtime DSP 相对 Python realtime float reference：max abs diff 0.386406660，mean abs diff 0.001111976。
+
+## 7. Benchmark
+
+PC 侧 benchmark：
+
+```bash
+make -C c_reference clean bench
+```
+
+当前开发服务器结果：
+
+- Q15 streaming model：0.280816 ms/frame。
+- Full realtime DSP reference：2.450210 ms/hop。
+- `sizeof(TinyTcnState)`：13,444 bytes。
+- `sizeof(TinyRealtimeDspState)`：17,540 bytes。
+
+这些数值只用于 PC reference 追踪，不代表 M55/U55 上板性能。详细记录见 `docs/performance.md`。

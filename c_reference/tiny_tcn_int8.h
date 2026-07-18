@@ -9,9 +9,20 @@ extern "C" {
 #endif
 
 #define TINY_TCN_MAX_LEFT_PAD ((TINY_TCN_KERNEL - 1) * 8)
+#define TINY_TCN_LEFT_PAD_D1 ((TINY_TCN_KERNEL - 1) * 1)
+#define TINY_TCN_LEFT_PAD_D2 ((TINY_TCN_KERNEL - 1) * 2)
+#define TINY_TCN_LEFT_PAD_D4 ((TINY_TCN_KERNEL - 1) * 4)
+#define TINY_TCN_LEFT_PAD_D8 ((TINY_TCN_KERNEL - 1) * 8)
 
 typedef struct {
-    int8_t block_history[TINY_TCN_BLOCKS][TINY_TCN_CHANNELS][TINY_TCN_MAX_LEFT_PAD];
+    int8_t block0_history[TINY_TCN_CHANNELS][TINY_TCN_LEFT_PAD_D1];
+    int8_t block1_history[TINY_TCN_CHANNELS][TINY_TCN_LEFT_PAD_D2];
+    int8_t block2_history[TINY_TCN_CHANNELS][TINY_TCN_LEFT_PAD_D4];
+    int8_t block3_history[TINY_TCN_CHANNELS][TINY_TCN_LEFT_PAD_D8];
+    int8_t block4_history[TINY_TCN_CHANNELS][TINY_TCN_LEFT_PAD_D1];
+    int8_t block5_history[TINY_TCN_CHANNELS][TINY_TCN_LEFT_PAD_D2];
+    int8_t block6_history[TINY_TCN_CHANNELS][TINY_TCN_LEFT_PAD_D4];
+    int8_t block7_history[TINY_TCN_CHANNELS][TINY_TCN_LEFT_PAD_D8];
     int frames_seen;
 } TinyTcnState;
 

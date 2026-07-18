@@ -119,6 +119,7 @@ static void conv1d_i8_requant_frame(
     int left_pad,
     int layer_idx,
     int relu,
+    int history_len,
     int8_t *y
 ) {
     int out_per_group = out_ch / groups;
@@ -134,7 +135,7 @@ static void conv1d_i8_requant_frame(
                 if (src_offset == 0) {
                     sample = x[ic];
                 } else if (src_offset < 0 && history != NULL) {
-                    sample = history[ic * TINY_TCN_MAX_LEFT_PAD + (TINY_TCN_MAX_LEFT_PAD + src_offset)];
+                    sample = history[ic * history_len + (history_len + src_offset)];
                 }
                 int w_idx = (oc * in_per_group + icg) * kernel + k;
                 acc += (int32_t)sample * (int32_t)w[w_idx];
@@ -159,11 +160,11 @@ static void residual_add_requant_frame(int8_t *x, const int8_t *residual, int n,
     }
 }
 
-static void update_history(int8_t *history, const int8_t *x, int channels) {
+static void update_history(int8_t *history, const int8_t *x, int channels, int history_len) {
     for (int ch = 0; ch < channels; ++ch) {
-        int8_t *row = history + ch * TINY_TCN_MAX_LEFT_PAD;
-        memmove(row, row + 1, (TINY_TCN_MAX_LEFT_PAD - 1) * sizeof(int8_t));
-        row[TINY_TCN_MAX_LEFT_PAD - 1] = x[ch];
+        int8_t *row = history + ch * history_len;
+        memmove(row, row + 1, (size_t)(history_len - 1) * sizeof(int8_t));
+        row[history_len - 1] = x[ch];
     }
 }
 
@@ -383,7 +384,7 @@ void tiny_tcn_process_frame_q15(TinyTcnState *state, const float *input_frame, i
 
     quantize_i8(input_frame, TINY_TCN_FEATURE_DIM, kActivationScales[0], input_q);
     conv1d_i8_requant_frame(input_q, NULL, stem_0_weight, kBias_stem_0,
-                            TINY_TCN_CHANNELS, TINY_TCN_FEATURE_DIM, 1, 1, 1, 0, 0, 1, a);
+                            TINY_TCN_CHANNELS, TINY_TCN_FEATURE_DIM, 1, 1, 1, 0, 0, 1, 0, a);
 
     const int8_t *dw_w[8] = {
         tcn_0_depthwise_weight, tcn_1_depthwise_weight, tcn_2_depthwise_weight, tcn_3_depthwise_weight,
@@ -402,24 +403,34 @@ void tiny_tcn_process_frame_q15(TinyTcnState *state, const float *input_frame, i
         kBias_tcn_4_pointwise, kBias_tcn_5_pointwise, kBias_tcn_6_pointwise, kBias_tcn_7_pointwise
     };
     const int dilations[8] = {1, 2, 4, 8, 1, 2, 4, 8};
+    int8_t *histories[8] = {
+        &state->block0_history[0][0], &state->block1_history[0][0],
+        &state->block2_history[0][0], &state->block3_history[0][0],
+        &state->block4_history[0][0], &state->block5_history[0][0],
+        &state->block6_history[0][0], &state->block7_history[0][0]
+    };
+    const int history_lens[8] = {
+        TINY_TCN_LEFT_PAD_D1, TINY_TCN_LEFT_PAD_D2, TINY_TCN_LEFT_PAD_D4, TINY_TCN_LEFT_PAD_D8,
+        TINY_TCN_LEFT_PAD_D1, TINY_TCN_LEFT_PAD_D2, TINY_TCN_LEFT_PAD_D4, TINY_TCN_LEFT_PAD_D8
+    };
 
     for (int block = 0; block < TINY_TCN_BLOCKS; ++block) {
         memcpy(residual, a, sizeof(residual));
         int depth_layer = 1 + block * 2;
         int point_layer = depth_layer + 1;
         int left_pad = (TINY_TCN_KERNEL - 1) * dilations[block];
-        int8_t *history = &state->block_history[block][0][0];
+        int8_t *history = histories[block];
         conv1d_i8_requant_frame(a, history, dw_w[block], dw_b[block],
                                 TINY_TCN_CHANNELS, 1, TINY_TCN_KERNEL, TINY_TCN_CHANNELS,
-                                dilations[block], left_pad, depth_layer, 1, b);
-        update_history(history, residual, TINY_TCN_CHANNELS);
+                                dilations[block], left_pad, depth_layer, 1, history_lens[block], b);
+        update_history(history, residual, TINY_TCN_CHANNELS, history_lens[block]);
         conv1d_i8_requant_frame(b, NULL, pw_w[block], pw_b[block],
-                                TINY_TCN_CHANNELS, TINY_TCN_CHANNELS, 1, 1, 1, 0, point_layer, 1, a);
+                                TINY_TCN_CHANNELS, TINY_TCN_CHANNELS, 1, 1, 1, 0, point_layer, 1, 0, a);
         residual_add_requant_frame(a, residual, TINY_TCN_CHANNELS, block);
     }
 
     conv1d_i8_requant_frame(a, NULL, head_weight, kBias_head,
-                            TINY_TCN_BANDS, TINY_TCN_CHANNELS, 1, 1, 1, 0, 17, 0, head_q);
+                            TINY_TCN_BANDS, TINY_TCN_CHANNELS, 1, 1, 1, 0, 17, 0, 0, head_q);
     for (int i = 0; i < TINY_TCN_BANDS; ++i) {
         int32_t delta = multiply_by_quantized_multiplier(head_q[i], kHardSigmoidMultiplier, kHardSigmoidShift);
         output_q15[i] = clamp_q15(delta + 16384);

@@ -49,3 +49,4 @@ runs/arctic_demand/int8/*
 
 # C build output
 c_reference/tiny_tcn_ref
+c_reference/tiny_tcn_bench

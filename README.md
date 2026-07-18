@@ -186,6 +186,7 @@ PYTHONPATH=src python scripts/evaluate.py --checkpoint runs/public_small/best.pt
 
 - `docs/implementation_plan.md`：完整实现方案、端侧映射和下一步路线。
 - `docs/experiments.md`：训练数据选择、实验记录和指标。
+- `docs/performance.md`：PC 侧 C reference benchmark 和内存估算。
 - `src/ha_denoise/model.py`：100-150KB 目标模型。
 - `src/ha_denoise/features.py`：双麦 STFT 特征、mask 标签、重构。
 - `src/ha_denoise/dataset.py`：合成双麦数据与训练数据集。
