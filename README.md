@@ -6,6 +6,17 @@
 
 这个项目实现一个面向助听器/耳戴设备的双麦上行降噪原型：双通道音频输入，模型预测 32 个频带的软掩蔽，最后对参考麦克风频谱做增强重构。
 
+## 当前结果
+
+- 推荐基线：CMU ARCTIC clean speech + DEMAND 多通道环境噪声。
+- 模型规模：121,104 参数，INT8 权重约 121 KB。
+- 实时链路：16 kHz，256 点 FFT，64 samples hop，4 ms 步进。
+- Python realtime eval：SI-SDR improvement `4.740 dB`，估计延迟 `192 samples / 12 ms`。
+- C Q15 模型 reference：mean abs diff `0.01477`，streaming 与 batch Q15 完全一致。
+- C realtime DSP reference：mean abs diff `0.00111` against Python realtime float reference。
+- PC reference benchmark：Q15 模型约 `0.267 ms/frame`，完整 C realtime reference 约 `2.530 ms/hop`。
+- C 端状态内存：`TinyTcnState` 13.4 KB，`TinyRealtimeDspState` 17.5 KB。
+
 ## 方案摘要
 
 - 采样率：16 kHz。
@@ -187,6 +198,8 @@ PYTHONPATH=src python scripts/evaluate.py --checkpoint runs/public_small/best.pt
 - `docs/implementation_plan.md`：完整实现方案、端侧映射和下一步路线。
 - `docs/experiments.md`：训练数据选择、实验记录和指标。
 - `docs/performance.md`：PC 侧 C reference benchmark 和内存估算。
+- `docs/project_report.md`：项目报告，可用于实习总结/答辩材料。
+- `docs/slides_outline.md`：汇报 PPT 提纲。
 - `src/ha_denoise/model.py`：100-150KB 目标模型。
 - `src/ha_denoise/features.py`：双麦 STFT 特征、mask 标签、重构。
 - `src/ha_denoise/dataset.py`：合成双麦数据与训练数据集。
