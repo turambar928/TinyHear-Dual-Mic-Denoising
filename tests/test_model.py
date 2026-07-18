@@ -4,6 +4,7 @@ import torch
 
 from ha_denoise.features import FeatureConfig, extract_features, target_band_mask
 from ha_denoise.model import TinyCausalTCN, count_parameters
+from ha_denoise.realtime import StreamingDenoiser
 from ha_denoise.streaming import run_streaming_model
 
 
@@ -38,3 +39,17 @@ def test_streaming_model_matches_batch_model() -> None:
         batch = model(x.transpose(0, 1).unsqueeze(0)).squeeze(0).transpose(0, 1)
         streaming = run_streaming_model(model, x)
     assert torch.allclose(streaming, batch, atol=1e-6)
+
+
+def test_realtime_denoiser_shapes() -> None:
+    model = TinyCausalTCN()
+    model.eval()
+    cfg = FeatureConfig()
+    denoiser = StreamingDenoiser(model, cfg)
+    hop = torch.randn(2, cfg.hop_length)
+    out_hop = denoiser.process_hop(hop)
+    assert out_hop.shape == (cfg.hop_length,)
+    wav = torch.randn(2, cfg.sample_rate // 10)
+    enhanced = denoiser.process(wav, flush=True)
+    assert enhanced.numel() == wav.shape[1] + cfg.n_fft
+    assert torch.isfinite(enhanced).all()

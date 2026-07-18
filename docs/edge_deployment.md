@@ -54,21 +54,21 @@ acc_int32 = conv(input_int8, weight_int8) + bias_int32
 output_float ~= acc_int32 * input_scale * weight_scale
 ```
 
-真正固化到端侧前，需要用校准集统计每层 activation scale。当前 `verify_int8_reference.py` 用动态 activation scale，目的是先验证权重量化和 int32 累加路径可复现。
+真正固化到端侧前，需要用校准集统计每层 activation scale。当前推荐基线使用 ARCTIC + DEMAND 固定验证集做 100th percentile 校准，以降低真实语音样本上的裁剪误差。
 
 校准命令：
 
 ```bash
 PYTHONPATH=src python scripts/calibrate_int8.py \
-  --checkpoint runs/yesno_public/best.pt \
-  --export-dir runs/yesno_public/int8 \
-  --data data/yesno_public_eval \
+  --checkpoint runs/arctic_demand/best.pt \
+  --export-dir runs/arctic_demand/int8 \
+  --data data/arctic_demand_eval \
   --split val \
-  --percentile 99.9
+  --percentile 100
 
 PYTHONPATH=src python scripts/verify_int8_reference.py \
-  --checkpoint runs/yesno_public/best.pt \
-  --export-dir runs/yesno_public/int8 \
+  --checkpoint runs/arctic_demand/best.pt \
+  --export-dir runs/arctic_demand/int8 \
   --fixed-scales
 ```
 
@@ -82,7 +82,7 @@ PYTHONPATH=src python scripts/verify_int8_reference.py \
   },
   "calibration": {
     "items": 24,
-    "percentile": 99.9
+    "percentile": 100.0
   }
 }
 ```
@@ -119,9 +119,9 @@ history bytes ~= 112 * 4 * (1+2+4+8+1+2+4+8) = 13,440 bytes
 
 ```bash
 PYTHONPATH=src python scripts/dump_c_reference_assets.py \
-  --checkpoint runs/yesno_public/best.pt \
-  --export-dir runs/yesno_public/int8 \
-  --input-wav data/yesno_public_eval/val/mix_0000.wav \
+  --checkpoint runs/arctic_demand/best.pt \
+  --export-dir runs/arctic_demand/int8 \
+  --input-wav data/arctic_demand_eval/val/mix_0000.wav \
   --out-dir c_reference/generated \
   --frames 16
 
@@ -132,6 +132,7 @@ make -C c_reference run
 
 - `tiny_tcn_forward`：卷积本体是 int8 activation、int8 weight、int32 accumulate；scale/requantize 用 float，目的是和 Python fixed-scale reference 对齐。
 - `tiny_tcn_forward_q15`：中间激活为 int8，bias 为 int32，requantize 使用 fixed-point multiplier/shift，最终 mask 输出为 Q15。
+- `tiny_tcn_process_frame_q15`：端侧单帧流式接口，`TinyTcnState` 保存每个 TCN depthwise block 的历史激活。
 
 `scripts/dump_c_reference_assets.py` 会生成：
 
@@ -140,3 +141,26 @@ make -C c_reference run
 - `generated/test_vectors.h`：输入特征和 PyTorch 期望输出。
 
 后续 CMSIS-NN/U55 版本可以用 `tiny_tcn_forward_q15` 的数值语义替换底层 conv kernel。
+
+## 6. 实时链路验证
+
+Python 侧完整实时链路：
+
+```bash
+PYTHONPATH=src python scripts/enhance_realtime.py \
+  --checkpoint runs/arctic_demand/best.pt \
+  --input data/arctic_demand_eval/val/mix_0000.wav \
+  --output runs/arctic_demand/realtime_eval/example.wav
+
+PYTHONPATH=src python scripts/compare_realtime.py \
+  --checkpoint runs/arctic_demand/best.pt \
+  --data data/arctic_demand_eval \
+  --split val
+```
+
+当前 ARCTIC + DEMAND 固定验证集结果：
+
+- 实时链路：causal 256 点 STFT、64 hop、逐帧模型、IRFFT、overlap-add。
+- 估计延迟：192 samples，16 kHz 下约 12 ms。
+- 平均实时 SI-SDR improvement：4.740 dB。
+- 相比离线 `center=True` 路径：平均 SI-SDR 低约 0.009 dB。

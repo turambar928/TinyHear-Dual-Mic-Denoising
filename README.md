@@ -46,11 +46,17 @@ python scripts/enhance_wav.py --checkpoint runs/tiny_tcn/best.pt --input data/sy
 # 逐帧流式模型增强一个双通道 wav
 python scripts/enhance_streaming.py --checkpoint runs/tiny_tcn/best.pt --input data/synth/val/mix_0000.wav --output enhanced_streaming.wav
 
+# 完整实时链路增强：流式 STFT + 逐帧模型 + IRFFT overlap-add
+python scripts/enhance_realtime.py --checkpoint runs/tiny_tcn/best.pt --input data/synth/val/mix_0000.wav --output enhanced_realtime.wav
+
 # 评估预生成验证集
 python scripts/evaluate.py --checkpoint runs/tiny_tcn/best.pt --data data/synth --split val --save-audio runs/tiny_tcn/eval_audio
 
 # 对比离线模型和逐帧流式模型输出
 python scripts/compare_streaming.py --checkpoint runs/tiny_tcn/best.pt --data data/synth --split val
+
+# 对比离线增强和完整实时链路输出
+python scripts/compare_realtime.py --checkpoint runs/tiny_tcn/best.pt --data data/synth --split val
 
 # 验证导出的 INT8 权重 reference
 python scripts/verify_int8_reference.py --checkpoint runs/tiny_tcn/best.pt --export-dir runs/tiny_tcn/int8
@@ -193,6 +199,8 @@ PYTHONPATH=src python scripts/evaluate.py --checkpoint runs/public_small/best.pt
 - `scripts/enhance_wav.py`：离线增强。
 - `scripts/enhance_streaming.py`：逐帧模型状态增强，模拟端侧连续帧推理。
 - `scripts/compare_streaming.py`：对比离线模型与逐帧流式模型的 mask、waveform 和 SI-SDR 差异。
+- `scripts/enhance_realtime.py`：完整实时链路增强，包含 causal STFT、模型状态、IRFFT 和 overlap-add。
+- `scripts/compare_realtime.py`：评估完整实时链路相对离线路径的延迟、SI-SDR 和 waveform 差异。
 - `scripts/evaluate.py`：SI-SDR improvement 和 mask MSE 评估。
 - `scripts/materialize_mixes.py`：将 on-the-fly clean/noise 数据固化为可复现 mix/clean 样本。
 - `scripts/dump_c_reference_assets.py`：生成 C reference 所需 scale 头文件和测试向量。

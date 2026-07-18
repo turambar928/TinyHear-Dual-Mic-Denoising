@@ -193,6 +193,37 @@ Notes:
 - This validates the model state cache for frame-by-frame inference.
 - The feature and reconstruction code intentionally reuse the existing 256 FFT / 64 hop STFT path, so the measured difference isolates model streaming behavior instead of DSP boundary handling.
 
+Realtime DSP validation:
+
+```bash
+PYTHONPATH=src python3 scripts/compare_realtime.py \
+  --checkpoint runs/arctic_demand/best.pt \
+  --data data/arctic_demand_eval \
+  --split val \
+  --save-audio runs/arctic_demand/realtime_eval \
+  --device cpu
+```
+
+```json
+{
+  "items": 160,
+  "mean_estimated_delay_samples": 192.0,
+  "mean_estimated_delay_ms": 12.0,
+  "mean_noisy_si_sdr": 4.331035113846883,
+  "mean_offline_si_sdr": 9.080238467641175,
+  "mean_realtime_si_sdr": 9.071255758032203,
+  "mean_realtime_si_sdr_improvement": 4.740220644185319,
+  "mean_realtime_vs_offline_si_sdr_delta": -0.008982709608972073,
+  "mean_aligned_waveform_mse": 6.925643552466165e-07
+}
+```
+
+Notes:
+
+- The realtime path uses causal 256-point STFT frames, 64-sample hops, frame-by-frame model state, IRFFT, and overlap-add synthesis.
+- Estimated algorithmic delay is 192 samples, or 12 ms at 16 kHz.
+- The realtime SI-SDR is within 0.01 dB of the offline `center=True` evaluation after delay alignment.
+
 Comparison:
 
 | Experiment | Clean speech | DEMAND envs | Eval items | SI-SDR improvement | Notes |
