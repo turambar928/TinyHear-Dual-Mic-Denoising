@@ -4,17 +4,13 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "fft_backend.h"
 #include "generated/band_matrix.h"
 #include "generated/model_config.h"
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
-
-typedef struct {
-    float re;
-    float im;
-} Complex32;
 
 static float clampf_local(float x, float lo, float hi) {
     if (x < lo) return lo;
@@ -26,33 +22,7 @@ static float hann(int n) {
     return 0.5f - 0.5f * cosf((float)(2.0 * M_PI * n) / (float)TINY_TCN_N_FFT);
 }
 
-static void rfft_naive(const float *x, Complex32 *spec) {
-    for (int k = 0; k < TINY_TCN_FREQ_BINS; ++k) {
-        double re = 0.0;
-        double im = 0.0;
-        for (int n = 0; n < TINY_TCN_N_FFT; ++n) {
-            double angle = -2.0 * M_PI * (double)k * (double)n / (double)TINY_TCN_N_FFT;
-            re += (double)x[n] * cos(angle);
-            im += (double)x[n] * sin(angle);
-        }
-        spec[k].re = (float)re;
-        spec[k].im = (float)im;
-    }
-}
-
-static void irfft_naive(const Complex32 *spec, float *x) {
-    for (int n = 0; n < TINY_TCN_N_FFT; ++n) {
-        double sum = (double)spec[0].re;
-        sum += (double)spec[TINY_TCN_FREQ_BINS - 1].re * ((n % 2 == 0) ? 1.0 : -1.0);
-        for (int k = 1; k < TINY_TCN_FREQ_BINS - 1; ++k) {
-            double angle = 2.0 * M_PI * (double)k * (double)n / (double)TINY_TCN_N_FFT;
-            sum += 2.0 * ((double)spec[k].re * cos(angle) - (double)spec[k].im * sin(angle));
-        }
-        x[n] = (float)(sum / (double)TINY_TCN_N_FFT);
-    }
-}
-
-static void make_features(const Complex32 *spec0, const Complex32 *spec1, float *features) {
+static void make_features(const TinyComplex32 *spec0, const TinyComplex32 *spec1, float *features) {
     for (int band = 0; band < TINY_TCN_BANDS; ++band) {
         double p0 = 0.0;
         double p1 = 0.0;
@@ -92,8 +62,8 @@ void tiny_realtime_process_hop(TinyRealtimeDspState *state, const float *stereo_
     float features[TINY_TCN_FEATURE_DIM];
     float bin_mask[TINY_TCN_FREQ_BINS];
     int16_t band_mask_q15[TINY_TCN_BANDS];
-    Complex32 spec0[TINY_TCN_FREQ_BINS];
-    Complex32 spec1[TINY_TCN_FREQ_BINS];
+    TinyComplex32 spec0[TINY_TCN_FREQ_BINS];
+    TinyComplex32 spec1[TINY_TCN_FREQ_BINS];
 
     for (int ch = 0; ch < 2; ++ch) {
         memmove(state->input_buffer[ch], state->input_buffer[ch] + TINY_TCN_HOP_LENGTH,
@@ -109,8 +79,8 @@ void tiny_realtime_process_hop(TinyRealtimeDspState *state, const float *stereo_
         frame0[n] = state->input_buffer[0][n] * w;
         frame1[n] = state->input_buffer[1][n] * w;
     }
-    rfft_naive(frame0, spec0);
-    rfft_naive(frame1, spec1);
+    tiny_rfft_forward(frame0, spec0);
+    tiny_rfft_forward(frame1, spec1);
     make_features(spec0, spec1, features);
     tiny_tcn_process_frame_q15(&state->model_state, features, band_mask_q15);
     mask_to_bins(band_mask_q15, bin_mask);
@@ -118,7 +88,7 @@ void tiny_realtime_process_hop(TinyRealtimeDspState *state, const float *stereo_
         spec0[bin].re *= bin_mask[bin];
         spec0[bin].im *= bin_mask[bin];
     }
-    irfft_naive(spec0, enhanced_frame);
+    tiny_rfft_inverse(spec0, enhanced_frame);
 
     for (int n = 0; n < TINY_TCN_N_FFT; ++n) {
         float w = hann(n);

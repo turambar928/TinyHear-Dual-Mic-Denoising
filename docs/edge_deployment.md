@@ -144,7 +144,13 @@ make -C c_reference run
 - `generated/realtime_vectors.h`：双麦 hop 输入和 Python realtime 期望输出。
 
 后续 CMSIS-NN/U55 版本可以用 `tiny_tcn_forward_q15` 的数值语义替换底层 conv kernel。
-后续 CMSIS-DSP 版本可以用 `tiny_realtime_process_hop` 的数值语义替换朴素 DFT/IDFT。
+后续 CMSIS-DSP 版本可以保留 `tiny_realtime_process_hop` 的链路语义，只替换 FFT backend。
+
+当前 FFT backend：
+
+- `c_reference/fft_backend.h`：统一 RFFT/IRFFT 接口。
+- `c_reference/fft_backend.c`：PC reference 默认 naive DFT/IDFT 实现。
+- 端侧替换点：实现同名 `tiny_rfft_forward` 和 `tiny_rfft_inverse`，内部调用 CMSIS-DSP RFFT/RIFFT。
 
 ## 6. 实时链路验证
 
@@ -169,7 +175,7 @@ PYTHONPATH=src python scripts/compare_realtime.py \
 - 平均实时 SI-SDR improvement：4.740 dB。
 - 相比离线 `center=True` 路径：平均 SI-SDR 低约 0.009 dB。
 
-当前 C realtime DSP reference 使用朴素 DFT/IDFT，目的是便于 PC 侧数值对齐，不代表端侧性能。`make -C c_reference run` 同时验证：
+当前 C realtime DSP reference 的默认 FFT backend 使用朴素 DFT/IDFT，目的是便于 PC 侧数值对齐，不代表端侧性能。`make -C c_reference run` 同时验证：
 
 - Q15 模型 streaming 和 batch 输出完全一致。
 - 完整 C realtime DSP 相对 Python realtime float reference：max abs diff 0.386406660，mean abs diff 0.001111976。
@@ -184,8 +190,8 @@ make -C c_reference clean bench
 
 当前开发服务器结果：
 
-- Q15 streaming model：0.280816 ms/frame。
-- Full realtime DSP reference：2.450210 ms/hop。
+- Q15 streaming model：0.267010 ms/frame。
+- Full realtime DSP reference：2.529917 ms/hop。
 - `sizeof(TinyTcnState)`：13,444 bytes。
 - `sizeof(TinyRealtimeDspState)`：17,540 bytes。
 
