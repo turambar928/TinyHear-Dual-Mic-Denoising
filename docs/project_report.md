@@ -145,6 +145,7 @@ PC reference benchmark：
 - C 完整 realtime DSP reference。
 - C benchmark。
 - GitHub CI。
+- 听感评估样例生成脚本和 5 组代表性样例。
 
 ## 8. 当前限制
 
@@ -154,7 +155,7 @@ PC reference benchmark：
 - C realtime DSP 当前默认 FFT backend 是 naive DFT/IDFT，只用于数值 reference。
 - C 卷积 kernel 仍是 reference loop，没有替换为 CMSIS-NN 或 U55 加速 kernel。
 - 量化使用 per-tensor weight scale，后续可升级为 per-channel 或 QAT。
-- 当前主观听感评估还不系统，主要依赖 SI-SDR 和误差指标。
+- 已有 5 组听感样例用于展示，但还不是正式 MOS/ABX 测试。
 
 ## 9. 后续路线
 
