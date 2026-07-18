@@ -106,6 +106,67 @@ static void conv1d_i8_requant(
     }
 }
 
+static void conv1d_i8_requant_frame(
+    const int8_t *x,
+    const int8_t *history,
+    const int8_t *w,
+    const int32_t *bias,
+    int out_ch,
+    int in_per_group,
+    int kernel,
+    int groups,
+    int dilation,
+    int left_pad,
+    int layer_idx,
+    int relu,
+    int8_t *y
+) {
+    int out_per_group = out_ch / groups;
+    for (int oc = 0; oc < out_ch; ++oc) {
+        int group = oc / out_per_group;
+        int ic_start = group * in_per_group;
+        int32_t acc = bias[oc];
+        for (int icg = 0; icg < in_per_group; ++icg) {
+            int ic = ic_start + icg;
+            for (int k = 0; k < kernel; ++k) {
+                int src_offset = k * dilation - left_pad;
+                int8_t sample = 0;
+                if (src_offset == 0) {
+                    sample = x[ic];
+                } else if (src_offset < 0 && history != NULL) {
+                    sample = history[ic * TINY_TCN_MAX_LEFT_PAD + (TINY_TCN_MAX_LEFT_PAD + src_offset)];
+                }
+                int w_idx = (oc * in_per_group + icg) * kernel + k;
+                acc += (int32_t)sample * (int32_t)w[w_idx];
+            }
+        }
+        int32_t q = multiply_by_quantized_multiplier(acc, kRequantMultipliers[layer_idx], kRequantShifts[layer_idx]);
+        if (relu && q < 0) q = 0;
+        y[oc] = clamp_i8(q);
+    }
+}
+
+static void residual_add_requant_frame(int8_t *x, const int8_t *residual, int n, int block) {
+    for (int i = 0; i < n; ++i) {
+        int32_t res_q = multiply_by_quantized_multiplier(
+            residual[i],
+            kResidualMultipliers[block],
+            kResidualShifts[block]
+        );
+        int32_t sum = (int32_t)x[i] + res_q;
+        if (sum < 0) sum = 0;
+        x[i] = clamp_i8(sum);
+    }
+}
+
+static void update_history(int8_t *history, const int8_t *x, int channels) {
+    for (int ch = 0; ch < channels; ++ch) {
+        int8_t *row = history + ch * TINY_TCN_MAX_LEFT_PAD;
+        memmove(row, row + 1, (TINY_TCN_MAX_LEFT_PAD - 1) * sizeof(int8_t));
+        row[TINY_TCN_MAX_LEFT_PAD - 1] = x[ch];
+    }
+}
+
 static void residual_add_requant(
     int8_t *x,
     const int8_t *residual,
@@ -122,6 +183,10 @@ static void residual_add_requant(
         if (sum < 0) sum = 0;
         x[i] = clamp_i8(sum);
     }
+}
+
+void tiny_tcn_init(TinyTcnState *state) {
+    memset(state, 0, sizeof(*state));
 }
 
 static void conv1d_i8_dequant(
@@ -307,4 +372,57 @@ void tiny_tcn_forward_q15(const float *input, int frames, int16_t *output_q15) {
     free(b);
     free(residual);
     free(head_q);
+}
+
+void tiny_tcn_process_frame_q15(TinyTcnState *state, const float *input_frame, int16_t *output_q15) {
+    int8_t input_q[TINY_TCN_FEATURE_DIM];
+    int8_t a[TINY_TCN_CHANNELS];
+    int8_t b[TINY_TCN_CHANNELS];
+    int8_t residual[TINY_TCN_CHANNELS];
+    int8_t head_q[TINY_TCN_BANDS];
+
+    quantize_i8(input_frame, TINY_TCN_FEATURE_DIM, kActivationScales[0], input_q);
+    conv1d_i8_requant_frame(input_q, NULL, stem_0_weight, kBias_stem_0,
+                            TINY_TCN_CHANNELS, TINY_TCN_FEATURE_DIM, 1, 1, 1, 0, 0, 1, a);
+
+    const int8_t *dw_w[8] = {
+        tcn_0_depthwise_weight, tcn_1_depthwise_weight, tcn_2_depthwise_weight, tcn_3_depthwise_weight,
+        tcn_4_depthwise_weight, tcn_5_depthwise_weight, tcn_6_depthwise_weight, tcn_7_depthwise_weight
+    };
+    const int32_t *dw_b[8] = {
+        kBias_tcn_0_depthwise, kBias_tcn_1_depthwise, kBias_tcn_2_depthwise, kBias_tcn_3_depthwise,
+        kBias_tcn_4_depthwise, kBias_tcn_5_depthwise, kBias_tcn_6_depthwise, kBias_tcn_7_depthwise
+    };
+    const int8_t *pw_w[8] = {
+        tcn_0_pointwise_weight, tcn_1_pointwise_weight, tcn_2_pointwise_weight, tcn_3_pointwise_weight,
+        tcn_4_pointwise_weight, tcn_5_pointwise_weight, tcn_6_pointwise_weight, tcn_7_pointwise_weight
+    };
+    const int32_t *pw_b[8] = {
+        kBias_tcn_0_pointwise, kBias_tcn_1_pointwise, kBias_tcn_2_pointwise, kBias_tcn_3_pointwise,
+        kBias_tcn_4_pointwise, kBias_tcn_5_pointwise, kBias_tcn_6_pointwise, kBias_tcn_7_pointwise
+    };
+    const int dilations[8] = {1, 2, 4, 8, 1, 2, 4, 8};
+
+    for (int block = 0; block < TINY_TCN_BLOCKS; ++block) {
+        memcpy(residual, a, sizeof(residual));
+        int depth_layer = 1 + block * 2;
+        int point_layer = depth_layer + 1;
+        int left_pad = (TINY_TCN_KERNEL - 1) * dilations[block];
+        int8_t *history = &state->block_history[block][0][0];
+        conv1d_i8_requant_frame(a, history, dw_w[block], dw_b[block],
+                                TINY_TCN_CHANNELS, 1, TINY_TCN_KERNEL, TINY_TCN_CHANNELS,
+                                dilations[block], left_pad, depth_layer, 1, b);
+        update_history(history, residual, TINY_TCN_CHANNELS);
+        conv1d_i8_requant_frame(b, NULL, pw_w[block], pw_b[block],
+                                TINY_TCN_CHANNELS, TINY_TCN_CHANNELS, 1, 1, 1, 0, point_layer, 1, a);
+        residual_add_requant_frame(a, residual, TINY_TCN_CHANNELS, block);
+    }
+
+    conv1d_i8_requant_frame(a, NULL, head_weight, kBias_head,
+                            TINY_TCN_BANDS, TINY_TCN_CHANNELS, 1, 1, 1, 0, 17, 0, head_q);
+    for (int i = 0; i < TINY_TCN_BANDS; ++i) {
+        int32_t delta = multiply_by_quantized_multiplier(head_q[i], kHardSigmoidMultiplier, kHardSigmoidShift);
+        output_q15[i] = clamp_q15(delta + 16384);
+    }
+    state->frames_seen += 1;
 }

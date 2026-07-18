@@ -194,3 +194,4 @@ C reference 现在包含两条路径：
 
 - `tiny_tcn_forward`：int8 卷积/int32 累加，scale 用 float，便于和 Python reference 对齐。
 - `tiny_tcn_forward_q15`：中间激活 int8、requant multiplier/shift、最终 mask 为 Q15，核心推理全整型。
+- `tiny_tcn_process_frame_q15`：逐帧流式接口，内部缓存每个 TCN block 的 depthwise 历史状态，适合端侧 4 ms hop 连续运行。

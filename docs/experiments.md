@@ -151,8 +151,8 @@ INT8 fixed-scale reference:
 {
   "frames": 16,
   "fixed_scales": true,
-  "max_abs_diff": 0.020154237747192383,
-  "mean_abs_diff": 0.004160087089985609
+  "max_abs_diff": 0.058467328548431396,
+  "mean_abs_diff": 0.011820799671113491
 }
 ```
 
@@ -161,7 +161,9 @@ Deployment package:
 - INT8 weights only: about 121 KB.
 - Exported weights and biases: 126,912 bytes.
 - Tracked C reference model header: `runs/arctic_demand/int8/model_int8.h`.
-- C reference test vector, Q15 integer path: max abs diff 0.150506899, mean abs diff 0.028929325.
+- Activation scale calibration: 100th percentile on 100 fixed validation items.
+- C reference test vector, Q15 integer path: max abs diff 0.126340210, mean abs diff 0.014770669.
+- C streaming Q15 output matches batch Q15 output exactly on the reference vector.
 
 Comparison:
 

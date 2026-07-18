@@ -337,29 +337,29 @@
     }
   ],
   "activation_scales": {
-    "head": 0.12999549446706807,
-    "stem.0": 0.09545671577153281,
-    "tcn.0.depthwise": 0.1226666233708542,
-    "tcn.0.pointwise": 0.035712976489481414,
-    "tcn.1.depthwise": 0.12482656945206103,
-    "tcn.1.pointwise": 0.03617391559645929,
-    "tcn.2.depthwise": 0.125144359070486,
-    "tcn.2.pointwise": 0.04887585941449899,
-    "tcn.3.depthwise": 0.12683312090175664,
-    "tcn.3.pointwise": 0.03598401986144666,
-    "tcn.4.depthwise": 0.1283904435615846,
-    "tcn.4.pointwise": 0.04059428267216187,
-    "tcn.5.depthwise": 0.12848759802870882,
-    "tcn.5.pointwise": 0.05830428298439582,
-    "tcn.6.depthwise": 0.12833382193497916,
-    "tcn.6.pointwise": 0.04642148674567204,
-    "tcn.7.depthwise": 0.12863964121360613,
-    "tcn.7.pointwise": 0.04610377122098147
+    "head": 0.19464703056755966,
+    "stem.0": 0.12641974321500524,
+    "tcn.0.depthwise": 0.18850592365415078,
+    "tcn.0.pointwise": 0.08057765510138565,
+    "tcn.1.depthwise": 0.18923490629421444,
+    "tcn.1.pointwise": 0.0929659520547221,
+    "tcn.2.depthwise": 0.18923490629421444,
+    "tcn.2.pointwise": 0.1434614827313761,
+    "tcn.3.depthwise": 0.19464703056755966,
+    "tcn.3.pointwise": 0.11108736353596364,
+    "tcn.4.depthwise": 0.19464703056755966,
+    "tcn.4.pointwise": 0.12726050849974624,
+    "tcn.5.depthwise": 0.19464703056755966,
+    "tcn.5.pointwise": 0.12360615617646946,
+    "tcn.6.depthwise": 0.19464703056755966,
+    "tcn.6.pointwise": 0.0976554990753414,
+    "tcn.7.depthwise": 0.19464703056755966,
+    "tcn.7.pointwise": 0.10449688828836276
   },
   "calibration": {
     "data": "data/arctic_demand_eval",
     "split": "val",
     "items": 100,
-    "percentile": 99.9
+    "percentile": 100.0
   }
 }
