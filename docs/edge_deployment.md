@@ -133,14 +133,18 @@ make -C c_reference run
 - `tiny_tcn_forward`：卷积本体是 int8 activation、int8 weight、int32 accumulate；scale/requantize 用 float，目的是和 Python fixed-scale reference 对齐。
 - `tiny_tcn_forward_q15`：中间激活为 int8，bias 为 int32，requantize 使用 fixed-point multiplier/shift，最终 mask 输出为 Q15。
 - `tiny_tcn_process_frame_q15`：端侧单帧流式接口，`TinyTcnState` 保存每个 TCN depthwise block 的历史激活。
+- `tiny_realtime_process_hop`：完整 C realtime DSP reference，每次输入 2 x 64 samples，输出 64 samples 增强音频。
 
 `scripts/dump_c_reference_assets.py` 会生成：
 
 - `generated/model_config.h`：activation/weight scale。
 - `generated/model_requant.h`：每层 int32 bias、requant multiplier/shift、residual multiplier/shift、hard-sigmoid Q15 参数。
 - `generated/test_vectors.h`：输入特征和 PyTorch 期望输出。
+- `generated/band_matrix.h`：129 x 32 band projection matrix。
+- `generated/realtime_vectors.h`：双麦 hop 输入和 Python realtime 期望输出。
 
 后续 CMSIS-NN/U55 版本可以用 `tiny_tcn_forward_q15` 的数值语义替换底层 conv kernel。
+后续 CMSIS-DSP 版本可以用 `tiny_realtime_process_hop` 的数值语义替换朴素 DFT/IDFT。
 
 ## 6. 实时链路验证
 
@@ -164,3 +168,8 @@ PYTHONPATH=src python scripts/compare_realtime.py \
 - 估计延迟：192 samples，16 kHz 下约 12 ms。
 - 平均实时 SI-SDR improvement：4.740 dB。
 - 相比离线 `center=True` 路径：平均 SI-SDR 低约 0.009 dB。
+
+当前 C realtime DSP reference 使用朴素 DFT/IDFT，目的是便于 PC 侧数值对齐，不代表端侧性能。`make -C c_reference run` 同时验证：
+
+- Q15 模型 streaming 和 batch 输出完全一致。
+- 完整 C realtime DSP 相对 Python realtime float reference：max abs diff 0.386406660，mean abs diff 0.001111976。

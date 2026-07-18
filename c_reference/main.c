@@ -1,7 +1,9 @@
 #include <math.h>
 #include <stdio.h>
 
+#include "generated/realtime_vectors.h"
 #include "generated/test_vectors.h"
+#include "realtime_dsp.h"
 #include "tiny_tcn_int8.h"
 
 int main(void) {
@@ -45,5 +47,46 @@ int main(void) {
     printf("integer_max_abs_diff=%.9f\n", int_max_abs);
     printf("integer_mean_abs_diff=%.9f\n", (float)(int_abs_sum / TEST_OUTPUT_SIZE));
     printf("stream_mismatches=%d\n", stream_mismatches);
-    return int_max_abs < 0.14f && (float)(int_abs_sum / TEST_OUTPUT_SIZE) < 0.02f && stream_mismatches == 0 ? 0 : 1;
+
+    TinyRealtimeDspState dsp_state;
+    float realtime_output[REALTIME_OUTPUT_SAMPLES];
+    tiny_realtime_init(&dsp_state);
+    for (int hop = 0; hop < REALTIME_TOTAL_HOPS; ++hop) {
+        float stereo_hop[2 * TINY_TCN_HOP_LENGTH];
+        float output_hop[TINY_TCN_HOP_LENGTH];
+        for (int ch = 0; ch < 2; ++ch) {
+            for (int i = 0; i < TINY_TCN_HOP_LENGTH; ++i) {
+                int sample = hop * TINY_TCN_HOP_LENGTH + i;
+                if (sample < REALTIME_INPUT_SAMPLES) {
+                    stereo_hop[ch * TINY_TCN_HOP_LENGTH + i] =
+                        kRealtimeInput[ch * REALTIME_INPUT_SAMPLES + sample];
+                } else {
+                    stereo_hop[ch * TINY_TCN_HOP_LENGTH + i] = 0.0f;
+                }
+            }
+        }
+        tiny_realtime_process_hop(&dsp_state, stereo_hop, output_hop);
+        for (int i = 0; i < TINY_TCN_HOP_LENGTH; ++i) {
+            realtime_output[hop * TINY_TCN_HOP_LENGTH + i] = output_hop[i];
+        }
+    }
+
+    double realtime_abs_sum = 0.0;
+    float realtime_max_abs = 0.0f;
+    for (int i = 0; i < REALTIME_OUTPUT_SAMPLES; ++i) {
+        float diff = fabsf(realtime_output[i] - kRealtimeExpectedOutput[i]);
+        realtime_abs_sum += diff;
+        if (diff > realtime_max_abs) realtime_max_abs = diff;
+    }
+    float realtime_mean_abs = (float)(realtime_abs_sum / REALTIME_OUTPUT_SAMPLES);
+    printf("realtime_dsp_max_abs_diff=%.9f\n", realtime_max_abs);
+    printf("realtime_dsp_mean_abs_diff=%.9f\n", realtime_mean_abs);
+
+    return int_max_abs < 0.14f &&
+                   (float)(int_abs_sum / TEST_OUTPUT_SIZE) < 0.02f &&
+                   stream_mismatches == 0 &&
+                   realtime_max_abs < 0.45f &&
+                   realtime_mean_abs < 0.002f
+               ? 0
+               : 1;
 }

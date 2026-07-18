@@ -164,6 +164,7 @@ Deployment package:
 - Activation scale calibration: 100th percentile on 100 fixed validation items.
 - C reference test vector, Q15 integer path: max abs diff 0.126340210, mean abs diff 0.014770669.
 - C streaming Q15 output matches batch Q15 output exactly on the reference vector.
+- C realtime DSP reference: max abs diff 0.386406660, mean abs diff 0.001111976 against Python realtime float output on a 16-hop vector.
 
 Python streaming model validation:
 

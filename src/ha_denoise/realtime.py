@@ -56,7 +56,7 @@ class StreamingDenoiser:
 
         self.output_buffer += enhanced_frame
         self.norm_buffer += self.window.square()
-        valid = self.norm_buffer[:h] > 1e-8
+        valid = self.norm_buffer[:h] > 1e-6
         out = torch.zeros(h, device=self.device, dtype=self.dtype)
         out[valid] = self.output_buffer[:h][valid] / self.norm_buffer[:h][valid]
 

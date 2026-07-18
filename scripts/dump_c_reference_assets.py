@@ -11,6 +11,7 @@ import torch
 from ha_denoise.audio import read_wav
 from ha_denoise.features import FeatureConfig, extract_features
 from ha_denoise.model import TinyCausalTCN
+from ha_denoise.realtime import StreamingDenoiser
 
 
 LAYER_ORDER = ["stem.0"]
@@ -29,6 +30,15 @@ def c_vector(name: str, arr: np.ndarray) -> str:
     flat = arr.astype(np.float32).reshape(-1)
     body = ", ".join(f"{float(v):.9e}f" for v in flat)
     return f"static const float {name}[{flat.size}] = {{{body}}};\n"
+
+
+def c_matrix(name: str, arr: np.ndarray) -> str:
+    rows, cols = arr.shape
+    row_blocks = []
+    for row in arr.astype(np.float32):
+        row_blocks.append("{" + ", ".join(f"{float(v):.9e}f" for v in row) + "}")
+    body = ", ".join(row_blocks)
+    return f"static const float {name}[{rows}][{cols}] = {{{body}}};\n"
 
 
 def c_int_array(name: str, values: np.ndarray, c_type: str = "int32_t") -> str:
@@ -90,6 +100,8 @@ def main() -> None:
         "#define TINY_TCN_BANDS 32\n",
         "#define TINY_TCN_BLOCKS 8\n",
         "#define TINY_TCN_KERNEL 5\n\n",
+        f"#define TINY_TCN_N_FFT {cfg.n_fft}\n",
+        f"#define TINY_TCN_HOP_LENGTH {cfg.hop_length}\n\n",
         c_float_array("kActivationScales", [float(activation_scales[name]) for name in LAYER_ORDER]),
         c_float_array("kWeightScales", [float(layer_meta[name]["weight_scale"]) for name in LAYER_ORDER]),
     ]
@@ -152,6 +164,30 @@ def main() -> None:
         c_vector("kExpectedOutput", expected),
     ]
     (out_dir / "test_vectors.h").write_text("".join(vectors_h), encoding="utf-8")
+
+    realtime_samples = args.frames * cfg.hop_length
+    realtime_mix = mix[:, :realtime_samples].contiguous()
+    denoiser = StreamingDenoiser(model, cfg)
+    with torch.no_grad():
+        realtime_expected = denoiser.process(realtime_mix, flush=True).contiguous().numpy()
+    realtime_h = [
+        "#pragma once\n",
+        "#define REALTIME_INPUT_HOPS " + str(args.frames) + "\n",
+        "#define REALTIME_FLUSH_HOPS " + str(cfg.n_fft // cfg.hop_length) + "\n",
+        "#define REALTIME_TOTAL_HOPS (REALTIME_INPUT_HOPS + REALTIME_FLUSH_HOPS)\n",
+        "#define REALTIME_INPUT_SAMPLES " + str(realtime_mix.shape[1]) + "\n",
+        "#define REALTIME_OUTPUT_SAMPLES " + str(realtime_expected.size) + "\n\n",
+        c_vector("kRealtimeInput", realtime_mix.numpy()),
+        c_vector("kRealtimeExpectedOutput", realtime_expected),
+    ]
+    (out_dir / "realtime_vectors.h").write_text("".join(realtime_h), encoding="utf-8")
+
+    band_h = [
+        "#pragma once\n",
+        "#define TINY_TCN_FREQ_BINS " + str(cfg.n_fft // 2 + 1) + "\n\n",
+        c_matrix("kBandMatrix", denoiser.band_matrix.detach().cpu().numpy()),
+    ]
+    (out_dir / "band_matrix.h").write_text("".join(band_h), encoding="utf-8")
     print(json.dumps({"frames": int(features_np.shape[1]), "out_dir": str(out_dir)}, indent=2))
 
 

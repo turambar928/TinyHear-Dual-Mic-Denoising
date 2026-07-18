@@ -204,10 +204,11 @@ PYTHONPATH=src python scripts/evaluate.py --checkpoint runs/public_small/best.pt
 - `scripts/evaluate.py`：SI-SDR improvement 和 mask MSE 评估。
 - `scripts/materialize_mixes.py`：将 on-the-fly clean/noise 数据固化为可复现 mix/clean 样本。
 - `scripts/dump_c_reference_assets.py`：生成 C reference 所需 scale 头文件和测试向量。
-- `c_reference/`：PC 侧 C INT8 reference，对齐 Python fixed-scale reference。
+- `c_reference/`：PC 侧 C INT8 + realtime DSP reference，对齐 Python fixed-scale/realtime reference。
 
 C reference 现在包含两条路径：
 
 - `tiny_tcn_forward`：int8 卷积/int32 累加，scale 用 float，便于和 Python reference 对齐。
 - `tiny_tcn_forward_q15`：中间激活 int8、requant multiplier/shift、最终 mask 为 Q15，核心推理全整型。
 - `tiny_tcn_process_frame_q15`：逐帧流式接口，内部缓存每个 TCN block 的 depthwise 历史状态，适合端侧 4 ms hop 连续运行。
+- `tiny_realtime_process_hop`：完整 C 端实时 reference，包含 causal STFT 特征、Q15 模型、mask-to-bin、IRFFT 和 overlap-add。
