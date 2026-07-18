@@ -43,8 +43,14 @@ python scripts/export_int8.py --checkpoint runs/tiny_tcn/best.pt --out runs/tiny
 # 离线增强一个双通道 wav
 python scripts/enhance_wav.py --checkpoint runs/tiny_tcn/best.pt --input data/synth/val/mix_0000.wav --output enhanced.wav
 
+# 逐帧流式模型增强一个双通道 wav
+python scripts/enhance_streaming.py --checkpoint runs/tiny_tcn/best.pt --input data/synth/val/mix_0000.wav --output enhanced_streaming.wav
+
 # 评估预生成验证集
 python scripts/evaluate.py --checkpoint runs/tiny_tcn/best.pt --data data/synth --split val --save-audio runs/tiny_tcn/eval_audio
+
+# 对比离线模型和逐帧流式模型输出
+python scripts/compare_streaming.py --checkpoint runs/tiny_tcn/best.pt --data data/synth --split val
 
 # 验证导出的 INT8 权重 reference
 python scripts/verify_int8_reference.py --checkpoint runs/tiny_tcn/best.pt --export-dir runs/tiny_tcn/int8
@@ -185,6 +191,8 @@ PYTHONPATH=src python scripts/evaluate.py --checkpoint runs/public_small/best.pt
 - `scripts/prepare_hf_librispeech.py`：从 Hugging Face 数据集导出 LibriSpeech clean wav。
 - `scripts/prepare_demand_noise.py`：将 DEMAND 多通道噪声整理成双通道 noise wav。
 - `scripts/enhance_wav.py`：离线增强。
+- `scripts/enhance_streaming.py`：逐帧模型状态增强，模拟端侧连续帧推理。
+- `scripts/compare_streaming.py`：对比离线模型与逐帧流式模型的 mask、waveform 和 SI-SDR 差异。
 - `scripts/evaluate.py`：SI-SDR improvement 和 mask MSE 评估。
 - `scripts/materialize_mixes.py`：将 on-the-fly clean/noise 数据固化为可复现 mix/clean 样本。
 - `scripts/dump_c_reference_assets.py`：生成 C reference 所需 scale 头文件和测试向量。

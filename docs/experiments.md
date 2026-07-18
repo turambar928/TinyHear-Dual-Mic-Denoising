@@ -165,6 +165,34 @@ Deployment package:
 - C reference test vector, Q15 integer path: max abs diff 0.126340210, mean abs diff 0.014770669.
 - C streaming Q15 output matches batch Q15 output exactly on the reference vector.
 
+Python streaming model validation:
+
+```bash
+PYTHONPATH=src python3 scripts/compare_streaming.py \
+  --checkpoint runs/arctic_demand/best.pt \
+  --data data/arctic_demand_eval \
+  --split val \
+  --save-audio runs/arctic_demand/streaming_eval \
+  --device cpu
+```
+
+```json
+{
+  "items": 160,
+  "max_mask_max_abs_diff": 2.3245811462402344e-06,
+  "mean_mask_mean_abs_diff": 6.453811007833821e-08,
+  "mean_waveform_mse": 2.853925897961481e-17,
+  "mean_offline_si_sdr": 9.080238467641175,
+  "mean_streaming_si_sdr": 9.08023853506893,
+  "mean_si_sdr_delta": 6.742775440216065e-08
+}
+```
+
+Notes:
+
+- This validates the model state cache for frame-by-frame inference.
+- The feature and reconstruction code intentionally reuse the existing 256 FFT / 64 hop STFT path, so the measured difference isolates model streaming behavior instead of DSP boundary handling.
+
 Comparison:
 
 | Experiment | Clean speech | DEMAND envs | Eval items | SI-SDR improvement | Notes |
