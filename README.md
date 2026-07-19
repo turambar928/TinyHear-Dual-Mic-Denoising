@@ -201,6 +201,8 @@ PYTHONPATH=src python scripts/evaluate.py --checkpoint runs/public_small/best.pt
 - `docs/implementation_plan.md`：完整实现方案、端侧映射和下一步路线。
 - `docs/experiments.md`：训练数据选择、实验记录和指标。
 - `docs/performance.md`：PC 侧 C reference benchmark 和内存估算。
+- `docs/cmsis_porting.md`：CMSIS-DSP/CMSIS-NN 上板替换说明。
+- `docs/roadmap.md`：后续工程和研究任务清单。
 - `docs/project_report.md`：项目报告，可用于实习总结/答辩材料。
 - `docs/slides_outline.md`：汇报 PPT 提纲。
 - `docs/listening_eval.md`：听感样例生成方式、样例列表和指标。

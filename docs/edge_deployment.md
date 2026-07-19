@@ -190,8 +190,8 @@ make -C c_reference clean bench
 
 当前开发服务器结果：
 
-- Q15 streaming model：0.267010 ms/frame。
-- Full realtime DSP reference：2.529917 ms/hop。
+- Q15 streaming model：0.243034 ms/frame。
+- Full realtime DSP reference：2.422017 ms/hop。
 - `sizeof(TinyTcnState)`：13,444 bytes。
 - `sizeof(TinyRealtimeDspState)`：17,540 bytes。
 
