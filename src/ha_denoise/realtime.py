@@ -10,9 +10,19 @@ from ha_denoise.streaming import StreamingTinyCausalTCN
 class StreamingDenoiser:
     """Causal dual-mic STFT, frame-by-frame model inference, and overlap-add synthesis."""
 
-    def __init__(self, model: TinyCausalTCN, cfg: FeatureConfig) -> None:
+    def __init__(
+        self,
+        model: TinyCausalTCN,
+        cfg: FeatureConfig,
+        high_snr_bypass: bool = False,
+        bypass_threshold: float = 0.97,
+        bypass_width: float = 0.02,
+    ) -> None:
         self.model = model
         self.cfg = cfg
+        self.high_snr_bypass = high_snr_bypass
+        self.bypass_threshold = bypass_threshold
+        self.bypass_width = bypass_width
         self.device = next(model.parameters()).device
         self.dtype = next(model.parameters()).dtype
         self.window = torch.hann_window(cfg.n_fft, device=self.device, dtype=self.dtype)
@@ -51,6 +61,10 @@ class StreamingDenoiser:
         spec1 = torch.fft.rfft(frame[1], n=self.cfg.n_fft)
         feat = self._features_from_spectrum(spec0, spec1)
         band_mask = self.model_stream.process_frame(feat)
+        if self.high_snr_bypass:
+            mean_mask = band_mask.mean()
+            bypass = torch.clamp((mean_mask - self.bypass_threshold) / max(self.bypass_width, 1e-6), 0.0, 1.0)
+            band_mask = torch.clamp(band_mask * (1.0 - bypass) + bypass, 0.0, 1.0)
         enhanced_spec = spec0 * self._mask_to_bins(band_mask)
         enhanced_frame = torch.fft.irfft(enhanced_spec, n=self.cfg.n_fft) * self.window
 

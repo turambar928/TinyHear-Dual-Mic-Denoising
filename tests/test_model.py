@@ -19,6 +19,12 @@ def test_model_size_and_shape() -> None:
     assert float(y.detach().max()) <= 1.0
 
 
+def test_larger_model_stays_inside_target_size() -> None:
+    model = TinyCausalTCN(channels=120)
+    params = count_parameters(model)
+    assert 100_000 <= params <= 150_000
+
+
 def test_feature_shapes() -> None:
     cfg = FeatureConfig()
     wav = torch.randn(2, 16000)

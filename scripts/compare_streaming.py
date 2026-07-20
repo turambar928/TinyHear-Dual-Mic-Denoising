@@ -9,7 +9,7 @@ import torch
 from tqdm import tqdm
 
 from ha_denoise.audio import read_wav, write_wav
-from ha_denoise.features import FeatureConfig, enhance_with_mask, extract_features
+from ha_denoise.features import FeatureConfig, apply_high_snr_bypass, enhance_with_mask, extract_features
 from ha_denoise.metrics import si_sdr
 from ha_denoise.model import TinyCausalTCN
 from ha_denoise.streaming import run_streaming_model
@@ -33,6 +33,9 @@ def main() -> None:
     parser.add_argument("--max-items", type=int)
     parser.add_argument("--save-audio", help="Optional directory for streaming enhanced examples.")
     parser.add_argument("--device", default="cpu")
+    parser.add_argument("--high-snr-bypass", action="store_true")
+    parser.add_argument("--bypass-threshold", type=float, default=0.97)
+    parser.add_argument("--bypass-width", type=float, default=0.02)
     args = parser.parse_args()
 
     model, cfg = load_model(args.checkpoint, args.device)
@@ -58,6 +61,9 @@ def main() -> None:
             features = extract_features(mix, cfg)
             offline_mask = model(features.transpose(0, 1).unsqueeze(0)).squeeze(0).transpose(0, 1)
             streaming_mask = run_streaming_model(model, features)
+            if args.high_snr_bypass:
+                offline_mask = apply_high_snr_bypass(offline_mask, args.bypass_threshold, args.bypass_width)
+                streaming_mask = apply_high_snr_bypass(streaming_mask, args.bypass_threshold, args.bypass_width)
             offline_enhanced = enhance_with_mask(mix[0], offline_mask, cfg)
             streaming_enhanced = enhance_with_mask(mix[0], streaming_mask, cfg)
 

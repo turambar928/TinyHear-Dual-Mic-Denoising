@@ -33,10 +33,13 @@ def main() -> None:
     parser.add_argument("--max-items", type=int)
     parser.add_argument("--save-audio")
     parser.add_argument("--device", default="cpu")
+    parser.add_argument("--high-snr-bypass", action="store_true")
+    parser.add_argument("--bypass-threshold", type=float, default=0.97)
+    parser.add_argument("--bypass-width", type=float, default=0.02)
     args = parser.parse_args()
 
     model, cfg = load_model(args.checkpoint, args.device)
-    denoiser = StreamingDenoiser(model, cfg)
+    denoiser = StreamingDenoiser(model, cfg, args.high_snr_bypass, args.bypass_threshold, args.bypass_width)
     split_dir = Path(args.data) / args.split
     mix_files = sorted(split_dir.glob("mix_*.wav"))
     if args.max_items is not None:

@@ -69,8 +69,14 @@ python scripts/compare_streaming.py --checkpoint runs/tiny_tcn/best.pt --data da
 # 对比离线增强和完整实时链路输出
 python scripts/compare_realtime.py --checkpoint runs/tiny_tcn/best.pt --data data/synth --split val
 
+# 开启 high-SNR bypass，减少干净场景过处理
+python scripts/compare_realtime.py --checkpoint runs/tiny_tcn/best.pt --data data/synth --split val --high-snr-bypass
+
 # 生成 noisy/clean/offline/realtime 听感对比样例
 python scripts/make_listening_eval.py --checkpoint runs/tiny_tcn/best.pt --data data/synth --split val --out runs/tiny_tcn/listening_eval
+
+# 可选感知指标，安装 pystoi/pesq 后会额外输出 STOI/PESQ
+python scripts/evaluate_perceptual.py --clean-dir runs/tiny_tcn/listening_eval --enhanced-dir runs/tiny_tcn/listening_eval --pattern "sample_*_realtime.wav"
 
 # 验证导出的 INT8 权重 reference
 python scripts/verify_int8_reference.py --checkpoint runs/tiny_tcn/best.pt --export-dir runs/tiny_tcn/int8
@@ -203,6 +209,8 @@ PYTHONPATH=src python scripts/evaluate.py --checkpoint runs/public_small/best.pt
 - `docs/performance.md`：PC 侧 C reference benchmark 和内存估算。
 - `docs/cmsis_porting.md`：CMSIS-DSP/CMSIS-NN 上板替换说明。
 - `docs/roadmap.md`：后续工程和研究任务清单。
+- `docs/data_upgrade.md`：更强公开数据和真实双麦数据升级路线。
+- `docs/effect_improvement.md`：听感改进项、bypass、强模型和感知指标说明。
 - `docs/project_report.md`：项目报告，可用于实习总结/答辩材料。
 - `docs/slides_outline.md`：汇报 PPT 提纲。
 - `docs/listening_eval.md`：听感样例生成方式、样例列表和指标。
@@ -222,6 +230,7 @@ PYTHONPATH=src python scripts/evaluate.py --checkpoint runs/public_small/best.pt
 - `scripts/enhance_realtime.py`：完整实时链路增强，包含 causal STFT、模型状态、IRFFT 和 overlap-add。
 - `scripts/compare_realtime.py`：评估完整实时链路相对离线路径的延迟、SI-SDR 和 waveform 差异。
 - `scripts/make_listening_eval.py`：生成 noisy/clean/offline/realtime 听感对比样例。
+- `scripts/evaluate_perceptual.py`：可选 STOI/PESQ 感知指标评估入口。
 - `scripts/evaluate.py`：SI-SDR improvement 和 mask MSE 评估。
 - `scripts/materialize_mixes.py`：将 on-the-fly clean/noise 数据固化为可复现 mix/clean 样本。
 - `scripts/dump_c_reference_assets.py`：生成 C reference 所需 scale 头文件和测试向量。

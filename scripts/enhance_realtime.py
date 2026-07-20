@@ -17,6 +17,9 @@ def main() -> None:
     parser.add_argument("--input", required=True)
     parser.add_argument("--output", required=True)
     parser.add_argument("--device", default="cpu")
+    parser.add_argument("--high-snr-bypass", action="store_true")
+    parser.add_argument("--bypass-threshold", type=float, default=0.97)
+    parser.add_argument("--bypass-width", type=float, default=0.02)
     args = parser.parse_args()
 
     ckpt = torch.load(args.checkpoint, map_location=args.device)
@@ -30,7 +33,7 @@ def main() -> None:
     if wav.shape[1] < 2:
         raise ValueError("input wav must be stereo dual-mic audio")
     mix = torch.from_numpy(wav[:, :2].T).to(args.device)
-    denoiser = StreamingDenoiser(model, cfg)
+    denoiser = StreamingDenoiser(model, cfg, args.high_snr_bypass, args.bypass_threshold, args.bypass_width)
     enhanced = denoiser.process(mix, flush=True).detach().cpu().numpy()
     write_wav(args.output, sr, enhanced)
 

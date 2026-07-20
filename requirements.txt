@@ -3,3 +3,6 @@ scipy>=1.10
 torch>=2.0
 tqdm>=4.64
 
+# Optional perceptual metrics:
+# pystoi>=0.4
+# pesq>=0.0.4

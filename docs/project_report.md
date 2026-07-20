@@ -156,6 +156,7 @@ PC reference benchmark：
 - C 卷积 kernel 仍是 reference loop，没有替换为 CMSIS-NN 或 U55 加速 kernel。
 - 量化使用 per-tensor weight scale，后续可升级为 per-channel 或 QAT。
 - 已有 5 组听感样例用于展示，但还不是正式 MOS/ABX 测试。
+- 当前 high-SNR bypass 只是实验开关，初步样例上没有稳定提升，后续更适合用真实高 SNR 数据训练 gating。
 
 ## 9. 后续路线
 

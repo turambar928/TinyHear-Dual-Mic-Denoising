@@ -41,10 +41,13 @@ def main() -> None:
     parser.add_argument("--out", required=True)
     parser.add_argument("--samples", type=int, default=5)
     parser.add_argument("--device", default="cpu")
+    parser.add_argument("--high-snr-bypass", action="store_true")
+    parser.add_argument("--bypass-threshold", type=float, default=0.97)
+    parser.add_argument("--bypass-width", type=float, default=0.02)
     args = parser.parse_args()
 
     model, cfg = load_model(args.checkpoint, args.device)
-    denoiser = StreamingDenoiser(model, cfg)
+    denoiser = StreamingDenoiser(model, cfg, args.high_snr_bypass, args.bypass_threshold, args.bypass_width)
     split_dir = Path(args.data) / args.split
     out_dir = Path(args.out)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -116,6 +119,9 @@ def main() -> None:
 
     summary = {
         "items": len(rows),
+        "high_snr_bypass": args.high_snr_bypass,
+        "bypass_threshold": args.bypass_threshold,
+        "bypass_width": args.bypass_width,
         "mean_noisy_si_sdr": sum(r["noisy_si_sdr"] for r in rows) / len(rows),
         "mean_offline_si_sdr": sum(r["offline_si_sdr"] for r in rows) / len(rows),
         "mean_realtime_si_sdr": sum(r["realtime_si_sdr"] for r in rows) / len(rows),

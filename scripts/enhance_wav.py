@@ -6,7 +6,7 @@ import argparse
 import torch
 
 from ha_denoise.audio import read_wav, write_wav
-from ha_denoise.features import FeatureConfig, enhance_with_mask, extract_features
+from ha_denoise.features import FeatureConfig, apply_high_snr_bypass, enhance_with_mask, extract_features
 from ha_denoise.model import TinyCausalTCN
 
 
@@ -16,6 +16,9 @@ def main() -> None:
     parser.add_argument("--input", required=True)
     parser.add_argument("--output", required=True)
     parser.add_argument("--device", default="cpu")
+    parser.add_argument("--high-snr-bypass", action="store_true")
+    parser.add_argument("--bypass-threshold", type=float, default=0.97)
+    parser.add_argument("--bypass-width", type=float, default=0.02)
     args = parser.parse_args()
 
     ckpt = torch.load(args.checkpoint, map_location=args.device)
@@ -32,10 +35,11 @@ def main() -> None:
     with torch.no_grad():
         feat = extract_features(mix, cfg).transpose(0, 1).unsqueeze(0)
         mask = model(feat).squeeze(0).transpose(0, 1)
+        if args.high_snr_bypass:
+            mask = apply_high_snr_bypass(mask, args.bypass_threshold, args.bypass_width)
         enhanced = enhance_with_mask(mix[0], mask, cfg).cpu().numpy()
     write_wav(args.output, sr, enhanced)
 
 
 if __name__ == "__main__":
     main()
-

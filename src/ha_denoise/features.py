@@ -113,6 +113,15 @@ def enhance_with_mask(mix_ref: torch.Tensor, band_mask: torch.Tensor, cfg: Featu
     return istft(enhanced, length=mix_ref.numel(), cfg=cfg)
 
 
+def apply_high_snr_bypass(mask: torch.Tensor, threshold: float = 0.97, width: float = 0.02) -> torch.Tensor:
+    """Blend masks toward identity when the predicted mask already indicates a clean frame."""
+    if mask.ndim != 2:
+        raise ValueError("mask must have shape [frames, bands]")
+    mean_mask = mask.mean(dim=-1, keepdim=True)
+    bypass = torch.clamp((mean_mask - threshold) / max(width, 1e-6), 0.0, 1.0)
+    return torch.clamp(mask * (1.0 - bypass) + bypass, 0.0, 1.0)
+
+
 def pad_sequence_batch(items: list[tuple[torch.Tensor, torch.Tensor]]) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
     max_t = max(x.shape[0] for x, _ in items)
     feat_dim = items[0][0].shape[1]
@@ -126,4 +135,3 @@ def pad_sequence_batch(items: list[tuple[torch.Tensor, torch.Tensor]]) -> tuple[
         masks[i, :, :t] = mask.transpose(0, 1)
         valid[i, :, :t] = 1.0
     return feats, masks, valid
-

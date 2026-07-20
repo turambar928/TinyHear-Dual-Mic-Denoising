@@ -9,7 +9,7 @@ import torch
 from tqdm import tqdm
 
 from ha_denoise.audio import read_wav, write_wav
-from ha_denoise.features import FeatureConfig, enhance_with_mask, extract_features, target_band_mask
+from ha_denoise.features import FeatureConfig, apply_high_snr_bypass, enhance_with_mask, extract_features, target_band_mask
 from ha_denoise.metrics import si_sdr
 from ha_denoise.model import TinyCausalTCN
 
@@ -32,6 +32,9 @@ def main() -> None:
     parser.add_argument("--save-audio", help="Optional directory for enhanced wav examples.")
     parser.add_argument("--max-items", type=int)
     parser.add_argument("--device", default="cpu")
+    parser.add_argument("--high-snr-bypass", action="store_true")
+    parser.add_argument("--bypass-threshold", type=float, default=0.97)
+    parser.add_argument("--bypass-width", type=float, default=0.02)
     args = parser.parse_args()
 
     model, cfg = load_model(args.checkpoint, args.device)
@@ -55,6 +58,8 @@ def main() -> None:
             clean = torch.from_numpy(clean_np[:, 0]).to(args.device)
             feat = extract_features(mix, cfg).transpose(0, 1).unsqueeze(0)
             pred_mask = model(feat).squeeze(0).transpose(0, 1)
+            if args.high_snr_bypass:
+                pred_mask = apply_high_snr_bypass(pred_mask, args.bypass_threshold, args.bypass_width)
             target_mask = target_band_mask(mix[0], clean, cfg)
             t = min(pred_mask.shape[0], target_mask.shape[0])
             enhanced = enhance_with_mask(mix[0], pred_mask, cfg)
@@ -91,4 +96,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

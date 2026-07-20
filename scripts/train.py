@@ -50,6 +50,9 @@ def main() -> None:
     parser.add_argument("--device", default="cpu")
     parser.add_argument("--resume", help="Optional checkpoint to initialize model weights from.")
     parser.add_argument("--start-epoch", type=int, default=0)
+    parser.add_argument("--channels", type=int, default=112)
+    parser.add_argument("--blocks", type=int, default=8)
+    parser.add_argument("--kernel-size", type=int, default=5)
     args = parser.parse_args()
 
     out = Path(args.out)
@@ -60,7 +63,13 @@ def main() -> None:
     train_loader = DataLoader(train_ds, batch_size=args.batch_size, shuffle=True, collate_fn=pad_sequence_batch)
     val_loader = DataLoader(val_ds, batch_size=args.batch_size, shuffle=False, collate_fn=pad_sequence_batch)
 
-    model = TinyCausalTCN(feature_dim=cfg.bands * 3, bands=cfg.bands)
+    model = TinyCausalTCN(
+        feature_dim=cfg.bands * 3,
+        bands=cfg.bands,
+        channels=args.channels,
+        blocks=args.blocks,
+        kernel_size=args.kernel_size,
+    )
     best = float("inf")
     if args.resume:
         ckpt = torch.load(args.resume, map_location="cpu")
