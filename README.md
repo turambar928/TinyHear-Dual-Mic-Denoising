@@ -48,6 +48,9 @@ python scripts/make_synth_dataset.py --out data/synth --seconds 2 --num-train 20
 # 训练
 python scripts/train.py --data data/synth --epochs 10 --batch-size 8 --out runs/tiny_tcn
 
+# 下一轮推荐训练：IPD/coherence 空间特征 + 150KB 内强模型 + 谱幅度 loss
+python scripts/train.py --data data/synth --epochs 20 --batch-size 8 --out runs/tiny_tcn_spatial --spatial-features --channels 120 --band-mag-loss-weight 0.1
+
 # 导出 INT8 权重和 C 头文件
 python scripts/export_int8.py --checkpoint runs/tiny_tcn/best.pt --out runs/tiny_tcn/int8
 

@@ -26,17 +26,33 @@ static void make_features(const TinyComplex32 *spec0, const TinyComplex32 *spec1
     for (int band = 0; band < TINY_TCN_BANDS; ++band) {
         double p0 = 0.0;
         double p1 = 0.0;
+        double cross_re = 0.0;
+        double cross_im = 0.0;
         for (int bin = 0; bin < TINY_TCN_FREQ_BINS; ++bin) {
             double e0 = (double)spec0[bin].re * (double)spec0[bin].re + (double)spec0[bin].im * (double)spec0[bin].im;
             double e1 = (double)spec1[bin].re * (double)spec1[bin].re + (double)spec1[bin].im * (double)spec1[bin].im;
-            p0 += e0 * (double)kBandMatrix[bin][band];
-            p1 += e1 * (double)kBandMatrix[bin][band];
+            double w = (double)kBandMatrix[bin][band];
+            p0 += e0 * w;
+            p1 += e1 * w;
+            cross_re += ((double)spec0[bin].re * (double)spec1[bin].re +
+                         (double)spec0[bin].im * (double)spec1[bin].im) *
+                        w;
+            cross_im += ((double)spec0[bin].im * (double)spec1[bin].re -
+                         (double)spec0[bin].re * (double)spec1[bin].im) *
+                        w;
         }
         float p0f = (float)(p0 > 1e-8 ? p0 : 1e-8);
         float p1f = (float)(p1 > 1e-8 ? p1 : 1e-8);
         features[band] = clampf_local(logf(p0f), -20.0f, 20.0f);
         features[TINY_TCN_BANDS + band] = clampf_local(logf(p1f), -20.0f, 20.0f);
         features[2 * TINY_TCN_BANDS + band] = clampf_local(logf(p0f / p1f), -20.0f, 20.0f);
+#if TINY_TCN_SPATIAL_FEATURES
+        double cross_abs = sqrt(cross_re * cross_re + cross_im * cross_im);
+        if (cross_abs < 1e-8) cross_abs = 1e-8;
+        features[3 * TINY_TCN_BANDS + band] = (float)(cross_re / cross_abs);
+        features[4 * TINY_TCN_BANDS + band] = (float)(cross_im / cross_abs);
+        features[5 * TINY_TCN_BANDS + band] = clampf_local((float)(cross_abs / sqrt((double)p0f * (double)p1f)), 0.0f, 1.0f);
+#endif
     }
 }
 

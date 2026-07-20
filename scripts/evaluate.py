@@ -9,7 +9,14 @@ import torch
 from tqdm import tqdm
 
 from ha_denoise.audio import read_wav, write_wav
-from ha_denoise.features import FeatureConfig, apply_high_snr_bypass, enhance_with_mask, extract_features, target_band_mask
+from ha_denoise.features import (
+    FeatureConfig,
+    apply_high_snr_bypass,
+    enhance_with_mask,
+    extract_features,
+    feature_config_from_dict,
+    target_band_mask,
+)
 from ha_denoise.metrics import si_sdr
 from ha_denoise.model import TinyCausalTCN
 
@@ -17,7 +24,7 @@ from ha_denoise.model import TinyCausalTCN
 def load_model(checkpoint: str, device: str) -> tuple[TinyCausalTCN, FeatureConfig]:
     ckpt = torch.load(checkpoint, map_location=device)
     cfg_d = ckpt["config"]
-    cfg = FeatureConfig(cfg_d["sample_rate"], cfg_d["n_fft"], cfg_d["hop_length"], cfg_d["bands"])
+    cfg = feature_config_from_dict(cfg_d)
     model = TinyCausalTCN(cfg_d["feature_dim"], cfg_d["bands"], cfg_d["channels"], cfg_d["blocks"], cfg_d["kernel_size"])
     model.load_state_dict(ckpt["model"])
     model.to(device).eval()

@@ -23,11 +23,19 @@ mic0/mic1 waveform
   -> ISTFT/OLA
 ```
 
-输入特征每帧 96 维：
+默认输入特征每帧 96 维：
 
 - `log_band_power(mic0)`：32 维。
 - `log_band_power(mic1)`：32 维。
 - `log((power_mic0 + eps) / (power_mic1 + eps))`：32 维。
+
+近距双麦下 ILD/能量比可能较弱，因此训练脚本支持 `--spatial-features`，额外加入：
+
+- IPD cosine：32 维。
+- IPD sine：32 维。
+- band coherence：32 维。
+
+启用后每帧输入为 192 维。旧 checkpoint 仍保持 96 维兼容。
 
 目标标签为频带理想幅度掩蔽：
 
@@ -40,7 +48,9 @@ mask = clamp(mask, min_gain, 1.0)
 
 ## 3. 模型架构
 
-`TinyCausalTCN(feature_dim=96, bands=32, channels=112, blocks=8, kernel_size=5)`
+默认模型：`TinyCausalTCN(feature_dim=96, bands=32, channels=112, blocks=8, kernel_size=5)`
+
+下一轮推荐模型：`TinyCausalTCN(feature_dim=192, bands=32, channels=120, blocks=8, kernel_size=5)`，仍在 150 KB INT8 权重目标内。
 
 结构：
 
@@ -111,6 +121,7 @@ delay_samples = mic_distance * sin(theta) / speed_of_sound * sample_rate
 
 - 参数量和 INT8 文件大小。
 - 验证集 mask MSE。
+- band magnitude loss，用于让训练目标更接近谱幅度重构。
 - SI-SDR improvement。
 - 离线听感检查。
 

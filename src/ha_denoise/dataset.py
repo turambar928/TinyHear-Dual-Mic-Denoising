@@ -104,12 +104,14 @@ class WavPairDataset(Dataset):
         cfg: FeatureConfig,
         seconds: float = 2.0,
         on_the_fly: bool = False,
+        return_audio: bool = False,
     ) -> None:
         self.root = Path(root)
         self.split = split
         self.cfg = cfg
         self.seconds = seconds
         self.on_the_fly = on_the_fly
+        self.return_audio = return_audio
         self.length = int(cfg.sample_rate * seconds)
         self.rng = random.Random(1234 if split == "train" else 4321)
         self.band_matrix = make_band_matrix(cfg.n_fft, cfg.bands, cfg.sample_rate)
@@ -169,6 +171,8 @@ class WavPairDataset(Dataset):
         feat = extract_features(mix_t, self.cfg, self.band_matrix)
         mask = target_band_mask(mix_t[0], clean_t[0], self.cfg, self.band_matrix)
         t = min(feat.shape[0], mask.shape[0])
+        if self.return_audio:
+            return feat[:t], mask[:t], mix_t[0], clean_t[0]
         return feat[:t], mask[:t]
 
 

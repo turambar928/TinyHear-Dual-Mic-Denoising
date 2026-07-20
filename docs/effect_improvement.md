@@ -69,14 +69,59 @@ PYTHONPATH=src python3 scripts/train.py \
   --seconds 2.0 \
   --epochs 60 \
   --batch-size 8 \
+  --spatial-features \
   --channels 120 \
+  --band-mag-loss-weight 0.1 \
   --out runs/arctic_demand_c120 \
   --device cpu
 ```
 
-`channels=120` remains under the 150 KB target.
+`channels=120` with the 192-dim spatial feature set remains under the 150 KB target.
 
-## 3. Perceptual Metrics
+## 3. IPD And Coherence Features
+
+The old feature set was:
+
+```text
+log power mic0: 32
+log power mic1: 32
+ILD/log power ratio: 32
+total: 96
+```
+
+For close microphone spacing, ILD can be weak. The optional spatial feature set adds:
+
+```text
+IPD cos: 32
+IPD sin: 32
+band coherence: 32
+total: 192
+```
+
+Enable it during training:
+
+```bash
+--spatial-features
+```
+
+Old checkpoints remain compatible because checkpoint config records `spatial_features`.
+
+## 4. Spectral And SI-SDR Training Losses
+
+The default training objective is still mask MSE for reproducibility.
+
+Optional losses:
+
+```bash
+--band-mag-loss-weight 0.1
+--si-sdr-loss-weight 0.02
+```
+
+`--band-mag-loss-weight` adds a band magnitude L1 term. It is cheap and recommended for the next training run.
+
+`--si-sdr-loss-weight` reconstructs waveform inside the training loop and adds negative SI-SDR. It is much slower, so use it only for fine-tuning or small experiments.
+
+## 5. Perceptual Metrics
 
 Added:
 
@@ -104,7 +149,7 @@ PYTHONPATH=src python3 scripts/evaluate_perceptual.py \
   --pattern "sample_*_realtime.wav"
 ```
 
-## 4. Data Upgrade
+## 6. Data Upgrade
 
 The most important listening-quality improvement is better data. See `docs/data_upgrade.md`.
 

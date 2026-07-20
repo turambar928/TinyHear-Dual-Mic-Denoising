@@ -42,7 +42,15 @@ class StreamingDenoiser:
         log0 = torch.log(torch.clamp(p0, min=1e-8))
         log1 = torch.log(torch.clamp(p1, min=1e-8))
         ild = torch.log(torch.clamp(p0, min=1e-8) / torch.clamp(p1, min=1e-8))
-        return torch.clamp(torch.cat([log0, log1, ild], dim=0), -20.0, 20.0)
+        features = [log0, log1, ild]
+        if self.cfg.spatial_features:
+            cross = (spec0 * torch.conj(spec1)) @ self.band_matrix.to(torch.complex64)
+            cross_abs = torch.clamp(torch.abs(cross), min=1e-8)
+            ipd_cos = cross.real / cross_abs
+            ipd_sin = cross.imag / cross_abs
+            coherence = cross_abs / torch.sqrt(torch.clamp(p0 * p1, min=1e-8))
+            features.extend([ipd_cos, ipd_sin, torch.clamp(coherence, 0.0, 1.0)])
+        return torch.clamp(torch.cat(features, dim=0), -20.0, 20.0)
 
     def _mask_to_bins(self, band_mask: torch.Tensor) -> torch.Tensor:
         bin_mask = band_mask @ self.band_matrix.transpose(0, 1)

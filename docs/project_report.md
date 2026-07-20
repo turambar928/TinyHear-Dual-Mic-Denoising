@@ -38,13 +38,15 @@ mic0/mic1 waveform
   -> enhanced waveform
 ```
 
-每帧输入特征为 96 维：
+默认每帧输入特征为 96 维：
 
 - mic0 32-band log power。
 - mic1 32-band log power。
 - mic0/mic1 32-band log power ratio。
 
 模型输出 32 维频带 mask，映射回 129 个 FFT bin 后乘到参考麦克风复数频谱。
+
+后续训练可启用 `--spatial-features`，加入 IPD sin/cos 和 band coherence，使输入从 96 维扩展到 192 维。近距双麦下 ILD 较弱，这组相位/相干性特征更适合表达双麦空间差异。
 
 ## 4. 模型结构
 
@@ -155,6 +157,7 @@ PC reference benchmark：
 - C realtime DSP 当前默认 FFT backend 是 naive DFT/IDFT，只用于数值 reference。
 - C 卷积 kernel 仍是 reference loop，没有替换为 CMSIS-NN 或 U55 加速 kernel。
 - 量化使用 per-tensor weight scale，后续可升级为 per-channel 或 QAT。
+- 当前推荐下一轮训练加入 `--spatial-features` 和 band magnitude loss。
 - 已有 5 组听感样例用于展示，但还不是正式 MOS/ABX 测试。
 - 当前 high-SNR bypass 只是实验开关，初步样例上没有稳定提升，后续更适合用真实高 SNR 数据训练 gating。
 

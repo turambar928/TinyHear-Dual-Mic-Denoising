@@ -12,12 +12,31 @@ class FeatureConfig:
         hop_length: int = 64,
         bands: int = 32,
         min_gain: float = 0.08,
+        spatial_features: bool = False,
     ) -> None:
         self.sample_rate = sample_rate
         self.n_fft = n_fft
         self.hop_length = hop_length
         self.bands = bands
         self.min_gain = min_gain
+        self.spatial_features = spatial_features
+
+    @property
+    def feature_dim(self) -> int:
+        return self.bands * (6 if self.spatial_features else 3)
+
+
+def feature_config_from_dict(config: dict) -> FeatureConfig:
+    bands = int(config["bands"])
+    feature_dim = int(config.get("feature_dim", bands * 3))
+    spatial_features = bool(config.get("spatial_features", feature_dim == bands * 6))
+    return FeatureConfig(
+        int(config["sample_rate"]),
+        int(config["n_fft"]),
+        int(config["hop_length"]),
+        bands,
+        spatial_features=spatial_features,
+    )
 
 
 def make_band_matrix(n_fft: int = 256, bands: int = 32, sample_rate: int = 16_000) -> torch.Tensor:
@@ -66,7 +85,7 @@ def _band_power(spec: torch.Tensor, band_matrix: torch.Tensor) -> torch.Tensor:
 
 
 def extract_features(mix: torch.Tensor, cfg: FeatureConfig, band_matrix: torch.Tensor | None = None) -> torch.Tensor:
-    """Return features with shape [T, 3 * bands] from a [2, N] waveform."""
+    """Return features with shape [T, feature_dim] from a [2, N] waveform."""
     if mix.ndim != 2 or mix.shape[0] != 2:
         raise ValueError("mix must have shape [2, samples]")
     band_matrix = band_matrix if band_matrix is not None else make_band_matrix(cfg.n_fft, cfg.bands, cfg.sample_rate)
@@ -77,7 +96,17 @@ def extract_features(mix: torch.Tensor, cfg: FeatureConfig, band_matrix: torch.T
     log0 = torch.log(torch.clamp(p0, min=1e-8))
     log1 = torch.log(torch.clamp(p1, min=1e-8))
     ild = torch.log(torch.clamp(p0, min=1e-8) / torch.clamp(p1, min=1e-8))
-    feat = torch.cat([log0, log1, ild], dim=-1)
+    features = [log0, log1, ild]
+    if cfg.spatial_features:
+        cross = (spec0 * torch.conj(spec1)).transpose(-2, -1) @ band_matrix.to(spec0.device, spec0.real.dtype).to(torch.complex64)
+        cross_real = cross.real
+        cross_imag = cross.imag
+        cross_abs = torch.clamp(torch.abs(cross), min=1e-8)
+        ipd_cos = cross_real / cross_abs
+        ipd_sin = cross_imag / cross_abs
+        coherence = cross_abs / torch.sqrt(torch.clamp(p0 * p1, min=1e-8))
+        features.extend([ipd_cos, ipd_sin, torch.clamp(coherence, 0.0, 1.0)])
+    feat = torch.cat(features, dim=-1)
     return torch.clamp(feat, -20.0, 20.0)
 
 
@@ -122,16 +151,28 @@ def apply_high_snr_bypass(mask: torch.Tensor, threshold: float = 0.97, width: fl
     return torch.clamp(mask * (1.0 - bypass) + bypass, 0.0, 1.0)
 
 
-def pad_sequence_batch(items: list[tuple[torch.Tensor, torch.Tensor]]) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-    max_t = max(x.shape[0] for x, _ in items)
+def pad_sequence_batch(items):
+    max_t = max(item[0].shape[0] for item in items)
     feat_dim = items[0][0].shape[1]
     bands = items[0][1].shape[1]
     feats = torch.zeros(len(items), feat_dim, max_t)
     masks = torch.zeros(len(items), bands, max_t)
     valid = torch.zeros(len(items), 1, max_t)
-    for i, (feat, mask) in enumerate(items):
+    for i, item in enumerate(items):
+        feat, mask = item[:2]
         t = feat.shape[0]
         feats[i, :, :t] = feat.transpose(0, 1)
         masks[i, :, :t] = mask.transpose(0, 1)
         valid[i, :, :t] = 1.0
+    if len(items[0]) == 4:
+        max_n = max(item[2].numel() for item in items)
+        mix_refs = torch.zeros(len(items), max_n)
+        clean_refs = torch.zeros(len(items), max_n)
+        audio_valid = torch.zeros(len(items), max_n)
+        for i, item in enumerate(items):
+            n = item[2].numel()
+            mix_refs[i, :n] = item[2]
+            clean_refs[i, :n] = item[3]
+            audio_valid[i, :n] = 1.0
+        return feats, masks, valid, mix_refs, clean_refs, audio_valid
     return feats, masks, valid

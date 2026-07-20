@@ -62,7 +62,9 @@ PYTHONPATH=src python3 scripts/train.py \
   --seconds 2.0 \
   --epochs 60 \
   --batch-size 8 \
+  --spatial-features \
   --channels 120 \
+  --band-mag-loss-weight 0.1 \
   --out runs/strong_public \
   --device cpu
 ```

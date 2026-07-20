@@ -11,14 +11,14 @@ import torch
 from tqdm import tqdm
 
 from ha_denoise.audio import read_wav
-from ha_denoise.features import FeatureConfig, extract_features
+from ha_denoise.features import FeatureConfig, extract_features, feature_config_from_dict
 from ha_denoise.model import TinyCausalTCN
 
 
 def load_model(checkpoint: str, device: str) -> tuple[TinyCausalTCN, FeatureConfig]:
     ckpt = torch.load(checkpoint, map_location=device)
     cfg_d = ckpt["config"]
-    cfg = FeatureConfig(cfg_d["sample_rate"], cfg_d["n_fft"], cfg_d["hop_length"], cfg_d["bands"])
+    cfg = feature_config_from_dict(cfg_d)
     model = TinyCausalTCN(cfg_d["feature_dim"], cfg_d["bands"], cfg_d["channels"], cfg_d["blocks"], cfg_d["kernel_size"])
     model.load_state_dict(ckpt["model"])
     model.to(device).eval()
@@ -107,4 +107,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

@@ -9,7 +9,7 @@ import numpy as np
 import torch
 
 from ha_denoise.audio import read_wav
-from ha_denoise.features import FeatureConfig, extract_features
+from ha_denoise.features import FeatureConfig, extract_features, feature_config_from_dict
 from ha_denoise.model import TinyCausalTCN
 from ha_denoise.realtime import StreamingDenoiser
 
@@ -79,7 +79,7 @@ def main() -> None:
     out_dir.mkdir(parents=True, exist_ok=True)
     ckpt = torch.load(args.checkpoint, map_location="cpu")
     cfg_d = ckpt["config"]
-    cfg = FeatureConfig(cfg_d["sample_rate"], cfg_d["n_fft"], cfg_d["hop_length"], cfg_d["bands"])
+    cfg = feature_config_from_dict(cfg_d)
     model = TinyCausalTCN(cfg_d["feature_dim"], cfg_d["bands"], cfg_d["channels"], cfg_d["blocks"], cfg_d["kernel_size"])
     model.load_state_dict(ckpt["model"])
     model.eval()
@@ -95,11 +95,12 @@ def main() -> None:
     scales_h = [
         "#pragma once\n",
         "#define TINY_TCN_NUM_LAYERS 18\n",
-        "#define TINY_TCN_FEATURE_DIM 96\n",
-        "#define TINY_TCN_CHANNELS 112\n",
-        "#define TINY_TCN_BANDS 32\n",
-        "#define TINY_TCN_BLOCKS 8\n",
-        "#define TINY_TCN_KERNEL 5\n\n",
+        f"#define TINY_TCN_FEATURE_DIM {cfg_d['feature_dim']}\n",
+        f"#define TINY_TCN_CHANNELS {cfg_d['channels']}\n",
+        f"#define TINY_TCN_BANDS {cfg_d['bands']}\n",
+        f"#define TINY_TCN_BLOCKS {cfg_d['blocks']}\n",
+        f"#define TINY_TCN_KERNEL {cfg_d['kernel_size']}\n\n",
+        f"#define TINY_TCN_SPATIAL_FEATURES {1 if cfg.spatial_features else 0}\n",
         f"#define TINY_TCN_N_FFT {cfg.n_fft}\n",
         f"#define TINY_TCN_HOP_LENGTH {cfg.hop_length}\n\n",
         c_float_array("kActivationScales", [float(activation_scales[name]) for name in LAYER_ORDER]),

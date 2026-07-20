@@ -6,7 +6,7 @@ import argparse
 import torch
 
 from ha_denoise.audio import read_wav, write_wav
-from ha_denoise.features import FeatureConfig
+from ha_denoise.features import feature_config_from_dict
 from ha_denoise.model import TinyCausalTCN
 from ha_denoise.realtime import StreamingDenoiser
 
@@ -24,7 +24,7 @@ def main() -> None:
 
     ckpt = torch.load(args.checkpoint, map_location=args.device)
     cfg_d = ckpt["config"]
-    cfg = FeatureConfig(cfg_d["sample_rate"], cfg_d["n_fft"], cfg_d["hop_length"], cfg_d["bands"])
+    cfg = feature_config_from_dict(cfg_d)
     model = TinyCausalTCN(cfg_d["feature_dim"], cfg_d["bands"], cfg_d["channels"], cfg_d["blocks"], cfg_d["kernel_size"])
     model.load_state_dict(ckpt["model"])
     model.to(args.device).eval()
