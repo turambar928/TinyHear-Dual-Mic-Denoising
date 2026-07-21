@@ -42,7 +42,44 @@ def si_sdr_mask_loss(pred: torch.Tensor, mix_refs: torch.Tensor, clean_refs: tor
     return torch.stack(losses).mean()
 
 
-def run_epoch(model, loader, optimizer, device, cfg, band_mag_loss_weight, si_sdr_loss_weight):
+def high_snr_sample_weights(
+    mix_refs: torch.Tensor,
+    clean_refs: torch.Tensor,
+    threshold_db: float,
+    dtype: torch.dtype,
+) -> torch.Tensor:
+    weights = []
+    for i in range(mix_refs.shape[0]):
+        score = si_sdr(mix_refs[i].detach(), clean_refs[i].detach())
+        weights.append((score >= threshold_db).to(dtype))
+    return torch.stack(weights).to(mix_refs.device).view(-1, 1, 1)
+
+
+def high_snr_identity_mask_loss(
+    pred: torch.Tensor,
+    valid: torch.Tensor,
+    mix_refs: torch.Tensor,
+    clean_refs: torch.Tensor,
+    threshold_db: float,
+) -> torch.Tensor:
+    sample_weights = high_snr_sample_weights(mix_refs, clean_refs, threshold_db, pred.dtype)
+    weighted_valid = valid * sample_weights
+    denom = weighted_valid.sum().clamp_min(1.0)
+    return (((pred - 1.0) ** 2) * weighted_valid).sum() / denom
+
+
+def run_epoch(
+    model,
+    loader,
+    optimizer,
+    device,
+    cfg,
+    band_mag_loss_weight,
+    si_sdr_loss_weight,
+    high_snr_preserve_weight,
+    high_snr_threshold,
+    high_snr_identity_target,
+):
     train = optimizer is not None
     model.train(train)
     total = 0.0
@@ -52,6 +89,11 @@ def run_epoch(model, loader, optimizer, device, cfg, band_mag_loss_weight, si_sd
             feats = feats.to(device)
             masks = masks.to(device)
             valid = valid.to(device)
+            if high_snr_identity_target:
+                mix_refs = batch[3].to(device)
+                clean_refs = batch[4].to(device)
+                high_snr_weights = high_snr_sample_weights(mix_refs, clean_refs, high_snr_threshold, masks.dtype)
+                masks = masks * (1.0 - high_snr_weights) + high_snr_weights
             pred = model(feats)
             loss = masked_mse(pred, masks, valid)
             if band_mag_loss_weight > 0.0:
@@ -60,6 +102,16 @@ def run_epoch(model, loader, optimizer, device, cfg, band_mag_loss_weight, si_sd
                 mix_refs = batch[3].to(device)
                 clean_refs = batch[4].to(device)
                 loss = loss + si_sdr_loss_weight * si_sdr_mask_loss(pred, mix_refs, clean_refs, cfg)
+            if high_snr_preserve_weight > 0.0:
+                mix_refs = batch[3].to(device)
+                clean_refs = batch[4].to(device)
+                loss = loss + high_snr_preserve_weight * high_snr_identity_mask_loss(
+                    pred,
+                    valid,
+                    mix_refs,
+                    clean_refs,
+                    high_snr_threshold,
+                )
             if train:
                 optimizer.zero_grad(set_to_none=True)
                 loss.backward()
@@ -80,6 +132,7 @@ def main() -> None:
     parser.add_argument("--on-the-fly", action="store_true")
     parser.add_argument("--device", default="cpu")
     parser.add_argument("--resume", help="Optional checkpoint to initialize model weights from.")
+    parser.add_argument("--reset-best-on-resume", action="store_true")
     parser.add_argument("--start-epoch", type=int, default=0)
     parser.add_argument("--channels", type=int, default=112)
     parser.add_argument("--blocks", type=int, default=8)
@@ -87,12 +140,15 @@ def main() -> None:
     parser.add_argument("--spatial-features", action="store_true", help="Add IPD sin/cos and coherence band features.")
     parser.add_argument("--band-mag-loss-weight", type=float, default=0.0)
     parser.add_argument("--si-sdr-loss-weight", type=float, default=0.0)
+    parser.add_argument("--high-snr-preserve-weight", type=float, default=0.0)
+    parser.add_argument("--high-snr-threshold", type=float, default=10.0)
+    parser.add_argument("--high-snr-identity-target", action="store_true")
     args = parser.parse_args()
 
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
     cfg = FeatureConfig(spatial_features=args.spatial_features)
-    return_audio = args.si_sdr_loss_weight > 0.0
+    return_audio = args.si_sdr_loss_weight > 0.0 or args.high_snr_preserve_weight > 0.0 or args.high_snr_identity_target
     train_ds = WavPairDataset(args.data, "train", cfg, args.seconds, args.on_the_fly, return_audio=return_audio)
     val_ds = WavPairDataset(args.data, "val", cfg, args.seconds, args.on_the_fly, return_audio=return_audio)
     train_loader = DataLoader(train_ds, batch_size=args.batch_size, shuffle=True, collate_fn=pad_sequence_batch)
@@ -109,7 +165,7 @@ def main() -> None:
     if args.resume:
         ckpt = torch.load(args.resume, map_location="cpu")
         model.load_state_dict(ckpt["model"])
-        if ckpt.get("val_mse") is not None:
+        if ckpt.get("val_mse") is not None and not args.reset_best_on_resume:
             best = float(ckpt["val_mse"])
         print(f"resumed_from={args.resume}")
     params = count_parameters(model)
@@ -125,8 +181,22 @@ def main() -> None:
             cfg,
             args.band_mag_loss_weight,
             args.si_sdr_loss_weight,
+            args.high_snr_preserve_weight,
+            args.high_snr_threshold,
+            args.high_snr_identity_target,
         )
-        val_loss = run_epoch(model, val_loader, None, args.device, cfg, args.band_mag_loss_weight, args.si_sdr_loss_weight)
+        val_loss = run_epoch(
+            model,
+            val_loader,
+            None,
+            args.device,
+            cfg,
+            args.band_mag_loss_weight,
+            args.si_sdr_loss_weight,
+            args.high_snr_preserve_weight,
+            args.high_snr_threshold,
+            args.high_snr_identity_target,
+        )
         print(f"epoch={epoch} train_mse={train_loss:.6f} val_mse={val_loss:.6f}")
         state = {
             "model": model.state_dict(),
@@ -143,6 +213,9 @@ def main() -> None:
                 "spatial_features": cfg.spatial_features,
                 "band_mag_loss_weight": args.band_mag_loss_weight,
                 "si_sdr_loss_weight": args.si_sdr_loss_weight,
+                "high_snr_preserve_weight": args.high_snr_preserve_weight,
+                "high_snr_threshold": args.high_snr_threshold,
+                "high_snr_identity_target": args.high_snr_identity_target,
             },
             "epoch": epoch,
             "val_mse": val_loss,

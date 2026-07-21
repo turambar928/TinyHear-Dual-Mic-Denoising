@@ -1,6 +1,7 @@
 #pragma once
 
 #include "tiny_tcn_int8.h"
+#include "tiny_gate.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -11,6 +12,8 @@ typedef struct {
     float output_buffer[TINY_TCN_N_FFT];
     float norm_buffer[TINY_TCN_N_FFT];
     TinyTcnState model_state;
+    TinyGateState gate_state;
+    float current_gate;
 } TinyRealtimeDspState;
 
 void tiny_realtime_init(TinyRealtimeDspState *state);

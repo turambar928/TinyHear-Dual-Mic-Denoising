@@ -12,6 +12,7 @@ from ha_denoise.audio import read_wav
 from ha_denoise.features import FeatureConfig, extract_features, feature_config_from_dict
 from ha_denoise.model import TinyCausalTCN
 from ha_denoise.realtime import StreamingDenoiser
+from train_gate import TinyGate, pooled_features
 
 
 LAYER_ORDER = ["stem.0"]
@@ -47,6 +48,84 @@ def c_int_array(name: str, values: np.ndarray, c_type: str = "int32_t") -> str:
     return f"static const {c_type} {name}[{flat.size}] = {{{body}}};\n"
 
 
+def load_gate(path: str) -> TinyGate:
+    ckpt = torch.load(path, map_location="cpu")
+    cfg = ckpt["config"]
+    gate = TinyGate(int(cfg["input_dim"]), int(cfg["hidden"]))
+    gate.load_state_dict(ckpt["model"])
+    gate.eval()
+    return gate
+
+
+def gate_from_prefix_stats(gate: TinyGate, feat_sum: torch.Tensor, feat_sumsq: torch.Tensor, frames: int) -> torch.Tensor:
+    denom = max(frames, 1)
+    mean = feat_sum / float(denom)
+    var = feat_sumsq / float(denom) - mean.square()
+    pooled = torch.cat([mean, torch.sqrt(var.clamp_min(1e-8))], dim=0).unsqueeze(0)
+    return torch.sigmoid(gate(pooled)).squeeze()
+
+
+def gated_streaming_process(denoiser: StreamingDenoiser, gate: TinyGate, mix: torch.Tensor, flush: bool = True) -> torch.Tensor:
+    denoiser.reset()
+    h = denoiser.cfg.hop_length
+    samples = mix.shape[1]
+    pad = (h - samples % h) % h
+    if pad:
+        mix = torch.nn.functional.pad(mix, (0, pad))
+    feat_sum = torch.zeros(denoiser.cfg.feature_dim)
+    feat_sumsq = torch.zeros(denoiser.cfg.feature_dim)
+    frames = 0
+    hops = []
+    total_hops = list(range(0, mix.shape[1], h))
+    with torch.no_grad():
+        for start in total_hops:
+            hops.append(gated_streaming_hop(denoiser, gate, mix[:, start : start + h], feat_sum, feat_sumsq, frames))
+            frames += 1
+        if flush:
+            zero_hop = torch.zeros(2, h)
+            for _ in range(denoiser.cfg.n_fft // h):
+                hops.append(gated_streaming_hop(denoiser, gate, zero_hop, feat_sum, feat_sumsq, frames))
+                frames += 1
+    return torch.cat(hops, dim=0)[: samples + (denoiser.cfg.n_fft if flush else 0)]
+
+
+def gated_streaming_hop(
+    denoiser: StreamingDenoiser,
+    gate: TinyGate,
+    hop: torch.Tensor,
+    feat_sum: torch.Tensor,
+    feat_sumsq: torch.Tensor,
+    frames_seen: int,
+) -> torch.Tensor:
+    h = denoiser.cfg.hop_length
+    denoiser.input_buffer[:, :-h] = denoiser.input_buffer[:, h:].clone()
+    denoiser.input_buffer[:, -h:] = hop.to(denoiser.device, denoiser.dtype)
+
+    frame = denoiser.input_buffer * denoiser.window[None, :]
+    spec0 = torch.fft.rfft(frame[0], n=denoiser.cfg.n_fft)
+    spec1 = torch.fft.rfft(frame[1], n=denoiser.cfg.n_fft)
+    feat = denoiser._features_from_spectrum(spec0, spec1).detach().cpu()
+    feat_sum += feat
+    feat_sumsq += feat.square()
+    gate_value = gate_from_prefix_stats(gate, feat_sum, feat_sumsq, frames_seen + 1).to(denoiser.device, denoiser.dtype)
+
+    band_mask = denoiser.model_stream.process_frame(feat.to(denoiser.device, denoiser.dtype))
+    enhanced_spec = spec0 * denoiser._mask_to_bins(band_mask)
+    enhanced_frame = torch.fft.irfft(enhanced_spec, n=denoiser.cfg.n_fft)
+    blended = gate_value * enhanced_frame + (1.0 - gate_value) * frame[0]
+
+    denoiser.output_buffer += blended * denoiser.window
+    denoiser.norm_buffer += denoiser.window.square()
+    valid = denoiser.norm_buffer[:h] > 1e-6
+    out = torch.zeros(h, device=denoiser.device, dtype=denoiser.dtype)
+    out[valid] = denoiser.output_buffer[:h][valid] / denoiser.norm_buffer[:h][valid]
+    denoiser.output_buffer[:-h] = denoiser.output_buffer[h:].clone()
+    denoiser.output_buffer[-h:] = 0.0
+    denoiser.norm_buffer[:-h] = denoiser.norm_buffer[h:].clone()
+    denoiser.norm_buffer[-h:] = 0.0
+    return out.cpu()
+
+
 def quantize_multiplier(real_scale: float) -> tuple[int, int]:
     if real_scale <= 0.0:
         return 0, 0
@@ -63,6 +142,7 @@ def main() -> None:
     parser.add_argument("--checkpoint", required=True)
     parser.add_argument("--export-dir", required=True)
     parser.add_argument("--input-wav", required=True)
+    parser.add_argument("--gate")
     parser.add_argument("--out-dir", default="c_reference/generated")
     parser.add_argument("--frames", type=int, default=16)
     args = parser.parse_args()
@@ -83,6 +163,7 @@ def main() -> None:
     model = TinyCausalTCN(cfg_d["feature_dim"], cfg_d["bands"], cfg_d["channels"], cfg_d["blocks"], cfg_d["kernel_size"])
     model.load_state_dict(ckpt["model"])
     model.eval()
+    gate = load_gate(args.gate) if args.gate else None
 
     _, wav = read_wav(args.input_wav, cfg.sample_rate)
     mix = torch.from_numpy(wav[:, :2].T)
@@ -91,6 +172,12 @@ def main() -> None:
     with torch.no_grad():
         expected = model(feat.unsqueeze(0)).squeeze(0).contiguous().numpy()
     features_np = feat.numpy()
+    if gate is not None:
+        valid = torch.ones(1, 1, feat.shape[-1], dtype=feat.dtype)
+        with torch.no_grad():
+            expected_gate = float(torch.sigmoid(gate(pooled_features(feat.unsqueeze(0), valid))).item())
+    else:
+        expected_gate = 1.0
 
     scales_h = [
         "#pragma once\n",
@@ -163,6 +250,7 @@ def main() -> None:
         f"#define TEST_OUTPUT_SIZE {expected.size}\n\n",
         c_vector("kTestInput", features_np),
         c_vector("kExpectedOutput", expected),
+        f"static const float kExpectedGate = {expected_gate:.9e}f;\n",
     ]
     (out_dir / "test_vectors.h").write_text("".join(vectors_h), encoding="utf-8")
 
@@ -170,7 +258,10 @@ def main() -> None:
     realtime_mix = mix[:, :realtime_samples].contiguous()
     denoiser = StreamingDenoiser(model, cfg)
     with torch.no_grad():
-        realtime_expected = denoiser.process(realtime_mix, flush=True).contiguous().numpy()
+        if gate is not None:
+            realtime_expected = gated_streaming_process(denoiser, gate, realtime_mix, flush=True).contiguous().numpy()
+        else:
+            realtime_expected = denoiser.process(realtime_mix, flush=True).contiguous().numpy()
     realtime_h = [
         "#pragma once\n",
         "#define REALTIME_INPUT_HOPS " + str(args.frames) + "\n",

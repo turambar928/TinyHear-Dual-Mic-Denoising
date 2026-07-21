@@ -6,24 +6,33 @@
 
 这个项目实现一个面向助听器/耳戴设备的双麦上行降噪原型：双通道音频输入，模型预测 32 个频带的软掩蔽，最后对参考麦克风频谱做增强重构。
 
+## Demo
+
+- 本地网页试听 demo：`http://127.0.0.1:38179/runs/audio_demo/index.html`
+- 当前 demo 包含 `c120_h32_gate`、`c120_h2_gate`、`c116_h24_gate` 三组 noisy/clean/enhanced 对比。
+- 如果本地服务没启动，可在项目根目录运行 `python3 -m http.server 38179`，然后打开上面的链接。
+
 ## 当前结果
 
 - 推荐基线：CMU ARCTIC clean speech + DEMAND 多通道环境噪声。
-- 模型规模：121,104 参数，INT8 权重约 121 KB。
+- 推荐部署方案：`c116` 空间特征 TCN + `hidden=24` learned gate。
+- 模型规模：TCN `140,276` 参数，gate `9,265` 参数，总计 `149,541` 参数，满足 150K 目标。
 - 实时链路：16 kHz，256 点 FFT，64 samples hop，4 ms 步进。
-- Python realtime eval：SI-SDR improvement `4.740 dB`，估计延迟 `192 samples / 12 ms`。
-- C Q15 模型 reference：mean abs diff `0.01477`，streaming 与 batch Q15 完全一致。
-- C realtime DSP reference：mean abs diff `0.00111` against Python realtime float reference。
-- PC reference benchmark：Q15 模型约 `0.267 ms/frame`，完整 C realtime reference 约 `2.530 ms/hop`。
-- C 端状态内存：`TinyTcnState` 13.4 KB，`TinyRealtimeDspState` 17.5 KB。
+- Python eval：全量 SI-SDR improvement `4.474 dB`，high-SNR 退化率 `0%`。
+- C Q15 模型 reference：mean abs diff `0.01703`，streaming 与 batch Q15 完全一致。
+- C learned gate reference：gate abs diff `0.0000039` against Python gate。
+- C gated realtime DSP reference：mean abs diff `0.00078` against Python gated realtime reference。
+- PC reference benchmark：Q15 模型约 `0.322 ms/frame`，完整 gated C realtime reference 约 `2.582 ms/hop`。
+- C 端状态内存：`TinyTcnState` 13.9 KB，`TinyGateState` 1.5 KB，`TinyRealtimeDspState` 19.6 KB。
 
 ## 方案摘要
 
 - 采样率：16 kHz。
 - 分帧：256 点 FFT，64 点 hop，算法步进 4 ms；模型严格因果，不使用未来帧。
-- 输入特征：参考麦与副麦的 32 频带 log power、频带能量比，共 96 维。
-- 模型：Causal depthwise-separable TCN，默认 `channels=112, blocks=8`。
-- 参数量：约 119K 参数，INT8 权重约 119 KB，满足 100-150 KB 目标。
+- 输入特征：参考麦与副麦的 32 频带 log power、频带能量比、IPD cos/sin、coherence，共 192 维。
+- 模型：Causal depthwise-separable TCN，推荐 `channels=116, blocks=8`。
+- learned gate：对整段/前缀特征做 mean/std pooling，MLP 判断增强或旁路，减少高 SNR 过处理。
+- 参数量：TCN + gate 共约 149.5K 参数，满足 100-150 KB 目标。
 - 输出：32 频带 mask，插值到 FFT bin 后乘到参考麦复数谱。
 - 整型路径：`scripts/export_int8.py` 会导出 per-tensor INT8 权重、scale 和 C 头文件；端侧可用 int8 卷积 + int32 累加实现。
 
@@ -96,6 +105,37 @@ python scripts/dump_c_reference_assets.py \
   --out-dir c_reference/generated \
   --frames 16
 make -C c_reference run
+```
+
+当前推荐 `c116 + h24 gate` 端侧链路复现命令：
+
+```bash
+PYTHONPATH=src python3 scripts/export_int8.py \
+  --checkpoint runs/arctic_demand_spatial_c116/best.pt \
+  --out runs/arctic_demand_spatial_c116/int8
+
+PYTHONPATH=src python3 scripts/calibrate_int8.py \
+  --checkpoint runs/arctic_demand_spatial_c116/best.pt \
+  --export-dir runs/arctic_demand_spatial_c116/int8 \
+  --data data/arctic_demand_eval \
+  --split val \
+  --max-items 160 \
+  --percentile 100
+
+PYTHONPATH=src:scripts python3 scripts/export_gate.py \
+  --gate runs/gate_spatial_c116_h24/best.pt \
+  --out c_reference/generated/tiny_gate_params.h
+
+PYTHONPATH=src:scripts python3 scripts/dump_c_reference_assets.py \
+  --checkpoint runs/arctic_demand_spatial_c116/best.pt \
+  --export-dir runs/arctic_demand_spatial_c116/int8 \
+  --input-wav data/arctic_demand_eval/val/mix_0000.wav \
+  --gate runs/gate_spatial_c116_h24/best.pt \
+  --out-dir c_reference/generated \
+  --frames 16
+
+make -C c_reference clean run
+make -C c_reference clean bench
 ```
 
 公开数据集下载后也可以直接训练，只要按下面结构放置 wav：
@@ -237,6 +277,7 @@ PYTHONPATH=src python scripts/evaluate.py --checkpoint runs/public_small/best.pt
 - `scripts/evaluate.py`：SI-SDR improvement 和 mask MSE 评估。
 - `scripts/materialize_mixes.py`：将 on-the-fly clean/noise 数据固化为可复现 mix/clean 样本。
 - `scripts/dump_c_reference_assets.py`：生成 C reference 所需 scale 头文件和测试向量。
+- `scripts/export_gate.py`：导出 learned gate 的 C header 参数。
 - `c_reference/`：PC 侧 C INT8 + realtime DSP reference，对齐 Python fixed-scale/realtime reference。
 
 C reference 现在包含两条路径：

@@ -69,6 +69,8 @@ static void mask_to_bins(const int16_t *band_mask_q15, float *bin_mask) {
 void tiny_realtime_init(TinyRealtimeDspState *state) {
     memset(state, 0, sizeof(*state));
     tiny_tcn_init(&state->model_state);
+    tiny_gate_init(&state->gate_state);
+    state->current_gate = 1.0f;
 }
 
 void tiny_realtime_process_hop(TinyRealtimeDspState *state, const float *stereo_hop, float *output_hop) {
@@ -98,6 +100,8 @@ void tiny_realtime_process_hop(TinyRealtimeDspState *state, const float *stereo_
     tiny_rfft_forward(frame0, spec0);
     tiny_rfft_forward(frame1, spec1);
     make_features(spec0, spec1, features);
+    tiny_gate_update(&state->gate_state, features);
+    state->current_gate = tiny_gate_compute_from_stats(&state->gate_state);
     tiny_tcn_process_frame_q15(&state->model_state, features, band_mask_q15);
     mask_to_bins(band_mask_q15, bin_mask);
     for (int bin = 0; bin < TINY_TCN_FREQ_BINS; ++bin) {
@@ -105,6 +109,9 @@ void tiny_realtime_process_hop(TinyRealtimeDspState *state, const float *stereo_
         spec0[bin].im *= bin_mask[bin];
     }
     tiny_rfft_inverse(spec0, enhanced_frame);
+    for (int n = 0; n < TINY_TCN_N_FFT; ++n) {
+        enhanced_frame[n] = state->current_gate * enhanced_frame[n] + (1.0f - state->current_gate) * frame0[n];
+    }
 
     for (int n = 0; n < TINY_TCN_N_FFT; ++n) {
         float w = hann(n);

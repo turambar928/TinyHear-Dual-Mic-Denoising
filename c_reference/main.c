@@ -4,6 +4,7 @@
 #include "generated/realtime_vectors.h"
 #include "generated/test_vectors.h"
 #include "realtime_dsp.h"
+#include "tiny_gate.h"
 #include "tiny_tcn_int8.h"
 
 int main(void) {
@@ -48,6 +49,21 @@ int main(void) {
     printf("integer_mean_abs_diff=%.9f\n", (float)(int_abs_sum / TEST_OUTPUT_SIZE));
     printf("stream_mismatches=%d\n", stream_mismatches);
 
+    TinyGateState gate_state;
+    tiny_gate_init(&gate_state);
+    for (int t = 0; t < TEST_FRAMES; ++t) {
+        float frame[TINY_TCN_FEATURE_DIM];
+        for (int ch = 0; ch < TINY_TCN_FEATURE_DIM; ++ch) {
+            frame[ch] = kTestInput[ch * TEST_FRAMES + t];
+        }
+        tiny_gate_update(&gate_state, frame);
+    }
+    float gate = tiny_gate_compute_from_stats(&gate_state);
+    float gate_diff = fabsf(gate - kExpectedGate);
+    printf("gate=%.9f\n", gate);
+    printf("gate_expected=%.9f\n", kExpectedGate);
+    printf("gate_abs_diff=%.9f\n", gate_diff);
+
     TinyRealtimeDspState dsp_state;
     float realtime_output[REALTIME_OUTPUT_SAMPLES];
     tiny_realtime_init(&dsp_state);
@@ -85,6 +101,7 @@ int main(void) {
     return int_max_abs < 0.14f &&
                    (float)(int_abs_sum / TEST_OUTPUT_SIZE) < 0.02f &&
                    stream_mismatches == 0 &&
+                   gate_diff < 0.00001f &&
                    realtime_max_abs < 0.45f &&
                    realtime_mean_abs < 0.002f
                ? 0

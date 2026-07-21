@@ -77,5 +77,6 @@ int main(void) {
     printf("sizeof_TinyRealtimeDspState=%zu\n", sizeof(TinyRealtimeDspState));
     printf("sizeof_model_frame_input=%zu\n", sizeof(float) * (size_t)TINY_TCN_FEATURE_DIM);
     printf("sizeof_model_frame_output_q15=%zu\n", sizeof(int16_t) * (size_t)TINY_TCN_BANDS);
+    printf("sizeof_gate_state=%zu\n", sizeof(TinyGateState));
     return 0;
 }

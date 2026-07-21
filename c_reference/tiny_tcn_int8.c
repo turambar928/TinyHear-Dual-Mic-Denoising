@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../runs/arctic_demand/int8/model_int8.h"
+#include "../runs/arctic_demand_spatial_c116/int8/model_int8.h"
 #include "generated/model_config.h"
 #include "generated/model_requant.h"
 
