@@ -25,7 +25,7 @@ def load_model(checkpoint: str, device: str) -> tuple[TinyCausalTCN, FeatureConf
     ckpt = torch.load(checkpoint, map_location=device)
     cfg_d = ckpt["config"]
     cfg = feature_config_from_dict(cfg_d)
-    model = TinyCausalTCN(cfg_d["feature_dim"], cfg_d["bands"], cfg_d["channels"], cfg_d["blocks"], cfg_d["kernel_size"])
+    model = TinyCausalTCN(cfg_d["feature_dim"], cfg_d["bands"], cfg_d["channels"], cfg_d["blocks"], cfg_d["kernel_size"], float(cfg_d.get("output_min_gain", 0.0)), float(cfg_d.get("output_max_gain", 1.0)))
     model.load_state_dict(ckpt["model"])
     model.to(device).eval()
     return model, cfg

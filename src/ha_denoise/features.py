@@ -12,6 +12,8 @@ class FeatureConfig:
         hop_length: int = 64,
         bands: int = 32,
         min_gain: float = 0.08,
+        max_gain: float = 1.0,
+        mask_target: str = "magnitude",
         spatial_features: bool = False,
     ) -> None:
         self.sample_rate = sample_rate
@@ -19,6 +21,8 @@ class FeatureConfig:
         self.hop_length = hop_length
         self.bands = bands
         self.min_gain = min_gain
+        self.max_gain = max_gain
+        self.mask_target = mask_target
         self.spatial_features = spatial_features
 
     @property
@@ -35,6 +39,9 @@ def feature_config_from_dict(config: dict) -> FeatureConfig:
         int(config["n_fft"]),
         int(config["hop_length"]),
         bands,
+        min_gain=float(config.get("min_gain", 0.08)),
+        max_gain=float(config.get("max_gain", 1.0)),
+        mask_target=str(config.get("mask_target", "magnitude")),
         spatial_features=spatial_features,
     )
 
@@ -120,9 +127,16 @@ def target_band_mask(
     noisy_spec = stft(mix_ref, cfg)
     clean_spec = stft(clean_ref, cfg)
     noisy_power = _band_power(noisy_spec, band_matrix)
-    clean_power = _band_power(clean_spec, band_matrix)
-    mask = torch.sqrt(torch.clamp(clean_power, min=1e-8) / torch.clamp(noisy_power, min=1e-8))
-    return torch.clamp(mask, cfg.min_gain, 1.0)
+    if cfg.mask_target == "phase_sensitive":
+        cross = (clean_spec * torch.conj(noisy_spec)).real.transpose(-2, -1)
+        projected_clean = cross @ band_matrix.to(cross.device, cross.dtype)
+        mask = projected_clean / torch.clamp(noisy_power, min=1e-8)
+    elif cfg.mask_target == "magnitude":
+        clean_power = _band_power(clean_spec, band_matrix)
+        mask = torch.sqrt(torch.clamp(clean_power, min=1e-8) / torch.clamp(noisy_power, min=1e-8))
+    else:
+        raise ValueError(f"unsupported mask_target: {cfg.mask_target}")
+    return torch.clamp(mask, cfg.min_gain, cfg.max_gain)
 
 
 def bands_to_bins(mask: torch.Tensor, cfg: FeatureConfig, band_matrix: torch.Tensor | None = None) -> torch.Tensor:
@@ -140,6 +154,119 @@ def enhance_with_mask(mix_ref: torch.Tensor, band_mask: torch.Tensor, cfg: Featu
     frames = min(spec.shape[-1], bin_mask.shape[-1])
     enhanced = spec[:, :frames] * bin_mask[:, :frames]
     return istft(enhanced, length=mix_ref.numel(), cfg=cfg)
+
+
+def mask_guided_post_filter(
+    enhanced: torch.Tensor,
+    band_mask: torch.Tensor,
+    cfg: FeatureConfig,
+    strength: float = 0.45,
+    floor: float = 0.35,
+    speech_threshold: float = 0.58,
+    transition_width: float = 0.18,
+    noise_alpha: float = 0.92,
+) -> torch.Tensor:
+    """Causal-ish spectral post-filter guided by the model mask.
+
+    The learned mask already carries a speech-presence estimate. This post-filter
+    only adds extra attenuation where the mask is low, so voiced bins are kept
+    close to the denoiser output instead of being globally over-suppressed.
+    """
+    if strength <= 0.0:
+        return enhanced
+    spec = stft(enhanced, cfg)
+    bin_mask = bands_to_bins(band_mask, cfg)
+    frames = min(spec.shape[-1], bin_mask.shape[-1])
+    if frames <= 0:
+        return enhanced
+    spec = spec[:, :frames]
+    bin_mask = bin_mask[:, :frames]
+    power = spec.abs().square()
+    noise = power[:, 0].clone()
+    out = torch.empty_like(spec)
+    alpha = float(min(max(noise_alpha, 0.0), 0.9999))
+    strength_t = spec.real.new_tensor(max(strength, 0.0))
+    floor_t = spec.real.new_tensor(min(max(floor, 0.0), 1.0))
+    width = max(float(transition_width), 1e-6)
+    for t in range(frames):
+        speech_presence = torch.clamp((bin_mask[:, t] - speech_threshold) / width, 0.0, 1.0)
+        noise_update = 1.0 - speech_presence
+        update_alpha = alpha + (0.999 - alpha) * speech_presence
+        noise = update_alpha * noise + (1.0 - update_alpha) * power[:, t]
+        snr = power[:, t] / torch.clamp(noise, min=1e-8)
+        wiener = torch.sqrt(snr / torch.clamp(snr + strength_t, min=1e-8))
+        noise_gain = floor_t + (1.0 - floor_t) * wiener
+        guided_gain = speech_presence + (1.0 - speech_presence) * noise_gain
+        out[:, t] = spec[:, t] * torch.clamp(guided_gain, floor_t, 1.0)
+        noise = torch.where(noise_update > 0.5, noise, torch.minimum(noise, power[:, t] * 1.5))
+    return istft(out, length=enhanced.numel(), cfg=cfg)
+
+
+def enhance_with_deep_filter(
+    mix_ref: torch.Tensor,
+    band_mask: torch.Tensor,
+    df_coef: torch.Tensor,
+    cfg: FeatureConfig,
+) -> torch.Tensor:
+    """Apply ERB gain plus causal low-bin multi-frame complex filtering.
+
+    band_mask: [T, bands]
+    df_coef: [T, df_bins, df_order, 2], real/imag complex coefficients.
+    """
+    spec = stft(mix_ref, cfg)
+    bin_mask = bands_to_bins(band_mask, cfg)
+    frames = min(spec.shape[-1], bin_mask.shape[-1], df_coef.shape[0])
+    spec = spec[:, :frames]
+    enhanced = spec * bin_mask[:, :frames]
+
+    df_bins = min(df_coef.shape[1], spec.shape[0])
+    df_order = df_coef.shape[2]
+    low = torch.zeros(df_bins, frames, device=spec.device, dtype=spec.dtype)
+    coef = torch.complex(df_coef[:frames, :df_bins, :, 0], df_coef[:frames, :df_bins, :, 1])
+    for k in range(df_order):
+        if k == 0:
+            hist = spec[:df_bins, :frames]
+        else:
+            hist = torch.cat(
+                [
+                    torch.zeros(df_bins, k, device=spec.device, dtype=spec.dtype),
+                    spec[:df_bins, : frames - k],
+                ],
+                dim=1,
+            )
+        low = low + coef[:, :, k].transpose(0, 1) * hist
+    enhanced[:df_bins, :frames] = low
+    return istft(enhanced, length=mix_ref.numel(), cfg=cfg)
+
+
+def match_loudness(
+    reference: torch.Tensor,
+    enhanced: torch.Tensor,
+    target_ratio: float = 0.95,
+    max_gain_db: float = 6.0,
+    eps: float = 1e-8,
+) -> tuple[torch.Tensor, torch.Tensor]:
+    """Scale enhanced audio toward the reference RMS with a bounded gain."""
+    n = min(reference.numel(), enhanced.numel())
+    if n <= 0:
+        return enhanced, torch.ones((), device=enhanced.device, dtype=enhanced.dtype)
+    ref_rms = torch.sqrt(torch.mean(reference[:n].square()) + eps)
+    enh_rms = torch.sqrt(torch.mean(enhanced[:n].square()) + eps)
+    max_gain = float(10.0 ** (max_gain_db / 20.0))
+    gain = torch.clamp((ref_rms * target_ratio) / enh_rms, max=enhanced.new_tensor(max_gain))
+    peak = torch.max(torch.abs(enhanced * gain)).clamp_min(eps)
+    limiter = torch.clamp(enhanced.new_tensor(0.98) / peak, max=enhanced.new_tensor(1.0))
+    gain = gain * limiter
+    return enhanced * gain, gain
+
+
+def rms_ratio(reference: torch.Tensor, candidate: torch.Tensor, eps: float = 1e-8) -> torch.Tensor:
+    n = min(reference.numel(), candidate.numel())
+    if n <= 0:
+        return candidate.new_tensor(1.0)
+    ref_rms = torch.sqrt(torch.mean(reference[:n].square()) + eps)
+    cand_rms = torch.sqrt(torch.mean(candidate[:n].square()) + eps)
+    return cand_rms / ref_rms.clamp_min(eps)
 
 
 def apply_high_snr_bypass(mask: torch.Tensor, threshold: float = 0.97, width: float = 0.02) -> torch.Tensor:

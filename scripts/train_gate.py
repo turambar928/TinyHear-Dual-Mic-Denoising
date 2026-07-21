@@ -10,8 +10,9 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from ha_denoise.dataset import WavPairDataset
-from ha_denoise.features import FeatureConfig, pad_sequence_batch
+from ha_denoise.features import FeatureConfig, enhance_with_mask, pad_sequence_batch, feature_config_from_dict
 from ha_denoise.metrics import si_sdr
+from ha_denoise.model import TinyCausalTCN
 
 
 class TinyGate(nn.Module):
@@ -44,13 +45,52 @@ def gate_targets(mix_refs: torch.Tensor, clean_refs: torch.Tensor, threshold: fl
     return torch.stack(labels).to(mix_refs.device)
 
 
-def run_epoch(model, loader, optimizer, device, threshold):
+def load_denoiser(checkpoint: str, device: str) -> tuple[TinyCausalTCN, FeatureConfig]:
+    ckpt = torch.load(checkpoint, map_location=device)
+    cfg_d = ckpt["config"]
+    cfg = feature_config_from_dict(cfg_d)
+    model = TinyCausalTCN(cfg_d["feature_dim"], cfg_d["bands"], cfg_d["channels"], cfg_d["blocks"], cfg_d["kernel_size"], float(cfg_d.get("output_min_gain", 0.0)), float(cfg_d.get("output_max_gain", 1.0)))
+    model.load_state_dict(ckpt["model"])
+    model.to(device).eval()
+    return model, cfg
+
+
+def oracle_blend_targets(
+    denoiser: TinyCausalTCN,
+    cfg: FeatureConfig,
+    feats: torch.Tensor,
+    mix_refs: torch.Tensor,
+    clean_refs: torch.Tensor,
+    steps: int,
+) -> torch.Tensor:
+    alphas = torch.linspace(0.0, 1.0, steps, device=feats.device, dtype=feats.dtype)
+    labels = []
+    with torch.no_grad():
+        pred = denoiser(feats)
+        for i in range(pred.shape[0]):
+            mask = pred[i].transpose(0, 1)
+            enhanced = enhance_with_mask(mix_refs[i], mask, cfg)
+            n = min(mix_refs[i].numel(), clean_refs[i].numel(), enhanced.numel())
+            noisy = mix_refs[i, :n]
+            clean = clean_refs[i, :n]
+            enhanced = enhanced[:n]
+            scores = []
+            for alpha in alphas:
+                blended = alpha * enhanced + (1.0 - alpha) * noisy
+                scores.append(si_sdr(blended, clean))
+            best_idx = int(torch.stack(scores).argmax().item())
+            labels.append(alphas[best_idx])
+    return torch.stack(labels).to(feats.device)
+
+
+def run_epoch(model, loader, optimizer, device, threshold, target_mode, denoiser, denoiser_cfg, oracle_steps):
     train = optimizer is not None
     model.train(train)
     total = 0.0
-    correct = 0
+    metric_total = 0.0
     count = 0
     loss_fn = nn.BCEWithLogitsLoss()
+    mse_loss = nn.MSELoss()
     with torch.set_grad_enabled(train):
         for batch in tqdm(loader, leave=False):
             feats, _, valid, mix_refs, clean_refs, _ = batch
@@ -59,19 +99,27 @@ def run_epoch(model, loader, optimizer, device, threshold):
             mix_refs = mix_refs.to(device)
             clean_refs = clean_refs.to(device)
             x = pooled_features(feats, valid)
-            target = gate_targets(mix_refs, clean_refs, threshold)
             logits = model(x)
-            loss = loss_fn(logits, target)
+            if target_mode == "oracle-blend":
+                if denoiser is None or denoiser_cfg is None:
+                    raise ValueError("--denoiser is required for oracle-blend gate training")
+                target = oracle_blend_targets(denoiser, denoiser_cfg, feats, mix_refs, clean_refs, oracle_steps)
+                pred = torch.sigmoid(logits)
+                loss = mse_loss(pred, target)
+                metric_total += float(torch.mean(torch.abs(pred.detach() - target)).item()) * int(target.numel())
+            else:
+                target = gate_targets(mix_refs, clean_refs, threshold)
+                loss = loss_fn(logits, target)
+                pred = (torch.sigmoid(logits) >= 0.5).to(target.dtype)
+                metric_total += int((pred == target).sum().item())
             if train:
                 optimizer.zero_grad(set_to_none=True)
                 loss.backward()
                 nn.utils.clip_grad_norm_(model.parameters(), 5.0)
                 optimizer.step()
-            pred = (torch.sigmoid(logits) >= 0.5).to(target.dtype)
-            correct += int((pred == target).sum().item())
             count += int(target.numel())
             total += float(loss.item())
-    return total / max(1, len(loader)), correct / max(1, count)
+    return total / max(1, len(loader)), metric_total / max(1, count)
 
 
 def main() -> None:
@@ -87,6 +135,9 @@ def main() -> None:
     parser.add_argument("--spatial-features", action="store_true")
     parser.add_argument("--threshold", type=float, default=10.0)
     parser.add_argument("--hidden", type=int, default=32)
+    parser.add_argument("--target-mode", choices=("threshold", "oracle-blend"), default="threshold")
+    parser.add_argument("--denoiser", help="Denoiser checkpoint used to build oracle-blend soft targets.")
+    parser.add_argument("--oracle-steps", type=int, default=21)
     args = parser.parse_args()
 
     out = Path(args.out)
@@ -100,12 +151,42 @@ def main() -> None:
     model = TinyGate(cfg.feature_dim * 2, args.hidden).to(args.device)
     params = sum(p.numel() for p in model.parameters())
     print(f"gate_parameters={params}")
+    denoiser = None
+    denoiser_cfg = None
+    if args.target_mode == "oracle-blend":
+        denoiser, denoiser_cfg = load_denoiser(args.denoiser, args.device)
+        if denoiser_cfg.feature_dim != cfg.feature_dim:
+            raise ValueError("gate feature config must match denoiser feature config")
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=1e-4)
     best = float("inf")
     for epoch in range(1, args.epochs + 1):
-        train_loss, train_acc = run_epoch(model, train_loader, optimizer, args.device, args.threshold)
-        val_loss, val_acc = run_epoch(model, val_loader, None, args.device, args.threshold)
-        print(f"epoch={epoch} train_loss={train_loss:.6f} train_acc={train_acc:.4f} val_loss={val_loss:.6f} val_acc={val_acc:.4f}")
+        train_loss, train_metric = run_epoch(
+            model,
+            train_loader,
+            optimizer,
+            args.device,
+            args.threshold,
+            args.target_mode,
+            denoiser,
+            denoiser_cfg,
+            args.oracle_steps,
+        )
+        val_loss, val_metric = run_epoch(
+            model,
+            val_loader,
+            None,
+            args.device,
+            args.threshold,
+            args.target_mode,
+            denoiser,
+            denoiser_cfg,
+            args.oracle_steps,
+        )
+        metric_name = "mae" if args.target_mode == "oracle-blend" else "acc"
+        print(
+            f"epoch={epoch} train_loss={train_loss:.6f} train_{metric_name}={train_metric:.4f} "
+            f"val_loss={val_loss:.6f} val_{metric_name}={val_metric:.4f}"
+        )
         state = {
             "model": model.state_dict(),
             "config": {
@@ -118,10 +199,12 @@ def main() -> None:
                 "threshold": args.threshold,
                 "hidden": args.hidden,
                 "input_dim": cfg.feature_dim * 2,
+                "target_mode": args.target_mode,
+                "oracle_steps": args.oracle_steps,
             },
             "epoch": epoch,
             "val_loss": val_loss,
-            "val_acc": val_acc,
+            "val_metric": val_metric,
         }
         torch.save(state, out / "last.pt")
         if val_loss < best:

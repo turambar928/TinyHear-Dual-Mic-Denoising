@@ -12,6 +12,14 @@ from typing import Any
 DEFAULT_SETS = [
     ("baseline", Path("runs/arctic_demand/listening_eval")),
     ("spatial_c120", Path("runs/arctic_demand_spatial_c120/listening_eval")),
+    ("c116_loud_gate", Path("runs/arctic_demand_spatial_c116_loud/listening_eval_loud")),
+    ("c116_quiet_gate", Path("runs/arctic_demand_spatial_c116_loud/listening_eval_quiet")),
+    ("c116_oracle_blend_balanced", Path("runs/arctic_demand_spatial_c116_loud/listening_eval_oracle_blend_balanced")),
+    ("c116_postfilter_balanced", Path("runs/arctic_demand_spatial_c116_loud/listening_eval_postfilter_balanced")),
+    ("c116_noise_first_balanced", Path("runs/arctic_demand_spatial_c116_loud/listening_eval_noise_first_balanced")),
+    ("c116_noise_aggressive_best", Path("runs/arctic_demand_spatial_c116_loud/listening_eval_noise_aggressive_best")),
+    ("c120_psm_gain_sisdr_m1.50", Path("runs/arctic_demand_spatial_c120_psm_gain_sisdr/listening_eval_gate_m1.50_best")),
+    ("c120_psm_noise_loss_m1.50", Path("runs/arctic_demand_spatial_c120_psm_gain_noise_loss/listening_eval_gate_m1.50_best")),
 ]
 
 

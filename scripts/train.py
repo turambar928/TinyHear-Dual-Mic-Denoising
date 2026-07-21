@@ -32,6 +32,85 @@ def masked_band_mag_l1(
     return (torch.abs(pred_mag - target_mag) * valid).sum() / valid.sum().clamp_min(1.0)
 
 
+def waveform_l1_loss(pred: torch.Tensor, mix_refs: torch.Tensor, clean_refs: torch.Tensor, valid: torch.Tensor, cfg: FeatureConfig) -> torch.Tensor:
+    losses = []
+    for i in range(pred.shape[0]):
+        mask = pred[i].transpose(0, 1)
+        enhanced = enhance_with_mask(mix_refs[i], mask, cfg)
+        n = min(enhanced.numel(), clean_refs[i].numel())
+        losses.append(torch.mean(torch.abs(enhanced[:n] - clean_refs[i, :n])))
+    return torch.stack(losses).mean()
+
+
+def stft_mag_loss(pred: torch.Tensor, mix_refs: torch.Tensor, clean_refs: torch.Tensor, cfg: FeatureConfig) -> torch.Tensor:
+    window = torch.hann_window(cfg.n_fft, device=pred.device, dtype=mix_refs.dtype)
+    losses = []
+    for i in range(pred.shape[0]):
+        mask = pred[i].transpose(0, 1)
+        enhanced = enhance_with_mask(mix_refs[i], mask, cfg)
+        n = min(enhanced.numel(), clean_refs[i].numel())
+        enh_spec = torch.stft(
+            enhanced[:n],
+            n_fft=cfg.n_fft,
+            hop_length=cfg.hop_length,
+            win_length=cfg.n_fft,
+            window=window,
+            center=True,
+            return_complex=True,
+        )
+        clean_spec = torch.stft(
+            clean_refs[i, :n],
+            n_fft=cfg.n_fft,
+            hop_length=cfg.hop_length,
+            win_length=cfg.n_fft,
+            window=window,
+            center=True,
+            return_complex=True,
+        )
+        losses.append(torch.mean(torch.abs(torch.log1p(enh_spec.abs()) - torch.log1p(clean_spec.abs()))))
+    return torch.stack(losses).mean()
+
+
+def residual_noise_loss(
+    pred: torch.Tensor,
+    mix_refs: torch.Tensor,
+    clean_refs: torch.Tensor,
+    cfg: FeatureConfig,
+    speech_threshold: float,
+) -> torch.Tensor:
+    window = torch.hann_window(cfg.n_fft, device=pred.device, dtype=mix_refs.dtype)
+    losses = []
+    threshold = float(max(speech_threshold, 1e-4))
+    for i in range(pred.shape[0]):
+        mask = pred[i].transpose(0, 1)
+        enhanced = enhance_with_mask(mix_refs[i], mask, cfg)
+        n = min(enhanced.numel(), clean_refs[i].numel())
+        enh_spec = torch.stft(
+            enhanced[:n],
+            n_fft=cfg.n_fft,
+            hop_length=cfg.hop_length,
+            win_length=cfg.n_fft,
+            window=window,
+            center=True,
+            return_complex=True,
+        )
+        clean_spec = torch.stft(
+            clean_refs[i, :n],
+            n_fft=cfg.n_fft,
+            hop_length=cfg.hop_length,
+            win_length=cfg.n_fft,
+            window=window,
+            center=True,
+            return_complex=True,
+        )
+        enh_mag = enh_spec.abs()
+        clean_mag = clean_spec.abs()
+        frame_ref = clean_mag.amax(dim=0, keepdim=True).clamp_min(1e-5)
+        quiet_weight = torch.clamp((threshold * frame_ref - clean_mag) / (threshold * frame_ref), 0.0, 1.0)
+        losses.append((torch.log1p(enh_mag) * quiet_weight).sum() / quiet_weight.sum().clamp_min(1.0))
+    return torch.stack(losses).mean()
+
+
 def si_sdr_mask_loss(pred: torch.Tensor, mix_refs: torch.Tensor, clean_refs: torch.Tensor, cfg: FeatureConfig) -> torch.Tensor:
     losses = []
     for i in range(pred.shape[0]):
@@ -76,6 +155,10 @@ def run_epoch(
     cfg,
     band_mag_loss_weight,
     si_sdr_loss_weight,
+    waveform_loss_weight,
+    stft_mag_loss_weight,
+    residual_noise_loss_weight,
+    residual_noise_threshold,
     high_snr_preserve_weight,
     high_snr_threshold,
     high_snr_identity_target,
@@ -102,6 +185,24 @@ def run_epoch(
                 mix_refs = batch[3].to(device)
                 clean_refs = batch[4].to(device)
                 loss = loss + si_sdr_loss_weight * si_sdr_mask_loss(pred, mix_refs, clean_refs, cfg)
+            if waveform_loss_weight > 0.0:
+                mix_refs = batch[3].to(device)
+                clean_refs = batch[4].to(device)
+                loss = loss + waveform_loss_weight * waveform_l1_loss(pred, mix_refs, clean_refs, valid, cfg)
+            if stft_mag_loss_weight > 0.0:
+                mix_refs = batch[3].to(device)
+                clean_refs = batch[4].to(device)
+                loss = loss + stft_mag_loss_weight * stft_mag_loss(pred, mix_refs, clean_refs, cfg)
+            if residual_noise_loss_weight > 0.0:
+                mix_refs = batch[3].to(device)
+                clean_refs = batch[4].to(device)
+                loss = loss + residual_noise_loss_weight * residual_noise_loss(
+                    pred,
+                    mix_refs,
+                    clean_refs,
+                    cfg,
+                    residual_noise_threshold,
+                )
             if high_snr_preserve_weight > 0.0:
                 mix_refs = batch[3].to(device)
                 clean_refs = batch[4].to(device)
@@ -138,8 +239,17 @@ def main() -> None:
     parser.add_argument("--blocks", type=int, default=8)
     parser.add_argument("--kernel-size", type=int, default=5)
     parser.add_argument("--spatial-features", action="store_true", help="Add IPD sin/cos and coherence band features.")
+    parser.add_argument("--target-mask", choices=["magnitude", "phase_sensitive"], default="magnitude")
+    parser.add_argument("--target-min-gain", type=float, default=0.08)
+    parser.add_argument("--target-max-gain", type=float, default=1.0)
+    parser.add_argument("--output-min-gain", type=float, default=0.0)
+    parser.add_argument("--output-max-gain", type=float, default=1.0)
     parser.add_argument("--band-mag-loss-weight", type=float, default=0.0)
     parser.add_argument("--si-sdr-loss-weight", type=float, default=0.0)
+    parser.add_argument("--waveform-loss-weight", type=float, default=0.0)
+    parser.add_argument("--stft-mag-loss-weight", type=float, default=0.0)
+    parser.add_argument("--residual-noise-loss-weight", type=float, default=0.0)
+    parser.add_argument("--residual-noise-threshold", type=float, default=0.08)
     parser.add_argument("--high-snr-preserve-weight", type=float, default=0.0)
     parser.add_argument("--high-snr-threshold", type=float, default=10.0)
     parser.add_argument("--high-snr-identity-target", action="store_true")
@@ -147,8 +257,20 @@ def main() -> None:
 
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
-    cfg = FeatureConfig(spatial_features=args.spatial_features)
-    return_audio = args.si_sdr_loss_weight > 0.0 or args.high_snr_preserve_weight > 0.0 or args.high_snr_identity_target
+    cfg = FeatureConfig(
+        min_gain=args.target_min_gain,
+        max_gain=args.target_max_gain,
+        mask_target=args.target_mask,
+        spatial_features=args.spatial_features,
+    )
+    return_audio = (
+        args.si_sdr_loss_weight > 0.0
+        or args.waveform_loss_weight > 0.0
+        or args.stft_mag_loss_weight > 0.0
+        or args.residual_noise_loss_weight > 0.0
+        or args.high_snr_preserve_weight > 0.0
+        or args.high_snr_identity_target
+    )
     train_ds = WavPairDataset(args.data, "train", cfg, args.seconds, args.on_the_fly, return_audio=return_audio)
     val_ds = WavPairDataset(args.data, "val", cfg, args.seconds, args.on_the_fly, return_audio=return_audio)
     train_loader = DataLoader(train_ds, batch_size=args.batch_size, shuffle=True, collate_fn=pad_sequence_batch)
@@ -160,6 +282,8 @@ def main() -> None:
         channels=args.channels,
         blocks=args.blocks,
         kernel_size=args.kernel_size,
+        min_gain=args.output_min_gain,
+        max_gain=args.output_max_gain,
     )
     best = float("inf")
     if args.resume:
@@ -181,6 +305,10 @@ def main() -> None:
             cfg,
             args.band_mag_loss_weight,
             args.si_sdr_loss_weight,
+            args.waveform_loss_weight,
+            args.stft_mag_loss_weight,
+            args.residual_noise_loss_weight,
+            args.residual_noise_threshold,
             args.high_snr_preserve_weight,
             args.high_snr_threshold,
             args.high_snr_identity_target,
@@ -193,6 +321,10 @@ def main() -> None:
             cfg,
             args.band_mag_loss_weight,
             args.si_sdr_loss_weight,
+            args.waveform_loss_weight,
+            args.stft_mag_loss_weight,
+            args.residual_noise_loss_weight,
+            args.residual_noise_threshold,
             args.high_snr_preserve_weight,
             args.high_snr_threshold,
             args.high_snr_identity_target,
@@ -205,6 +337,11 @@ def main() -> None:
                 "n_fft": cfg.n_fft,
                 "hop_length": cfg.hop_length,
                 "bands": cfg.bands,
+                "min_gain": cfg.min_gain,
+                "max_gain": cfg.max_gain,
+                "mask_target": cfg.mask_target,
+                "output_min_gain": args.output_min_gain,
+                "output_max_gain": args.output_max_gain,
                 "feature_dim": cfg.feature_dim,
                 "spatial_features": cfg.spatial_features,
                 "channels": model.channels,
@@ -213,6 +350,10 @@ def main() -> None:
                 "spatial_features": cfg.spatial_features,
                 "band_mag_loss_weight": args.band_mag_loss_weight,
                 "si_sdr_loss_weight": args.si_sdr_loss_weight,
+                "waveform_loss_weight": args.waveform_loss_weight,
+                "stft_mag_loss_weight": args.stft_mag_loss_weight,
+                "residual_noise_loss_weight": args.residual_noise_loss_weight,
+                "residual_noise_threshold": args.residual_noise_threshold,
                 "high_snr_preserve_weight": args.high_snr_preserve_weight,
                 "high_snr_threshold": args.high_snr_threshold,
                 "high_snr_identity_target": args.high_snr_identity_target,

@@ -17,12 +17,14 @@ class StreamingDenoiser:
         high_snr_bypass: bool = False,
         bypass_threshold: float = 0.97,
         bypass_width: float = 0.02,
+        mask_gamma: float = 1.0,
     ) -> None:
         self.model = model
         self.cfg = cfg
         self.high_snr_bypass = high_snr_bypass
         self.bypass_threshold = bypass_threshold
         self.bypass_width = bypass_width
+        self.mask_gamma = mask_gamma
         self.device = next(model.parameters()).device
         self.dtype = next(model.parameters()).dtype
         self.window = torch.hann_window(cfg.n_fft, device=self.device, dtype=self.dtype)
@@ -73,6 +75,8 @@ class StreamingDenoiser:
             mean_mask = band_mask.mean()
             bypass = torch.clamp((mean_mask - self.bypass_threshold) / max(self.bypass_width, 1e-6), 0.0, 1.0)
             band_mask = torch.clamp(band_mask * (1.0 - bypass) + bypass, 0.0, 1.0)
+        if self.mask_gamma != 1.0:
+            band_mask = torch.pow(torch.clamp(band_mask, min=1e-4), self.mask_gamma)
         enhanced_spec = spec0 * self._mask_to_bins(band_mask)
         enhanced_frame = torch.fft.irfft(enhanced_spec, n=self.cfg.n_fft) * self.window
 

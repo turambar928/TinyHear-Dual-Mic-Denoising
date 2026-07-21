@@ -9,36 +9,28 @@ import torch
 from tqdm import tqdm
 
 from ha_denoise.audio import read_wav, write_wav
-from ha_denoise.features import (
-    enhance_with_mask,
-    extract_features,
-    feature_config_from_dict,
-    mask_guided_post_filter,
-    match_loudness,
-    rms_ratio,
-)
+from ha_denoise.features import enhance_with_deep_filter, extract_features, feature_config_from_dict, match_loudness, rms_ratio
 from ha_denoise.metrics import si_sdr
-from ha_denoise.model import TinyCausalTCN
-from train_gate import TinyGate, pooled_features
+from ha_denoise.model import TinyDeepFilterTCN
 
 
-def load_denoiser(checkpoint: str, device: str):
+def load_model(checkpoint: str, device: str):
     ckpt = torch.load(checkpoint, map_location=device)
     cfg_d = ckpt["config"]
     cfg = feature_config_from_dict(cfg_d)
-    model = TinyCausalTCN(cfg_d["feature_dim"], cfg_d["bands"], cfg_d["channels"], cfg_d["blocks"], cfg_d["kernel_size"], float(cfg_d.get("output_min_gain", 0.0)), float(cfg_d.get("output_max_gain", 1.0)))
+    model = TinyDeepFilterTCN(
+        cfg_d["feature_dim"],
+        cfg_d["bands"],
+        cfg_d["channels"],
+        cfg_d["blocks"],
+        cfg_d["kernel_size"],
+        cfg_d["df_bins"],
+        cfg_d["df_order"],
+        float(cfg_d.get("coef_scale", 1.5)),
+    )
     model.load_state_dict(ckpt["model"])
     model.to(device).eval()
     return model, cfg
-
-
-def load_gate(checkpoint: str, device: str) -> TinyGate:
-    ckpt = torch.load(checkpoint, map_location=device)
-    cfg = ckpt["config"]
-    model = TinyGate(int(cfg["input_dim"]), int(cfg["hidden"]))
-    model.load_state_dict(ckpt["model"])
-    model.to(device).eval()
-    return model
 
 
 def quantile_indices(count: int, samples: int) -> list[int]:
@@ -49,63 +41,28 @@ def quantile_indices(count: int, samples: int) -> list[int]:
     return sorted({round(i * (count - 1) / (samples - 1)) for i in range(samples)})
 
 
-def process_one(
-    denoiser,
-    gate_model,
-    cfg,
-    mix_path: Path,
-    device: str,
-    loudness_match: bool,
-    target_rms_ratio: float,
-    max_gain_db: float,
-    min_gate: float,
-    mask_gamma: float,
-    post_filter: bool,
-    post_filter_strength: float,
-    post_filter_floor: float,
-    post_filter_threshold: float,
-    post_filter_width: float,
-):
+def process_one(model, cfg, mix_path: Path, device: str, loudness_match: bool, target_rms_ratio: float, max_gain_db: float):
     clean_path = mix_path.with_name(mix_path.name.replace("mix_", "clean_"))
     sr, mix_np = read_wav(mix_path, cfg.sample_rate)
     _, clean_np = read_wav(clean_path, cfg.sample_rate)
     mix = torch.from_numpy(mix_np[:, :2].T).to(device)
     clean = torch.from_numpy(clean_np[:, 0]).to(device)
-    features = extract_features(mix, cfg)
-    feat_batch = features.transpose(0, 1).unsqueeze(0)
-    mask = denoiser(feat_batch).squeeze(0).transpose(0, 1)
-    if mask_gamma != 1.0:
-        mask = torch.pow(torch.clamp(mask, min=1e-4), mask_gamma)
-    enhanced = enhance_with_mask(mix[0], mask, cfg)
-    valid = torch.ones(1, 1, feat_batch.shape[-1], device=device, dtype=feat_batch.dtype)
-    gate_input = pooled_features(feat_batch, valid)
-    gate = float(torch.sigmoid(gate_model(gate_input)).item())
-    gate = max(min(gate, 1.0), min_gate)
+    feat = extract_features(mix, cfg).transpose(0, 1).unsqueeze(0)
+    gain, coef = model(feat)
+    enhanced = enhance_with_deep_filter(mix[0], gain.squeeze(0).transpose(0, 1), coef.squeeze(0), cfg)
     n = min(mix.shape[-1], clean.numel(), enhanced.numel())
     noisy = mix[0, :n]
     clean = clean[:n]
     enhanced = enhanced[:n]
-    gated = gate * enhanced + (1.0 - gate) * noisy
-    if post_filter:
-        gated = mask_guided_post_filter(
-            gated,
-            mask,
-            cfg,
-            post_filter_strength,
-            post_filter_floor,
-            post_filter_threshold,
-            post_filter_width,
-        )
-    gain = torch.ones((), device=device, dtype=gated.dtype)
+    loudness_gain = torch.ones((), device=device, dtype=enhanced.dtype)
     if loudness_match:
-        gated, gain = match_loudness(noisy, gated, target_rms_ratio, max_gain_db)
-    return sr, noisy, clean, enhanced, gated, gate, float(gain.detach().cpu())
+        enhanced, loudness_gain = match_loudness(noisy, enhanced, target_rms_ratio, max_gain_db)
+    return sr, noisy, clean, enhanced, float(loudness_gain.detach().cpu())
 
 
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--checkpoint", required=True)
-    parser.add_argument("--gate", required=True)
     parser.add_argument("--data", required=True)
     parser.add_argument("--split", default="val")
     parser.add_argument("--save-audio")
@@ -114,19 +71,11 @@ def main() -> None:
     parser.add_argument("--max-items", type=int)
     parser.add_argument("--device", default="cpu")
     parser.add_argument("--loudness-match", action="store_true")
-    parser.add_argument("--target-rms-ratio", type=float, default=0.95)
-    parser.add_argument("--max-gain-db", type=float, default=6.0)
-    parser.add_argument("--min-gate", type=float, default=0.0, help="Minimum enhanced-output blend ratio.")
-    parser.add_argument("--mask-gamma", type=float, default=1.0, help="Raise predicted masks to this power; >1 suppresses residual noise more.")
-    parser.add_argument("--post-filter", action="store_true", help="Apply a mask-guided spectral post-filter for residual noise.")
-    parser.add_argument("--post-filter-strength", type=float, default=0.45)
-    parser.add_argument("--post-filter-floor", type=float, default=0.35)
-    parser.add_argument("--post-filter-threshold", type=float, default=0.58)
-    parser.add_argument("--post-filter-width", type=float, default=0.18)
+    parser.add_argument("--target-rms-ratio", type=float, default=0.92)
+    parser.add_argument("--max-gain-db", type=float, default=5.0)
     args = parser.parse_args()
 
-    denoiser, cfg = load_denoiser(args.checkpoint, args.device)
-    gate_model = load_gate(args.gate, args.device)
+    model, cfg = load_model(args.checkpoint, args.device)
     split_dir = Path(args.data) / args.split
     mix_files = sorted(split_dir.glob("mix_*.wav"))
     if args.max_items is not None:
@@ -140,53 +89,35 @@ def main() -> None:
     rows = []
     with torch.no_grad():
         for mix_path in tqdm(mix_files):
-            sr, noisy, clean, enhanced, gated, gate, gain = process_one(
-                denoiser,
-                gate_model,
+            sr, noisy, clean, enhanced, gain = process_one(
+                model,
                 cfg,
                 mix_path,
                 args.device,
                 args.loudness_match,
                 args.target_rms_ratio,
                 args.max_gain_db,
-                args.min_gate,
-                args.mask_gamma,
-                args.post_filter,
-                args.post_filter_strength,
-                args.post_filter_floor,
-                args.post_filter_threshold,
-                args.post_filter_width,
             )
             noisy_score = float(si_sdr(noisy.detach().cpu(), clean.detach().cpu()))
             enhanced_score = float(si_sdr(enhanced.detach().cpu(), clean.detach().cpu()))
-            gated_score = float(si_sdr(gated.detach().cpu(), clean.detach().cpu()))
             rows.append(
                 {
                     "file": mix_path.name,
-                    "learned_gate": gate,
                     "noisy_si_sdr": noisy_score,
-                    "enhanced_si_sdr": gated_score,
-                    "si_sdr_improvement": gated_score - noisy_score,
-                    "model_enhanced_si_sdr": enhanced_score,
-                    "model_si_sdr_improvement": enhanced_score - noisy_score,
-                    "output_input_rms_ratio": float(rms_ratio(noisy.detach().cpu(), gated.detach().cpu())),
+                    "enhanced_si_sdr": enhanced_score,
+                    "si_sdr_improvement": enhanced_score - noisy_score,
+                    "output_input_rms_ratio": float(rms_ratio(noisy.detach().cpu(), enhanced.detach().cpu())),
                     "loudness_gain": gain,
                 }
             )
             if save_dir:
-                write_wav(save_dir / mix_path.name.replace("mix_", "learned_gate_"), sr, gated.detach().cpu().numpy())
+                write_wav(save_dir / mix_path.name.replace("mix_", "deepfilter_"), sr, enhanced.detach().cpu().numpy())
 
-    mean_noisy = sum(row["noisy_si_sdr"] for row in rows) / len(rows)
-    mean_model = sum(row["model_enhanced_si_sdr"] for row in rows) / len(rows)
-    mean_gated = sum(row["enhanced_si_sdr"] for row in rows) / len(rows)
     summary = {
         "items": len(rows),
-        "mean_noisy_si_sdr": mean_noisy,
-        "mean_model_enhanced_si_sdr": mean_model,
-        "mean_model_si_sdr_improvement": mean_model - mean_noisy,
-        "mean_enhanced_si_sdr": mean_gated,
-        "mean_si_sdr_improvement": mean_gated - mean_noisy,
-        "mean_gate": sum(row["learned_gate"] for row in rows) / len(rows),
+        "mean_noisy_si_sdr": sum(row["noisy_si_sdr"] for row in rows) / len(rows),
+        "mean_enhanced_si_sdr": sum(row["enhanced_si_sdr"] for row in rows) / len(rows),
+        "mean_si_sdr_improvement": sum(row["si_sdr_improvement"] for row in rows) / len(rows),
         "mean_output_input_rms_ratio": sum(row["output_input_rms_ratio"] for row in rows) / len(rows),
         "mean_loudness_gain": sum(row["loudness_gain"] for row in rows) / len(rows),
     }
@@ -202,22 +133,14 @@ def main() -> None:
         listen_rows = []
         for out_idx, row_idx in enumerate(selected):
             mix_path = mix_files[row_idx]
-            sr, noisy, clean, enhanced, gated, gate, gain = process_one(
-                denoiser,
-                gate_model,
+            sr, noisy, clean, enhanced, gain = process_one(
+                model,
                 cfg,
                 mix_path,
                 args.device,
                 args.loudness_match,
                 args.target_rms_ratio,
                 args.max_gain_db,
-                args.min_gate,
-                args.mask_gamma,
-                args.post_filter,
-                args.post_filter_strength,
-                args.post_filter_floor,
-                args.post_filter_threshold,
-                args.post_filter_width,
             )
             row = rows[row_idx]
             prefix = f"sample_{out_idx:03d}"
@@ -230,17 +153,16 @@ def main() -> None:
             write_wav(listen_dir / files["noisy"], sr, noisy.detach().cpu().numpy())
             write_wav(listen_dir / files["clean"], sr, clean.detach().cpu().numpy())
             write_wav(listen_dir / files["offline"], sr, enhanced.detach().cpu().numpy())
-            write_wav(listen_dir / files["realtime"], sr, gated.detach().cpu().numpy())
+            write_wav(listen_dir / files["realtime"], sr, enhanced.detach().cpu().numpy())
             listen_rows.append(
                 {
                     "sample": prefix,
                     "source_mix": mix_path.name,
-                    "learned_gate": gate,
                     "loudness_gain": gain,
                     "noisy_si_sdr": row["noisy_si_sdr"],
-                    "offline_si_sdr": row["model_enhanced_si_sdr"],
+                    "offline_si_sdr": row["enhanced_si_sdr"],
                     "realtime_si_sdr": row["enhanced_si_sdr"],
-                    "offline_improvement": row["model_si_sdr_improvement"],
+                    "offline_improvement": row["si_sdr_improvement"],
                     "realtime_improvement": row["si_sdr_improvement"],
                     "files": files,
                 }

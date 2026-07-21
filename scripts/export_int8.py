@@ -38,7 +38,7 @@ def main() -> None:
 
     ckpt = torch.load(args.checkpoint, map_location="cpu")
     cfg = ckpt["config"]
-    model = TinyCausalTCN(cfg["feature_dim"], cfg["bands"], cfg["channels"], cfg["blocks"], cfg["kernel_size"])
+    model = TinyCausalTCN(cfg["feature_dim"], cfg["bands"], cfg["channels"], cfg["blocks"], cfg["kernel_size"], float(cfg.get("output_min_gain", 0.0)), float(cfg.get("output_max_gain", 1.0)))
     model.load_state_dict(ckpt["model"])
     model.eval()
 

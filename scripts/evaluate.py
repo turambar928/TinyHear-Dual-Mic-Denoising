@@ -15,6 +15,8 @@ from ha_denoise.features import (
     enhance_with_mask,
     extract_features,
     feature_config_from_dict,
+    match_loudness,
+    rms_ratio,
     target_band_mask,
 )
 from ha_denoise.metrics import si_sdr
@@ -25,7 +27,7 @@ def load_model(checkpoint: str, device: str) -> tuple[TinyCausalTCN, FeatureConf
     ckpt = torch.load(checkpoint, map_location=device)
     cfg_d = ckpt["config"]
     cfg = feature_config_from_dict(cfg_d)
-    model = TinyCausalTCN(cfg_d["feature_dim"], cfg_d["bands"], cfg_d["channels"], cfg_d["blocks"], cfg_d["kernel_size"])
+    model = TinyCausalTCN(cfg_d["feature_dim"], cfg_d["bands"], cfg_d["channels"], cfg_d["blocks"], cfg_d["kernel_size"], float(cfg_d.get("output_min_gain", 0.0)), float(cfg_d.get("output_max_gain", 1.0)))
     model.load_state_dict(ckpt["model"])
     model.to(device).eval()
     return model, cfg
@@ -42,6 +44,9 @@ def main() -> None:
     parser.add_argument("--high-snr-bypass", action="store_true")
     parser.add_argument("--bypass-threshold", type=float, default=0.97)
     parser.add_argument("--bypass-width", type=float, default=0.02)
+    parser.add_argument("--loudness-match", action="store_true")
+    parser.add_argument("--target-rms-ratio", type=float, default=0.95)
+    parser.add_argument("--max-gain-db", type=float, default=6.0)
     args = parser.parse_args()
 
     model, cfg = load_model(args.checkpoint, args.device)
@@ -70,10 +75,14 @@ def main() -> None:
             target_mask = target_band_mask(mix[0], clean, cfg)
             t = min(pred_mask.shape[0], target_mask.shape[0])
             enhanced = enhance_with_mask(mix[0], pred_mask, cfg)
+            gain = torch.ones((), device=enhanced.device, dtype=enhanced.dtype)
+            if args.loudness_match:
+                enhanced, gain = match_loudness(mix[0], enhanced, args.target_rms_ratio, args.max_gain_db)
 
             noisy_score = float(si_sdr(mix[0].detach().cpu(), clean.detach().cpu()))
             enhanced_score = float(si_sdr(enhanced.detach().cpu(), clean.detach().cpu()))
             mask_mse = float(torch.mean((pred_mask[:t].cpu() - target_mask[:t].cpu()) ** 2))
+            output_rms_ratio = float(rms_ratio(mix[0].detach().cpu(), enhanced.detach().cpu()))
             rows.append(
                 {
                     "file": mix_path.name,
@@ -81,6 +90,8 @@ def main() -> None:
                     "enhanced_si_sdr": enhanced_score,
                     "si_sdr_improvement": enhanced_score - noisy_score,
                     "mask_mse": mask_mse,
+                    "output_input_rms_ratio": output_rms_ratio,
+                    "loudness_gain": float(gain.detach().cpu()),
                 }
             )
             if save_dir:
@@ -89,12 +100,14 @@ def main() -> None:
     mean_noisy = sum(r["noisy_si_sdr"] for r in rows) / len(rows)
     mean_enhanced = sum(r["enhanced_si_sdr"] for r in rows) / len(rows)
     mean_mask_mse = sum(r["mask_mse"] for r in rows) / len(rows)
+    mean_rms_ratio = sum(r["output_input_rms_ratio"] for r in rows) / len(rows)
     summary = {
         "items": len(rows),
         "mean_noisy_si_sdr": mean_noisy,
         "mean_enhanced_si_sdr": mean_enhanced,
         "mean_si_sdr_improvement": mean_enhanced - mean_noisy,
         "mean_mask_mse": mean_mask_mse,
+        "mean_output_input_rms_ratio": mean_rms_ratio,
     }
     print(json.dumps(summary, indent=2))
     if save_dir:

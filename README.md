@@ -9,16 +9,16 @@
 ## Demo
 
 - 本地网页试听 demo：`http://127.0.0.1:38179/runs/audio_demo/index.html`
-- 当前 demo 包含 `c120_h32_gate`、`c120_h2_gate`、`c116_h24_gate` 三组 noisy/clean/enhanced 对比。
+- 当前 demo 包含多组 noisy/clean/enhanced 对比，最新推荐听 `c116_oracle_blend_balanced` 的 `Realtime`。
 - 如果本地服务没启动，可在项目根目录运行 `python3 -m http.server 38179`，然后打开上面的链接。
 
 ## 当前结果
 
 - 推荐基线：CMU ARCTIC clean speech + DEMAND 多通道环境噪声。
-- 推荐部署方案：`c116` 空间特征 TCN + `hidden=24` learned gate。
+- 推荐部署方案：`c116` 空间特征 TCN + `hidden=24` oracle-blend learned gate。
 - 模型规模：TCN `140,276` 参数，gate `9,265` 参数，总计 `149,541` 参数，满足 150K 目标。
 - 实时链路：16 kHz，256 点 FFT，64 samples hop，4 ms 步进。
-- Python eval：全量 SI-SDR improvement `4.474 dB`，high-SNR 退化率 `0%`。
+- Python eval：全量 SI-SDR improvement `5.083 dB`，high-SNR 退化率 `0%`。
 - C Q15 模型 reference：mean abs diff `0.01703`，streaming 与 batch Q15 完全一致。
 - C learned gate reference：gate abs diff `0.0000039` against Python gate。
 - C gated realtime DSP reference：mean abs diff `0.00078` against Python gated realtime reference。
@@ -71,6 +71,9 @@ python scripts/enhance_streaming.py --checkpoint runs/tiny_tcn/best.pt --input d
 
 # 完整实时链路增强：流式 STFT + 逐帧模型 + IRFFT overlap-add
 python scripts/enhance_realtime.py --checkpoint runs/tiny_tcn/best.pt --input data/synth/val/mix_0000.wav --output enhanced_realtime.wav
+
+# 最新听感检查：oracle-blend learned gate + 轻量增强 + 适中响度匹配
+python scripts/enhance_realtime.py --checkpoint runs/arctic_demand_spatial_c116_loud/best.pt --gate runs/gate_spatial_c116_oracle_blend_h24/best.pt --input data/arctic_demand_eval/val/mix_0000.wav --output enhanced_gated.wav --loudness-match --target-rms-ratio 0.90 --max-gain-db 5.0 --mask-gamma 1.10
 
 # 评估预生成验证集
 python scripts/evaluate.py --checkpoint runs/tiny_tcn/best.pt --data data/synth --split val --save-audio runs/tiny_tcn/eval_audio
