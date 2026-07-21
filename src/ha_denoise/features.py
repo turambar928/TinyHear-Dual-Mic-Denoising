@@ -208,10 +208,14 @@ def enhance_with_deep_filter(
     df_coef: torch.Tensor,
     cfg: FeatureConfig,
 ) -> torch.Tensor:
-    """Apply ERB gain plus causal low-bin multi-frame complex filtering.
+    """Apply ERB gain plus causal low-bin residual complex filtering.
 
     band_mask: [T, bands]
-    df_coef: [T, df_bins, df_order, 2], real/imag complex coefficients.
+    df_coef: [T, df_bins, df_order, 2], residual real/imag coefficients.
+
+    The ERB gain path is the stable base enhancement. Deep-filter coefficients
+    add a learned complex residual in low bins, so zero coefficients exactly
+    reproduce ordinary mask enhancement.
     """
     spec = stft(mix_ref, cfg)
     bin_mask = bands_to_bins(band_mask, cfg)
@@ -221,7 +225,7 @@ def enhance_with_deep_filter(
 
     df_bins = min(df_coef.shape[1], spec.shape[0])
     df_order = df_coef.shape[2]
-    low = torch.zeros(df_bins, frames, device=spec.device, dtype=spec.dtype)
+    low = enhanced[:df_bins].clone()
     coef = torch.complex(df_coef[:frames, :df_bins, :, 0], df_coef[:frames, :df_bins, :, 1])
     for k in range(df_order):
         if k == 0:

@@ -9,7 +9,7 @@
 ## Demo
 
 - 本地网页试听 demo：`http://127.0.0.1:38179/runs/audio_demo/index.html`
-- 当前 demo 包含多组 noisy/clean/enhanced 对比。建议先听 `c120_psm_gain_sisdr_m1.50` 的 `Realtime` 作为当前主力版本，再对比 `c116_psm_noise_loss_pf_clean` 和 `c116_psm_noise_loss_pf_aggressive` 判断底噪/人声细节取舍。
+- 当前 demo 包含多组 noisy/clean/enhanced 对比。建议先听 `tiny_deepfilter_residual_loud` 的 `Realtime`，这是当前主力版本；再对比 `c120_psm_gain_sisdr_m1.50` 观察 mask 模型和 DeepFilter 的底噪差异。
 - 如果本地服务没启动，可在项目根目录运行 `python3 -m http.server 38179`，然后打开上面的链接。
 
 ## 当前结果
@@ -18,7 +18,7 @@
 - 推荐部署方案：`c116` 空间特征 TCN + `hidden=24` oracle-blend learned gate。
 - 模型规模：TCN `140,276` 参数，gate `9,265` 参数，总计 `149,541` 参数，满足 150K 目标。
 - 实时链路：16 kHz，256 点 FFT，64 samples hop，4 ms 步进。
-- Python eval：当前主力 `c120_psm_gain_sisdr_m1.50` 全量 SI-SDR improvement 约 `5.69 dB`；新 residual-noise 训练版 `c116_psm_noise_loss_m1.50` 约 `5.55 dB`，后滤波版本约 `4.83 / 4.55 dB`，主观上更安静但会牺牲部分人声细节。
+- Python eval：当前主力 `tiny_deepfilter_residual_loud` 全量 SI-SDR improvement 约 `8.29 dB`，输出/输入 RMS 比约 `0.99`；旧主力 `c120_psm_gain_sisdr_m1.50` 约 `5.69 dB`。DeepFilter 版本不再只靠频带 mask，而是在低频预测多帧复数残差滤波器，底噪控制明显更强。
 - C Q15 模型 reference：mean abs diff `0.01703`，streaming 与 batch Q15 完全一致。
 - C learned gate reference：gate abs diff `0.0000039` against Python gate。
 - C gated realtime DSP reference：mean abs diff `0.00078` against Python gated realtime reference。
@@ -72,8 +72,12 @@ python scripts/enhance_streaming.py --checkpoint runs/tiny_tcn/best.pt --input d
 # 完整实时链路增强：流式 STFT + 逐帧模型 + IRFFT overlap-add
 python scripts/enhance_realtime.py --checkpoint runs/tiny_tcn/best.pt --input data/synth/val/mix_0000.wav --output enhanced_realtime.wav
 
-# 最新听感检查：oracle-blend learned gate + 轻量增强 + 适中响度匹配
-python scripts/enhance_realtime.py --checkpoint runs/arctic_demand_spatial_c116_loud/best.pt --gate runs/gate_spatial_c116_oracle_blend_h24/best.pt --input data/arctic_demand_eval/val/mix_0000.wav --output enhanced_gated.wav --loudness-match --target-rms-ratio 0.90 --max-gain-db 5.0 --mask-gamma 1.10
+# 最新听感检查：Tiny residual DeepFilter
+PYTHONPATH=src python3 scripts/enhance_deepfilter.py \
+  --checkpoint runs/arctic_demand_tiny_deepfilter_residual/best.pt \
+  --input data/arctic_demand_eval/val/mix_0000.wav \
+  --output enhanced_deepfilter.wav \
+  --loudness-match --target-rms-ratio 1.00 --max-gain-db 8.0
 
 # 评估预生成验证集
 python scripts/evaluate.py --checkpoint runs/tiny_tcn/best.pt --data data/synth --split val --save-audio runs/tiny_tcn/eval_audio

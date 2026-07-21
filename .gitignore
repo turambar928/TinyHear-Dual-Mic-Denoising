@@ -72,6 +72,13 @@ runs/arctic_demand_spatial_c116_psm_noise_loss/*
 !runs/arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.65_pf_aggressive/
 !runs/arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.65_pf_aggressive/**
 
+# Tiny residual DeepFilter checkpoint and small listening-eval demo set.
+!runs/arctic_demand_tiny_deepfilter_residual/
+runs/arctic_demand_tiny_deepfilter_residual/*
+!runs/arctic_demand_tiny_deepfilter_residual/best.pt
+!runs/arctic_demand_tiny_deepfilter_residual/listening_eval_loud/
+!runs/arctic_demand_tiny_deepfilter_residual/listening_eval_loud/**
+
 # C build output
 c_reference/tiny_tcn_ref
 c_reference/tiny_tcn_bench

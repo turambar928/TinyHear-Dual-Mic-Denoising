@@ -100,6 +100,10 @@ class TinyDeepFilterTCN(nn.Module):
         )
         self.gain_head = nn.Conv1d(channels, bands, kernel_size=1)
         self.df_head = nn.Conv1d(channels, df_bins * df_order * 2, kernel_size=1)
+        # Start as a regular mask model. The complex branch learns residual
+        # filtering only after it sees a useful gradient from waveform losses.
+        nn.init.zeros_(self.df_head.weight)
+        nn.init.zeros_(self.df_head.bias)
 
     def forward(self, x: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
         y = self.stem(x)

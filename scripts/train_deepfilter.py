@@ -65,10 +65,48 @@ def si_sdr_loss(gain: torch.Tensor, coef: torch.Tensor, mix_refs: torch.Tensor, 
     return torch.stack(losses).mean()
 
 
-def coef_identity_loss(coef: torch.Tensor) -> torch.Tensor:
-    target = torch.zeros_like(coef)
-    target[:, :, :, 0, 0] = 1.0
-    return torch.mean((coef - target) ** 2)
+def coef_energy_loss(coef: torch.Tensor) -> torch.Tensor:
+    """Keep the residual deep-filter branch small unless it improves audio."""
+    return torch.mean(coef.square())
+
+
+def residual_noise_loss(
+    gain: torch.Tensor,
+    coef: torch.Tensor,
+    mix_refs: torch.Tensor,
+    clean_refs: torch.Tensor,
+    cfg: FeatureConfig,
+    speech_threshold: float,
+) -> torch.Tensor:
+    window = torch.hann_window(cfg.n_fft, device=gain.device, dtype=mix_refs.dtype)
+    losses = []
+    threshold = float(max(speech_threshold, 1e-4))
+    for i in range(gain.shape[0]):
+        enhanced = enhance_with_deep_filter(mix_refs[i], gain[i].transpose(0, 1), coef[i], cfg)
+        n = min(enhanced.numel(), clean_refs[i].numel())
+        enh_spec = torch.stft(
+            enhanced[:n],
+            n_fft=cfg.n_fft,
+            hop_length=cfg.hop_length,
+            win_length=cfg.n_fft,
+            window=window,
+            center=True,
+            return_complex=True,
+        )
+        clean_spec = torch.stft(
+            clean_refs[i, :n],
+            n_fft=cfg.n_fft,
+            hop_length=cfg.hop_length,
+            win_length=cfg.n_fft,
+            window=window,
+            center=True,
+            return_complex=True,
+        )
+        clean_mag = clean_spec.abs()
+        frame_ref = clean_mag.amax(dim=0, keepdim=True).clamp_min(1e-5)
+        quiet_weight = torch.clamp((threshold * frame_ref - clean_mag) / (threshold * frame_ref), 0.0, 1.0)
+        losses.append((torch.log1p(enh_spec.abs()) * quiet_weight).sum() / quiet_weight.sum().clamp_min(1.0))
+    return torch.stack(losses).mean()
 
 
 def run_epoch(
@@ -81,6 +119,8 @@ def run_epoch(
     stft_weight: float,
     sisdr_weight: float,
     coef_reg_weight: float,
+    residual_noise_weight: float,
+    residual_noise_threshold: float,
 ) -> float:
     train = optimizer is not None
     model.train(train)
@@ -102,7 +142,16 @@ def run_epoch(
             if sisdr_weight > 0.0:
                 loss = loss + sisdr_weight * si_sdr_loss(gain, coef, mix_refs, clean_refs, cfg)
             if coef_reg_weight > 0.0:
-                loss = loss + coef_reg_weight * coef_identity_loss(coef)
+                loss = loss + coef_reg_weight * coef_energy_loss(coef)
+            if residual_noise_weight > 0.0:
+                loss = loss + residual_noise_weight * residual_noise_loss(
+                    gain,
+                    coef,
+                    mix_refs,
+                    clean_refs,
+                    cfg,
+                    residual_noise_threshold,
+                )
             if train:
                 optimizer.zero_grad(set_to_none=True)
                 loss.backward()
@@ -138,6 +187,8 @@ def main() -> None:
     parser.add_argument("--stft-mag-loss-weight", type=float, default=0.1)
     parser.add_argument("--si-sdr-loss-weight", type=float, default=0.02)
     parser.add_argument("--coef-reg-weight", type=float, default=0.01)
+    parser.add_argument("--residual-noise-loss-weight", type=float, default=0.10)
+    parser.add_argument("--residual-noise-threshold", type=float, default=0.08)
     args = parser.parse_args()
 
     out = Path(args.out)
@@ -182,6 +233,8 @@ def main() -> None:
             args.stft_mag_loss_weight,
             args.si_sdr_loss_weight,
             args.coef_reg_weight,
+            args.residual_noise_loss_weight,
+            args.residual_noise_threshold,
         )
         val_loss = run_epoch(
             model,
@@ -193,6 +246,8 @@ def main() -> None:
             args.stft_mag_loss_weight,
             args.si_sdr_loss_weight,
             args.coef_reg_weight,
+            args.residual_noise_loss_weight,
+            args.residual_noise_threshold,
         )
         print(f"epoch={epoch} train_loss={train_loss:.6f} val_loss={val_loss:.6f}")
         state = {
@@ -211,6 +266,12 @@ def main() -> None:
                 "df_order": args.df_order,
                 "coef_scale": args.coef_scale,
                 "model_type": "tiny_deepfilter_tcn",
+                "waveform_loss_weight": args.waveform_loss_weight,
+                "stft_mag_loss_weight": args.stft_mag_loss_weight,
+                "si_sdr_loss_weight": args.si_sdr_loss_weight,
+                "coef_reg_weight": args.coef_reg_weight,
+                "residual_noise_loss_weight": args.residual_noise_loss_weight,
+                "residual_noise_threshold": args.residual_noise_threshold,
             },
             "epoch": epoch,
             "val_loss": val_loss,
