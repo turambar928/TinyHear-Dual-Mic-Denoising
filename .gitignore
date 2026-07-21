@@ -56,6 +56,22 @@ runs/arctic_demand_spatial_c116/int8/*
 !runs/arctic_demand_spatial_c116/int8/model_int8.json
 !runs/arctic_demand_spatial_c116/int8/calibration_report.json
 
+# Tracked browser audio demo entry point and curated listening samples.
+!runs/audio_demo/
+!runs/audio_demo/**
+runs/audio_demo/*.log
+
+# Residual-noise-loss c116 checkpoint and small listening-eval demo sets.
+!runs/arctic_demand_spatial_c116_psm_noise_loss/
+runs/arctic_demand_spatial_c116_psm_noise_loss/*
+!runs/arctic_demand_spatial_c116_psm_noise_loss/best.pt
+!runs/arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.50/
+!runs/arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.50/**
+!runs/arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.50_pf_clean/
+!runs/arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.50_pf_clean/**
+!runs/arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.65_pf_aggressive/
+!runs/arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.65_pf_aggressive/**
+
 # C build output
 c_reference/tiny_tcn_ref
 c_reference/tiny_tcn_bench

@@ -1,0 +1,3269 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TinyHear Audio Demo</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f7f9;
+      --ink: #17202a;
+      --muted: #667085;
+      --line: #d9dee7;
+      --panel: #ffffff;
+      --accent: #16655a;
+      --accent-soft: #e4f3f0;
+      --warn: #8a4b10;
+      --warn-soft: #fff0dc;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: 0;
+    }
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      border-bottom: 1px solid var(--line);
+      background: rgba(246, 247, 249, 0.94);
+      backdrop-filter: blur(10px);
+    }
+    .topbar {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 18px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+    h1 {
+      margin: 0;
+      font-size: 22px;
+      line-height: 1.2;
+      font-weight: 720;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 32px;
+      padding: 6px 10px;
+      border-radius: 8px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 650;
+      white-space: nowrap;
+    }
+    .toolbar {
+      border-bottom: 1px solid var(--line);
+      background: #ffffff;
+    }
+    .toolbar-inner {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 10px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    select, label.toggle {
+      min-height: 34px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--ink);
+      font: inherit;
+      font-size: 13px;
+    }
+    select {
+      padding: 6px 28px 6px 10px;
+    }
+    label.toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      cursor: pointer;
+      user-select: none;
+    }
+    input[type="checkbox"] {
+      width: 15px;
+      height: 15px;
+      accent-color: var(--accent);
+    }
+    main {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 22px 24px 48px;
+    }
+    .run {
+      margin: 0 0 30px;
+    }
+    .run-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 18px;
+      align-items: end;
+      margin-bottom: 12px;
+    }
+    h2 {
+      margin: 0 0 4px;
+      font-size: 18px;
+      line-height: 1.25;
+    }
+    p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      overflow-wrap: anywhere;
+    }
+    .summary, .score-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+    .summary span, .score-grid span {
+      min-height: 30px;
+      padding: 6px 9px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    b {
+      color: var(--ink);
+      font-weight: 720;
+    }
+    .samples {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 12px;
+    }
+    .sample {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      overflow: hidden;
+    }
+    .sample.regression {
+      border-color: #f0c78d;
+      background: #fffaf3;
+    }
+    .sample.hidden {
+      display: none;
+    }
+    .sample-head {
+      min-height: 78px;
+      padding: 14px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 12px;
+      border-bottom: 1px solid var(--line);
+      background: #fbfcfd;
+    }
+    h3 {
+      margin: 0 0 4px;
+      font-size: 16px;
+      line-height: 1.25;
+    }
+    h3 span {
+      display: inline-flex;
+      min-height: 24px;
+      margin-left: 8px;
+      padding: 3px 7px;
+      border-radius: 8px;
+      background: var(--warn-soft);
+      color: var(--warn);
+      font-size: 12px;
+      vertical-align: 1px;
+    }
+    .players {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0;
+    }
+    .player {
+      padding: 12px 14px;
+      display: grid;
+      grid-template-columns: 82px minmax(0, 1fr);
+      gap: 10px;
+      align-items: center;
+      border-bottom: 1px solid var(--line);
+    }
+    .player:last-child { border-bottom: 0; }
+    .player-title {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 650;
+    }
+    audio {
+      width: 100%;
+      height: 36px;
+    }
+    .empty {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--warn-soft);
+      color: var(--warn);
+      padding: 18px;
+    }
+    @media (max-width: 720px) {
+      .topbar, .toolbar-inner, main { padding-left: 14px; padding-right: 14px; }
+      .topbar, .run-head { grid-template-columns: 1fr; display: grid; }
+      .toolbar-inner { justify-content: flex-start; }
+      .summary, .score-grid { justify-content: flex-start; }
+      .samples { grid-template-columns: 1fr; }
+      .player { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="topbar">
+      <h1>TinyHear Audio Demo</h1>
+      <div class="badge">A/B Listening</div>
+    </div>
+  </header>
+  <div class="toolbar">
+    <div class="toolbar-inner">
+      <select id="sort-mode" aria-label="Sort samples">
+        <option value="sample">Sample order</option>
+        <option value="worst">Worst improvement</option>
+        <option value="best">Best improvement</option>
+        <option value="noisy-low">Lowest noisy SI-SDR</option>
+        <option value="noisy-high">Highest noisy SI-SDR</option>
+      </select>
+      <label class="toggle">
+        <input id="regression-only" type="checkbox">
+        Regression only
+      </label>
+    </div>
+  </div>
+  <main>
+    
+    <section class="run">
+      <div class="run-head">
+        <div>
+          <h2>baseline</h2>
+          <p>runs/arctic_demand/listening_eval</p>
+        </div>
+        <div class="summary">
+          <span>Items <b>5</b></span>
+          <span>Noisy <b>4.40</b></span>
+          <span>Offline +<b>3.73</b></span>
+          <span>Realtime +<b>3.73</b></span>
+        </div>
+      </div>
+      <div class="samples">
+        
+            <article class="sample "
+              data-noisy="-5.028980"
+              data-offline-improvement="4.335266"
+              data-realtime-improvement="4.339196"
+              data-best-improvement="4.339196"
+              data-regression="false">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_000</h3>
+                  <p>mix_0110.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>-5.03</b></span>
+                  <span>Offline +<b>4.34</b></span>
+                  <span>Realtime +<b>4.34</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand/listening_eval/sample_000_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand/listening_eval/sample_000_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand/listening_eval/sample_000_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand/listening_eval/sample_000_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+            <article class="sample "
+              data-noisy="-0.825550"
+              data-offline-improvement="10.836961"
+              data-realtime-improvement="10.813664"
+              data-best-improvement="10.836961"
+              data-regression="false">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_001</h3>
+                  <p>mix_0072.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>-0.83</b></span>
+                  <span>Offline +<b>10.84</b></span>
+                  <span>Realtime +<b>10.81</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand/listening_eval/sample_001_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand/listening_eval/sample_001_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand/listening_eval/sample_001_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand/listening_eval/sample_001_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+            <article class="sample "
+              data-noisy="3.932903"
+              data-offline-improvement="6.264869"
+              data-realtime-improvement="6.264220"
+              data-best-improvement="6.264869"
+              data-regression="false">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_002</h3>
+                  <p>mix_0112.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>3.93</b></span>
+                  <span>Offline +<b>6.26</b></span>
+                  <span>Realtime +<b>6.26</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand/listening_eval/sample_002_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand/listening_eval/sample_002_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand/listening_eval/sample_002_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand/listening_eval/sample_002_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+            <article class="sample "
+              data-noisy="9.268380"
+              data-offline-improvement="2.201488"
+              data-realtime-improvement="2.180132"
+              data-best-improvement="2.201488"
+              data-regression="false">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_003</h3>
+                  <p>mix_0147.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>9.27</b></span>
+                  <span>Offline +<b>2.20</b></span>
+                  <span>Realtime +<b>2.18</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand/listening_eval/sample_003_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand/listening_eval/sample_003_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand/listening_eval/sample_003_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand/listening_eval/sample_003_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+            <article class="sample regression"
+              data-noisy="14.637339"
+              data-offline-improvement="-4.964769"
+              data-realtime-improvement="-4.965993"
+              data-best-improvement="-4.964769"
+              data-regression="true">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_004 <span>Regression</span></h3>
+                  <p>mix_0145.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>14.64</b></span>
+                  <span>Offline +<b>-4.96</b></span>
+                  <span>Realtime +<b>-4.97</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand/listening_eval/sample_004_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand/listening_eval/sample_004_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand/listening_eval/sample_004_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand/listening_eval/sample_004_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+      </div>
+    </section>
+    
+
+    <section class="run">
+      <div class="run-head">
+        <div>
+          <h2>spatial_c120</h2>
+          <p>runs/arctic_demand_spatial_c120/listening_eval</p>
+        </div>
+        <div class="summary">
+          <span>Items <b>5</b></span>
+          <span>Noisy <b>4.40</b></span>
+          <span>Offline +<b>3.84</b></span>
+          <span>Realtime +<b>3.83</b></span>
+        </div>
+      </div>
+      <div class="samples">
+        
+            <article class="sample "
+              data-noisy="-5.028980"
+              data-offline-improvement="4.495208"
+              data-realtime-improvement="4.494845"
+              data-best-improvement="4.495208"
+              data-regression="false">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_000</h3>
+                  <p>mix_0110.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>-5.03</b></span>
+                  <span>Offline +<b>4.50</b></span>
+                  <span>Realtime +<b>4.49</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c120/listening_eval/sample_000_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c120/listening_eval/sample_000_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c120/listening_eval/sample_000_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c120/listening_eval/sample_000_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+            <article class="sample "
+              data-noisy="-0.825550"
+              data-offline-improvement="10.816139"
+              data-realtime-improvement="10.787256"
+              data-best-improvement="10.816139"
+              data-regression="false">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_001</h3>
+                  <p>mix_0072.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>-0.83</b></span>
+                  <span>Offline +<b>10.82</b></span>
+                  <span>Realtime +<b>10.79</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c120/listening_eval/sample_001_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c120/listening_eval/sample_001_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c120/listening_eval/sample_001_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c120/listening_eval/sample_001_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+            <article class="sample "
+              data-noisy="3.932903"
+              data-offline-improvement="6.424406"
+              data-realtime-improvement="6.418802"
+              data-best-improvement="6.424406"
+              data-regression="false">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_002</h3>
+                  <p>mix_0112.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>3.93</b></span>
+                  <span>Offline +<b>6.42</b></span>
+                  <span>Realtime +<b>6.42</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c120/listening_eval/sample_002_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c120/listening_eval/sample_002_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c120/listening_eval/sample_002_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c120/listening_eval/sample_002_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+            <article class="sample "
+              data-noisy="9.268380"
+              data-offline-improvement="2.396992"
+              data-realtime-improvement="2.384108"
+              data-best-improvement="2.396992"
+              data-regression="false">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_003</h3>
+                  <p>mix_0147.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>9.27</b></span>
+                  <span>Offline +<b>2.40</b></span>
+                  <span>Realtime +<b>2.38</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c120/listening_eval/sample_003_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c120/listening_eval/sample_003_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c120/listening_eval/sample_003_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c120/listening_eval/sample_003_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+            <article class="sample regression"
+              data-noisy="14.637339"
+              data-offline-improvement="-4.945810"
+              data-realtime-improvement="-4.945183"
+              data-best-improvement="-4.945183"
+              data-regression="true">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_004 <span>Regression</span></h3>
+                  <p>mix_0145.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>14.64</b></span>
+                  <span>Offline +<b>-4.95</b></span>
+                  <span>Realtime +<b>-4.95</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c120/listening_eval/sample_004_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c120/listening_eval/sample_004_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c120/listening_eval/sample_004_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c120/listening_eval/sample_004_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+      </div>
+    </section>
+    
+
+    <section class="run">
+      <div class="run-head">
+        <div>
+          <h2>c116_loud_gate</h2>
+          <p>runs/arctic_demand_spatial_c116_loud/listening_eval_loud</p>
+        </div>
+        <div class="summary">
+          <span>Items <b>5</b></span>
+          <span>Noisy <b>4.40</b></span>
+          <span>Offline +<b>3.80</b></span>
+          <span>Realtime +<b>4.28</b></span>
+        </div>
+      </div>
+      <div class="samples">
+        
+            <article class="sample "
+              data-noisy="-5.028980"
+              data-offline-improvement="4.327361"
+              data-realtime-improvement="4.327349"
+              data-best-improvement="4.327361"
+              data-regression="false">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_000</h3>
+                  <p>mix_0110.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>-5.03</b></span>
+                  <span>Offline +<b>4.33</b></span>
+                  <span>Realtime +<b>4.33</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_loud/sample_000_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_loud/sample_000_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_loud/sample_000_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_loud/sample_000_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+            <article class="sample "
+              data-noisy="-0.825550"
+              data-offline-improvement="10.795261"
+              data-realtime-improvement="10.716565"
+              data-best-improvement="10.795261"
+              data-regression="false">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_001</h3>
+                  <p>mix_0072.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>-0.83</b></span>
+                  <span>Offline +<b>10.80</b></span>
+                  <span>Realtime +<b>10.72</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_loud/sample_001_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_loud/sample_001_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_loud/sample_001_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_loud/sample_001_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+            <article class="sample "
+              data-noisy="3.932903"
+              data-offline-improvement="6.452595"
+              data-realtime-improvement="6.234213"
+              data-best-improvement="6.452595"
+              data-regression="false">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_002</h3>
+                  <p>mix_0112.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>3.93</b></span>
+                  <span>Offline +<b>6.45</b></span>
+                  <span>Realtime +<b>6.23</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_loud/sample_002_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_loud/sample_002_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_loud/sample_002_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_loud/sample_002_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+            <article class="sample "
+              data-noisy="9.268380"
+              data-offline-improvement="2.357045"
+              data-realtime-improvement="0.082924"
+              data-best-improvement="2.357045"
+              data-regression="false">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_003</h3>
+                  <p>mix_0147.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>9.27</b></span>
+                  <span>Offline +<b>2.36</b></span>
+                  <span>Realtime +<b>0.08</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_loud/sample_003_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_loud/sample_003_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_loud/sample_003_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_loud/sample_003_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+            <article class="sample "
+              data-noisy="14.637339"
+              data-offline-improvement="-4.929628"
+              data-realtime-improvement="0.052156"
+              data-best-improvement="0.052156"
+              data-regression="false">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_004</h3>
+                  <p>mix_0145.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>14.64</b></span>
+                  <span>Offline +<b>-4.93</b></span>
+                  <span>Realtime +<b>0.05</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_loud/sample_004_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_loud/sample_004_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_loud/sample_004_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_loud/sample_004_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+      </div>
+    </section>
+    
+
+    <section class="run">
+      <div class="run-head">
+        <div>
+          <h2>c116_quiet_gate</h2>
+          <p>runs/arctic_demand_spatial_c116_loud/listening_eval_quiet</p>
+        </div>
+        <div class="summary">
+          <span>Items <b>5</b></span>
+          <span>Noisy <b>4.40</b></span>
+          <span>Offline +<b>4.03</b></span>
+          <span>Realtime +<b>4.50</b></span>
+        </div>
+      </div>
+      <div class="samples">
+        
+            <article class="sample "
+              data-noisy="-5.028980"
+              data-offline-improvement="4.528116"
+              data-realtime-improvement="4.528108"
+              data-best-improvement="4.528116"
+              data-regression="false">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_000</h3>
+                  <p>mix_0110.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>-5.03</b></span>
+                  <span>Offline +<b>4.53</b></span>
+                  <span>Realtime +<b>4.53</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_quiet/sample_000_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_quiet/sample_000_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_quiet/sample_000_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_quiet/sample_000_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+            <article class="sample "
+              data-noisy="-0.825550"
+              data-offline-improvement="11.317387"
+              data-realtime-improvement="11.257263"
+              data-best-improvement="11.317387"
+              data-regression="false">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_001</h3>
+                  <p>mix_0072.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>-0.83</b></span>
+                  <span>Offline +<b>11.32</b></span>
+                  <span>Realtime +<b>11.26</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_quiet/sample_001_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_quiet/sample_001_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_quiet/sample_001_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_quiet/sample_001_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+            <article class="sample "
+              data-noisy="3.932903"
+              data-offline-improvement="6.706902"
+              data-realtime-improvement="6.584175"
+              data-best-improvement="6.706902"
+              data-regression="false">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_002</h3>
+                  <p>mix_0112.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>3.93</b></span>
+                  <span>Offline +<b>6.71</b></span>
+                  <span>Realtime +<b>6.58</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_quiet/sample_002_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_quiet/sample_002_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_quiet/sample_002_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_quiet/sample_002_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+            <article class="sample "
+              data-noisy="9.268380"
+              data-offline-improvement="2.499970"
+              data-realtime-improvement="0.087326"
+              data-best-improvement="2.499970"
+              data-regression="false">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_003</h3>
+                  <p>mix_0147.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>9.27</b></span>
+                  <span>Offline +<b>2.50</b></span>
+                  <span>Realtime +<b>0.09</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_quiet/sample_003_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_quiet/sample_003_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_quiet/sample_003_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_quiet/sample_003_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+            <article class="sample "
+              data-noisy="14.637339"
+              data-offline-improvement="-4.908992"
+              data-realtime-improvement="0.055322"
+              data-best-improvement="0.055322"
+              data-regression="false">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_004</h3>
+                  <p>mix_0145.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>14.64</b></span>
+                  <span>Offline +<b>-4.91</b></span>
+                  <span>Realtime +<b>0.06</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_quiet/sample_004_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_quiet/sample_004_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_quiet/sample_004_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_quiet/sample_004_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+      </div>
+    </section>
+    
+
+    <section class="run">
+      <div class="run-head">
+        <div>
+          <h2>c116_oracle_blend_balanced</h2>
+          <p>runs/arctic_demand_spatial_c116_loud/listening_eval_oracle_blend_balanced</p>
+        </div>
+        <div class="summary">
+          <span>Items <b>5</b></span>
+          <span>Noisy <b>4.40</b></span>
+          <span>Offline +<b>3.91</b></span>
+          <span>Realtime +<b>4.65</b></span>
+        </div>
+      </div>
+      <div class="samples">
+        
+            <article class="sample "
+              data-noisy="-5.028980"
+              data-offline-improvement="4.420228"
+              data-realtime-improvement="4.404245"
+              data-best-improvement="4.420228"
+              data-regression="false">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_000</h3>
+                  <p>mix_0110.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>-5.03</b></span>
+                  <span>Offline +<b>4.42</b></span>
+                  <span>Realtime +<b>4.40</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_oracle_blend_balanced/sample_000_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_oracle_blend_balanced/sample_000_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_oracle_blend_balanced/sample_000_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_oracle_blend_balanced/sample_000_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+            <article class="sample "
+              data-noisy="-0.825550"
+              data-offline-improvement="11.035493"
+              data-realtime-improvement="9.993518"
+              data-best-improvement="11.035493"
+              data-regression="false">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_001</h3>
+                  <p>mix_0072.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>-0.83</b></span>
+                  <span>Offline +<b>11.04</b></span>
+                  <span>Realtime +<b>9.99</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_oracle_blend_balanced/sample_001_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_oracle_blend_balanced/sample_001_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_oracle_blend_balanced/sample_001_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_oracle_blend_balanced/sample_001_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+            <article class="sample "
+              data-noisy="3.932903"
+              data-offline-improvement="6.568928"
+              data-realtime-improvement="5.948926"
+              data-best-improvement="6.568928"
+              data-regression="false">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_002</h3>
+                  <p>mix_0112.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>3.93</b></span>
+                  <span>Offline +<b>6.57</b></span>
+                  <span>Realtime +<b>5.95</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_oracle_blend_balanced/sample_002_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_oracle_blend_balanced/sample_002_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_oracle_blend_balanced/sample_002_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_oracle_blend_balanced/sample_002_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+            <article class="sample "
+              data-noisy="9.268380"
+              data-offline-improvement="2.422817"
+              data-realtime-improvement="2.354511"
+              data-best-improvement="2.422817"
+              data-regression="false">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_003</h3>
+                  <p>mix_0147.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>9.27</b></span>
+                  <span>Offline +<b>2.42</b></span>
+                  <span>Realtime +<b>2.35</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_oracle_blend_balanced/sample_003_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_oracle_blend_balanced/sample_003_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_oracle_blend_balanced/sample_003_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_oracle_blend_balanced/sample_003_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+            <article class="sample "
+              data-noisy="14.637339"
+              data-offline-improvement="-4.919975"
+              data-realtime-improvement="0.554755"
+              data-best-improvement="0.554755"
+              data-regression="false">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_004</h3>
+                  <p>mix_0145.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>14.64</b></span>
+                  <span>Offline +<b>-4.92</b></span>
+                  <span>Realtime +<b>0.55</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_oracle_blend_balanced/sample_004_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_oracle_blend_balanced/sample_004_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_oracle_blend_balanced/sample_004_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_oracle_blend_balanced/sample_004_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+      </div>
+    </section>
+    
+
+    <section class="run">
+      <div class="run-head">
+        <div>
+          <h2>c116_postfilter_balanced</h2>
+          <p>runs/arctic_demand_spatial_c116_loud/listening_eval_postfilter_balanced</p>
+        </div>
+        <div class="summary">
+          <span>Items <b>5</b></span>
+          <span>Noisy <b>4.40</b></span>
+          <span>Offline +<b>3.80</b></span>
+          <span>Realtime +<b>4.48</b></span>
+        </div>
+      </div>
+      <div class="samples">
+        
+            <article class="sample "
+              data-noisy="-5.028980"
+              data-offline-improvement="4.327361"
+              data-realtime-improvement="4.256378"
+              data-best-improvement="4.327361"
+              data-regression="false">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_000</h3>
+                  <p>mix_0110.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>-5.03</b></span>
+                  <span>Offline +<b>4.33</b></span>
+                  <span>Realtime +<b>4.26</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_postfilter_balanced/sample_000_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_postfilter_balanced/sample_000_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_postfilter_balanced/sample_000_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_postfilter_balanced/sample_000_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+            <article class="sample "
+              data-noisy="-0.825550"
+              data-offline-improvement="10.795261"
+              data-realtime-improvement="9.659570"
+              data-best-improvement="10.795261"
+              data-regression="false">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_001</h3>
+                  <p>mix_0072.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>-0.83</b></span>
+                  <span>Offline +<b>10.80</b></span>
+                  <span>Realtime +<b>9.66</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_postfilter_balanced/sample_001_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_postfilter_balanced/sample_001_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_postfilter_balanced/sample_001_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_postfilter_balanced/sample_001_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+            <article class="sample "
+              data-noisy="3.932903"
+              data-offline-improvement="6.452595"
+              data-realtime-improvement="5.723610"
+              data-best-improvement="6.452595"
+              data-regression="false">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_002</h3>
+                  <p>mix_0112.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>3.93</b></span>
+                  <span>Offline +<b>6.45</b></span>
+                  <span>Realtime +<b>5.72</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_postfilter_balanced/sample_002_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_postfilter_balanced/sample_002_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_postfilter_balanced/sample_002_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_postfilter_balanced/sample_002_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+            <article class="sample "
+              data-noisy="9.268380"
+              data-offline-improvement="2.357045"
+              data-realtime-improvement="2.456463"
+              data-best-improvement="2.456463"
+              data-regression="false">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_003</h3>
+                  <p>mix_0147.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>9.27</b></span>
+                  <span>Offline +<b>2.36</b></span>
+                  <span>Realtime +<b>2.46</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_postfilter_balanced/sample_003_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_postfilter_balanced/sample_003_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_postfilter_balanced/sample_003_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_postfilter_balanced/sample_003_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+            <article class="sample "
+              data-noisy="14.637339"
+              data-offline-improvement="-4.929628"
+              data-realtime-improvement="0.287673"
+              data-best-improvement="0.287673"
+              data-regression="false">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_004</h3>
+                  <p>mix_0145.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>14.64</b></span>
+                  <span>Offline +<b>-4.93</b></span>
+                  <span>Realtime +<b>0.29</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_postfilter_balanced/sample_004_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_postfilter_balanced/sample_004_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_postfilter_balanced/sample_004_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_postfilter_balanced/sample_004_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+      </div>
+    </section>
+    
+
+    <section class="run">
+      <div class="run-head">
+        <div>
+          <h2>c116_noise_first_balanced</h2>
+          <p>runs/arctic_demand_spatial_c116_loud/listening_eval_noise_first_balanced</p>
+        </div>
+        <div class="summary">
+          <span>Items <b>5</b></span>
+          <span>Noisy <b>4.40</b></span>
+          <span>Offline +<b>3.99</b></span>
+          <span>Realtime +<b>4.32</b></span>
+        </div>
+      </div>
+      <div class="samples">
+        
+            <article class="sample "
+              data-noisy="-5.028980"
+              data-offline-improvement="4.495730"
+              data-realtime-improvement="4.481691"
+              data-best-improvement="4.495730"
+              data-regression="false">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_000</h3>
+                  <p>mix_0110.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>-5.03</b></span>
+                  <span>Offline +<b>4.50</b></span>
+                  <span>Realtime +<b>4.48</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_noise_first_balanced/sample_000_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_noise_first_balanced/sample_000_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_noise_first_balanced/sample_000_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_noise_first_balanced/sample_000_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+            <article class="sample "
+              data-noisy="-0.825550"
+              data-offline-improvement="11.232083"
+              data-realtime-improvement="10.213724"
+              data-best-improvement="11.232083"
+              data-regression="false">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_001</h3>
+                  <p>mix_0072.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>-0.83</b></span>
+                  <span>Offline +<b>11.23</b></span>
+                  <span>Realtime +<b>10.21</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_noise_first_balanced/sample_001_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_noise_first_balanced/sample_001_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_noise_first_balanced/sample_001_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_noise_first_balanced/sample_001_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+            <article class="sample "
+              data-noisy="3.932903"
+              data-offline-improvement="6.664880"
+              data-realtime-improvement="6.551381"
+              data-best-improvement="6.664880"
+              data-regression="false">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_002</h3>
+                  <p>mix_0112.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>3.93</b></span>
+                  <span>Offline +<b>6.66</b></span>
+                  <span>Realtime +<b>6.55</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_noise_first_balanced/sample_002_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_noise_first_balanced/sample_002_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_noise_first_balanced/sample_002_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_noise_first_balanced/sample_002_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+            <article class="sample "
+              data-noisy="9.268380"
+              data-offline-improvement="2.476670"
+              data-realtime-improvement="3.467534"
+              data-best-improvement="3.467534"
+              data-regression="false">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_003</h3>
+                  <p>mix_0147.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>9.27</b></span>
+                  <span>Offline +<b>2.48</b></span>
+                  <span>Realtime +<b>3.47</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_noise_first_balanced/sample_003_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_noise_first_balanced/sample_003_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_noise_first_balanced/sample_003_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_noise_first_balanced/sample_003_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+            <article class="sample regression"
+              data-noisy="14.637339"
+              data-offline-improvement="-4.912275"
+              data-realtime-improvement="-3.098724"
+              data-best-improvement="-3.098724"
+              data-regression="true">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_004 <span>Regression</span></h3>
+                  <p>mix_0145.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>14.64</b></span>
+                  <span>Offline +<b>-4.91</b></span>
+                  <span>Realtime +<b>-3.10</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_noise_first_balanced/sample_004_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_noise_first_balanced/sample_004_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_noise_first_balanced/sample_004_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_noise_first_balanced/sample_004_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+      </div>
+    </section>
+    
+
+    <section class="run">
+      <div class="run-head">
+        <div>
+          <h2>c116_noise_aggressive_best</h2>
+          <p>runs/arctic_demand_spatial_c116_loud/listening_eval_noise_aggressive_best</p>
+        </div>
+        <div class="summary">
+          <span>Items <b>5</b></span>
+          <span>Noisy <b>4.40</b></span>
+          <span>Offline +<b>4.17</b></span>
+          <span>Realtime +<b>4.56</b></span>
+        </div>
+      </div>
+      <div class="samples">
+        
+            <article class="sample "
+              data-noisy="-5.028980"
+              data-offline-improvement="4.649387"
+              data-realtime-improvement="4.640938"
+              data-best-improvement="4.649387"
+              data-regression="false">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_000</h3>
+                  <p>mix_0110.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>-5.03</b></span>
+                  <span>Offline +<b>4.65</b></span>
+                  <span>Realtime +<b>4.64</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_noise_aggressive_best/sample_000_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_noise_aggressive_best/sample_000_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_noise_aggressive_best/sample_000_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_noise_aggressive_best/sample_000_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+            <article class="sample "
+              data-noisy="-0.825550"
+              data-offline-improvement="11.651818"
+              data-realtime-improvement="10.697984"
+              data-best-improvement="11.651818"
+              data-regression="false">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_001</h3>
+                  <p>mix_0072.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>-0.83</b></span>
+                  <span>Offline +<b>11.65</b></span>
+                  <span>Realtime +<b>10.70</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_noise_aggressive_best/sample_001_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_noise_aggressive_best/sample_001_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_noise_aggressive_best/sample_001_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_noise_aggressive_best/sample_001_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+            <article class="sample "
+              data-noisy="3.932903"
+              data-offline-improvement="6.875344"
+              data-realtime-improvement="6.843037"
+              data-best-improvement="6.875344"
+              data-regression="false">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_002</h3>
+                  <p>mix_0112.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>3.93</b></span>
+                  <span>Offline +<b>6.88</b></span>
+                  <span>Realtime +<b>6.84</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_noise_aggressive_best/sample_002_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_noise_aggressive_best/sample_002_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_noise_aggressive_best/sample_002_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_noise_aggressive_best/sample_002_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+            <article class="sample "
+              data-noisy="9.268380"
+              data-offline-improvement="2.589510"
+              data-realtime-improvement="3.678058"
+              data-best-improvement="3.678058"
+              data-regression="false">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_003</h3>
+                  <p>mix_0147.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>9.27</b></span>
+                  <span>Offline +<b>2.59</b></span>
+                  <span>Realtime +<b>3.68</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_noise_aggressive_best/sample_003_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_noise_aggressive_best/sample_003_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_noise_aggressive_best/sample_003_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_noise_aggressive_best/sample_003_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+            <article class="sample regression"
+              data-noisy="14.637339"
+              data-offline-improvement="-4.896697"
+              data-realtime-improvement="-3.052694"
+              data-best-improvement="-3.052694"
+              data-regression="true">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_004 <span>Regression</span></h3>
+                  <p>mix_0145.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>14.64</b></span>
+                  <span>Offline +<b>-4.90</b></span>
+                  <span>Realtime +<b>-3.05</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_noise_aggressive_best/sample_004_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_noise_aggressive_best/sample_004_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_noise_aggressive_best/sample_004_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_loud/listening_eval_noise_aggressive_best/sample_004_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+      </div>
+    </section>
+    
+
+    <section class="run">
+      <div class="run-head">
+        <div>
+          <h2>c120_psm_gain_sisdr_m1.50</h2>
+          <p>runs/arctic_demand_spatial_c120_psm_gain_sisdr/listening_eval_gate_m1.50_best</p>
+        </div>
+        <div class="summary">
+          <span>Items <b>5</b></span>
+          <span>Noisy <b>4.40</b></span>
+          <span>Offline +<b>4.42</b></span>
+          <span>Realtime +<b>4.88</b></span>
+        </div>
+      </div>
+      <div class="samples">
+        
+            <article class="sample "
+              data-noisy="-5.028980"
+              data-offline-improvement="4.853900"
+              data-realtime-improvement="4.851735"
+              data-best-improvement="4.853900"
+              data-regression="false">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_000</h3>
+                  <p>mix_0110.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>-5.03</b></span>
+                  <span>Offline +<b>4.85</b></span>
+                  <span>Realtime +<b>4.85</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c120_psm_gain_sisdr/listening_eval_gate_m1.50_best/sample_000_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c120_psm_gain_sisdr/listening_eval_gate_m1.50_best/sample_000_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c120_psm_gain_sisdr/listening_eval_gate_m1.50_best/sample_000_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c120_psm_gain_sisdr/listening_eval_gate_m1.50_best/sample_000_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+            <article class="sample "
+              data-noisy="-0.825550"
+              data-offline-improvement="12.201549"
+              data-realtime-improvement="11.299255"
+              data-best-improvement="12.201549"
+              data-regression="false">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_001</h3>
+                  <p>mix_0072.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>-0.83</b></span>
+                  <span>Offline +<b>12.20</b></span>
+                  <span>Realtime +<b>11.30</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c120_psm_gain_sisdr/listening_eval_gate_m1.50_best/sample_001_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c120_psm_gain_sisdr/listening_eval_gate_m1.50_best/sample_001_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c120_psm_gain_sisdr/listening_eval_gate_m1.50_best/sample_001_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c120_psm_gain_sisdr/listening_eval_gate_m1.50_best/sample_001_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+            <article class="sample "
+              data-noisy="3.932903"
+              data-offline-improvement="7.231758"
+              data-realtime-improvement="7.206787"
+              data-best-improvement="7.231758"
+              data-regression="false">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_002</h3>
+                  <p>mix_0112.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>3.93</b></span>
+                  <span>Offline +<b>7.23</b></span>
+                  <span>Realtime +<b>7.21</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c120_psm_gain_sisdr/listening_eval_gate_m1.50_best/sample_002_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c120_psm_gain_sisdr/listening_eval_gate_m1.50_best/sample_002_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c120_psm_gain_sisdr/listening_eval_gate_m1.50_best/sample_002_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c120_psm_gain_sisdr/listening_eval_gate_m1.50_best/sample_002_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+            <article class="sample "
+              data-noisy="9.268380"
+              data-offline-improvement="2.527626"
+              data-realtime-improvement="3.847695"
+              data-best-improvement="3.847695"
+              data-regression="false">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_003</h3>
+                  <p>mix_0147.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>9.27</b></span>
+                  <span>Offline +<b>2.53</b></span>
+                  <span>Realtime +<b>3.85</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c120_psm_gain_sisdr/listening_eval_gate_m1.50_best/sample_003_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c120_psm_gain_sisdr/listening_eval_gate_m1.50_best/sample_003_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c120_psm_gain_sisdr/listening_eval_gate_m1.50_best/sample_003_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c120_psm_gain_sisdr/listening_eval_gate_m1.50_best/sample_003_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+            <article class="sample regression"
+              data-noisy="14.637339"
+              data-offline-improvement="-4.699372"
+              data-realtime-improvement="-2.813846"
+              data-best-improvement="-2.813846"
+              data-regression="true">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_004 <span>Regression</span></h3>
+                  <p>mix_0145.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>14.64</b></span>
+                  <span>Offline +<b>-4.70</b></span>
+                  <span>Realtime +<b>-2.81</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c120_psm_gain_sisdr/listening_eval_gate_m1.50_best/sample_004_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c120_psm_gain_sisdr/listening_eval_gate_m1.50_best/sample_004_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c120_psm_gain_sisdr/listening_eval_gate_m1.50_best/sample_004_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c120_psm_gain_sisdr/listening_eval_gate_m1.50_best/sample_004_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+      </div>
+    </section>
+    
+
+    <section class="run">
+      <div class="run-head">
+        <div>
+          <h2>c120_psm_noise_loss_m1.50</h2>
+          <p>runs/arctic_demand_spatial_c120_psm_gain_noise_loss/listening_eval_gate_m1.50_best</p>
+        </div>
+        <div class="summary">
+          <span>Items <b>5</b></span>
+          <span>Noisy <b>4.40</b></span>
+          <span>Offline +<b>4.58</b></span>
+          <span>Realtime +<b>4.99</b></span>
+        </div>
+      </div>
+      <div class="samples">
+        
+            <article class="sample "
+              data-noisy="-5.028980"
+              data-offline-improvement="4.977107"
+              data-realtime-improvement="4.973165"
+              data-best-improvement="4.977107"
+              data-regression="false">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_000</h3>
+                  <p>mix_0110.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>-5.03</b></span>
+                  <span>Offline +<b>4.98</b></span>
+                  <span>Realtime +<b>4.97</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c120_psm_gain_noise_loss/listening_eval_gate_m1.50_best/sample_000_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c120_psm_gain_noise_loss/listening_eval_gate_m1.50_best/sample_000_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c120_psm_gain_noise_loss/listening_eval_gate_m1.50_best/sample_000_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c120_psm_gain_noise_loss/listening_eval_gate_m1.50_best/sample_000_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+            <article class="sample "
+              data-noisy="-0.825550"
+              data-offline-improvement="12.384728"
+              data-realtime-improvement="11.390611"
+              data-best-improvement="12.384728"
+              data-regression="false">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_001</h3>
+                  <p>mix_0072.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>-0.83</b></span>
+                  <span>Offline +<b>12.38</b></span>
+                  <span>Realtime +<b>11.39</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c120_psm_gain_noise_loss/listening_eval_gate_m1.50_best/sample_001_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c120_psm_gain_noise_loss/listening_eval_gate_m1.50_best/sample_001_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c120_psm_gain_noise_loss/listening_eval_gate_m1.50_best/sample_001_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c120_psm_gain_noise_loss/listening_eval_gate_m1.50_best/sample_001_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+            <article class="sample "
+              data-noisy="3.932903"
+              data-offline-improvement="7.424303"
+              data-realtime-improvement="7.319782"
+              data-best-improvement="7.424303"
+              data-regression="false">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_002</h3>
+                  <p>mix_0112.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>3.93</b></span>
+                  <span>Offline +<b>7.42</b></span>
+                  <span>Realtime +<b>7.32</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c120_psm_gain_noise_loss/listening_eval_gate_m1.50_best/sample_002_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c120_psm_gain_noise_loss/listening_eval_gate_m1.50_best/sample_002_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c120_psm_gain_noise_loss/listening_eval_gate_m1.50_best/sample_002_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c120_psm_gain_noise_loss/listening_eval_gate_m1.50_best/sample_002_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+            <article class="sample "
+              data-noisy="9.268380"
+              data-offline-improvement="2.766008"
+              data-realtime-improvement="4.034904"
+              data-best-improvement="4.034904"
+              data-regression="false">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_003</h3>
+                  <p>mix_0147.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>9.27</b></span>
+                  <span>Offline +<b>2.77</b></span>
+                  <span>Realtime +<b>4.03</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c120_psm_gain_noise_loss/listening_eval_gate_m1.50_best/sample_003_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c120_psm_gain_noise_loss/listening_eval_gate_m1.50_best/sample_003_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c120_psm_gain_noise_loss/listening_eval_gate_m1.50_best/sample_003_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c120_psm_gain_noise_loss/listening_eval_gate_m1.50_best/sample_003_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+            <article class="sample regression"
+              data-noisy="14.637339"
+              data-offline-improvement="-4.660179"
+              data-realtime-improvement="-2.766304"
+              data-best-improvement="-2.766304"
+              data-regression="true">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_004 <span>Regression</span></h3>
+                  <p>mix_0145.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>14.64</b></span>
+                  <span>Offline +<b>-4.66</b></span>
+                  <span>Realtime +<b>-2.77</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c120_psm_gain_noise_loss/listening_eval_gate_m1.50_best/sample_004_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c120_psm_gain_noise_loss/listening_eval_gate_m1.50_best/sample_004_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c120_psm_gain_noise_loss/listening_eval_gate_m1.50_best/sample_004_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c120_psm_gain_noise_loss/listening_eval_gate_m1.50_best/sample_004_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+      </div>
+    </section>
+    
+
+    <section class="run">
+      <div class="run-head">
+        <div>
+          <h2>c116_psm_noise_loss_m1.50</h2>
+          <p>runs/arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.50</p>
+        </div>
+        <div class="summary">
+          <span>Items <b>5</b></span>
+          <span>Noisy <b>4.40</b></span>
+          <span>Offline +<b>4.51</b></span>
+          <span>Realtime +<b>4.91</b></span>
+        </div>
+      </div>
+      <div class="samples">
+        
+            <article class="sample "
+              data-noisy="-5.028980"
+              data-offline-improvement="4.276693"
+              data-realtime-improvement="4.285897"
+              data-best-improvement="4.285897"
+              data-regression="false">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_000</h3>
+                  <p>mix_0110.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>-5.03</b></span>
+                  <span>Offline +<b>4.28</b></span>
+                  <span>Realtime +<b>4.29</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.50/sample_000_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.50/sample_000_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.50/sample_000_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.50/sample_000_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+            <article class="sample "
+              data-noisy="-0.825550"
+              data-offline-improvement="12.901004"
+              data-realtime-improvement="11.860632"
+              data-best-improvement="12.901004"
+              data-regression="false">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_001</h3>
+                  <p>mix_0072.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>-0.83</b></span>
+                  <span>Offline +<b>12.90</b></span>
+                  <span>Realtime +<b>11.86</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.50/sample_001_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.50/sample_001_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.50/sample_001_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.50/sample_001_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+            <article class="sample "
+              data-noisy="3.932903"
+              data-offline-improvement="7.355559"
+              data-realtime-improvement="7.331268"
+              data-best-improvement="7.355559"
+              data-regression="false">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_002</h3>
+                  <p>mix_0112.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>3.93</b></span>
+                  <span>Offline +<b>7.36</b></span>
+                  <span>Realtime +<b>7.33</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.50/sample_002_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.50/sample_002_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.50/sample_002_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.50/sample_002_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+            <article class="sample "
+              data-noisy="9.268380"
+              data-offline-improvement="3.159779"
+              data-realtime-improvement="4.360847"
+              data-best-improvement="4.360847"
+              data-regression="false">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_003</h3>
+                  <p>mix_0147.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>9.27</b></span>
+                  <span>Offline +<b>3.16</b></span>
+                  <span>Realtime +<b>4.36</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.50/sample_003_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.50/sample_003_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.50/sample_003_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.50/sample_003_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+            <article class="sample regression"
+              data-noisy="14.637339"
+              data-offline-improvement="-5.153211"
+              data-realtime-improvement="-3.306706"
+              data-best-improvement="-3.306706"
+              data-regression="true">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_004 <span>Regression</span></h3>
+                  <p>mix_0145.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>14.64</b></span>
+                  <span>Offline +<b>-5.15</b></span>
+                  <span>Realtime +<b>-3.31</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.50/sample_004_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.50/sample_004_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.50/sample_004_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.50/sample_004_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+      </div>
+    </section>
+    
+
+    <section class="run">
+      <div class="run-head">
+        <div>
+          <h2>c116_psm_noise_loss_pf_clean</h2>
+          <p>runs/arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.50_pf_clean</p>
+        </div>
+        <div class="summary">
+          <span>Items <b>5</b></span>
+          <span>Noisy <b>4.40</b></span>
+          <span>Offline +<b>4.51</b></span>
+          <span>Realtime +<b>4.19</b></span>
+        </div>
+      </div>
+      <div class="samples">
+        
+            <article class="sample "
+              data-noisy="-5.028980"
+              data-offline-improvement="4.276693"
+              data-realtime-improvement="4.111474"
+              data-best-improvement="4.276693"
+              data-regression="false">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_000</h3>
+                  <p>mix_0110.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>-5.03</b></span>
+                  <span>Offline +<b>4.28</b></span>
+                  <span>Realtime +<b>4.11</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.50_pf_clean/sample_000_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.50_pf_clean/sample_000_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.50_pf_clean/sample_000_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.50_pf_clean/sample_000_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+            <article class="sample "
+              data-noisy="-0.825550"
+              data-offline-improvement="12.901004"
+              data-realtime-improvement="11.319581"
+              data-best-improvement="12.901004"
+              data-regression="false">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_001</h3>
+                  <p>mix_0072.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>-0.83</b></span>
+                  <span>Offline +<b>12.90</b></span>
+                  <span>Realtime +<b>11.32</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.50_pf_clean/sample_001_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.50_pf_clean/sample_001_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.50_pf_clean/sample_001_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.50_pf_clean/sample_001_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+            <article class="sample "
+              data-noisy="3.932903"
+              data-offline-improvement="7.355559"
+              data-realtime-improvement="6.549331"
+              data-best-improvement="7.355559"
+              data-regression="false">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_002</h3>
+                  <p>mix_0112.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>3.93</b></span>
+                  <span>Offline +<b>7.36</b></span>
+                  <span>Realtime +<b>6.55</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.50_pf_clean/sample_002_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.50_pf_clean/sample_002_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.50_pf_clean/sample_002_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.50_pf_clean/sample_002_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+            <article class="sample "
+              data-noisy="9.268380"
+              data-offline-improvement="3.159779"
+              data-realtime-improvement="3.315089"
+              data-best-improvement="3.315089"
+              data-regression="false">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_003</h3>
+                  <p>mix_0147.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>9.27</b></span>
+                  <span>Offline +<b>3.16</b></span>
+                  <span>Realtime +<b>3.32</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.50_pf_clean/sample_003_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.50_pf_clean/sample_003_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.50_pf_clean/sample_003_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.50_pf_clean/sample_003_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+            <article class="sample regression"
+              data-noisy="14.637339"
+              data-offline-improvement="-5.153211"
+              data-realtime-improvement="-4.338437"
+              data-best-improvement="-4.338437"
+              data-regression="true">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_004 <span>Regression</span></h3>
+                  <p>mix_0145.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>14.64</b></span>
+                  <span>Offline +<b>-5.15</b></span>
+                  <span>Realtime +<b>-4.34</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.50_pf_clean/sample_004_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.50_pf_clean/sample_004_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.50_pf_clean/sample_004_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.50_pf_clean/sample_004_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+      </div>
+    </section>
+    
+
+    <section class="run">
+      <div class="run-head">
+        <div>
+          <h2>c116_psm_noise_loss_pf_aggressive</h2>
+          <p>runs/arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.65_pf_aggressive</p>
+        </div>
+        <div class="summary">
+          <span>Items <b>5</b></span>
+          <span>Noisy <b>4.40</b></span>
+          <span>Offline +<b>4.54</b></span>
+          <span>Realtime +<b>3.88</b></span>
+        </div>
+      </div>
+      <div class="samples">
+        
+            <article class="sample "
+              data-noisy="-5.028980"
+              data-offline-improvement="4.258172"
+              data-realtime-improvement="4.071294"
+              data-best-improvement="4.258172"
+              data-regression="false">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_000</h3>
+                  <p>mix_0110.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>-5.03</b></span>
+                  <span>Offline +<b>4.26</b></span>
+                  <span>Realtime +<b>4.07</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.65_pf_aggressive/sample_000_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.65_pf_aggressive/sample_000_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.65_pf_aggressive/sample_000_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.65_pf_aggressive/sample_000_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+            <article class="sample "
+              data-noisy="-0.825550"
+              data-offline-improvement="13.038884"
+              data-realtime-improvement="11.168400"
+              data-best-improvement="13.038884"
+              data-regression="false">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_001</h3>
+                  <p>mix_0072.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>-0.83</b></span>
+                  <span>Offline +<b>13.04</b></span>
+                  <span>Realtime +<b>11.17</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.65_pf_aggressive/sample_001_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.65_pf_aggressive/sample_001_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.65_pf_aggressive/sample_001_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.65_pf_aggressive/sample_001_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+            <article class="sample "
+              data-noisy="3.932903"
+              data-offline-improvement="7.411310"
+              data-realtime-improvement="6.268457"
+              data-best-improvement="7.411310"
+              data-regression="false">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_002</h3>
+                  <p>mix_0112.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>3.93</b></span>
+                  <span>Offline +<b>7.41</b></span>
+                  <span>Realtime +<b>6.27</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.65_pf_aggressive/sample_002_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.65_pf_aggressive/sample_002_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.65_pf_aggressive/sample_002_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.65_pf_aggressive/sample_002_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+            <article class="sample "
+              data-noisy="9.268380"
+              data-offline-improvement="3.176446"
+              data-realtime-improvement="2.745285"
+              data-best-improvement="3.176446"
+              data-regression="false">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_003</h3>
+                  <p>mix_0147.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>9.27</b></span>
+                  <span>Offline +<b>3.18</b></span>
+                  <span>Realtime +<b>2.75</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.65_pf_aggressive/sample_003_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.65_pf_aggressive/sample_003_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.65_pf_aggressive/sample_003_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.65_pf_aggressive/sample_003_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+            <article class="sample regression"
+              data-noisy="14.637339"
+              data-offline-improvement="-5.185769"
+              data-realtime-improvement="-4.862768"
+              data-best-improvement="-4.862768"
+              data-regression="true">
+              <div class="sample-head">
+                <div>
+                  <h3>sample_004 <span>Regression</span></h3>
+                  <p>mix_0145.wav</p>
+                </div>
+                <div class="score-grid">
+                  <span>Noisy <b>14.64</b></span>
+                  <span>Offline +<b>-5.19</b></span>
+                  <span>Realtime +<b>-4.86</b></span>
+                </div>
+              </div>
+              <div class="players">
+                
+                <div class="player">
+                  <div class="player-title">Noisy</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.65_pf_aggressive/sample_004_noisy.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Offline</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.65_pf_aggressive/sample_004_offline.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Realtime</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.65_pf_aggressive/sample_004_realtime.wav"></audio>
+                </div>
+                
+                <div class="player">
+                  <div class="player-title">Clean</div>
+                  <audio controls preload="metadata" src="../arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.65_pf_aggressive/sample_004_clean.wav"></audio>
+                </div>
+                
+              </div>
+            </article>
+            
+      </div>
+    </section>
+    
+  </main>
+  <script>
+    const sortMode = document.getElementById('sort-mode');
+    const regressionOnly = document.getElementById('regression-only');
+
+    function numberValue(node, name) {
+      return Number.parseFloat(node.dataset[name] || '0');
+    }
+
+    function applyView() {
+      document.querySelectorAll('.samples').forEach((container) => {
+        const samples = Array.from(container.querySelectorAll('.sample'));
+        const sorted = samples.sort((a, b) => {
+          switch (sortMode.value) {
+            case 'worst':
+              return numberValue(a, 'bestImprovement') - numberValue(b, 'bestImprovement');
+            case 'best':
+              return numberValue(b, 'bestImprovement') - numberValue(a, 'bestImprovement');
+            case 'noisy-low':
+              return numberValue(a, 'noisy') - numberValue(b, 'noisy');
+            case 'noisy-high':
+              return numberValue(b, 'noisy') - numberValue(a, 'noisy');
+            default:
+              return 0;
+          }
+        });
+        sorted.forEach((sample) => {
+          const hide = regressionOnly.checked && sample.dataset.regression !== 'true';
+          sample.classList.toggle('hidden', hide);
+          container.appendChild(sample);
+        });
+      });
+    }
+
+    sortMode.addEventListener('change', applyView);
+    regressionOnly.addEventListener('change', applyView);
+  </script>
+</body>
+</html>

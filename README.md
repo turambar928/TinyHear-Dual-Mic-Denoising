@@ -9,7 +9,7 @@
 ## Demo
 
 - 本地网页试听 demo：`http://127.0.0.1:38179/runs/audio_demo/index.html`
-- 当前 demo 包含多组 noisy/clean/enhanced 对比，最新推荐听 `c116_oracle_blend_balanced` 的 `Realtime`。
+- 当前 demo 包含多组 noisy/clean/enhanced 对比。建议先听 `c120_psm_gain_sisdr_m1.50` 的 `Realtime` 作为当前主力版本，再对比 `c116_psm_noise_loss_pf_clean` 和 `c116_psm_noise_loss_pf_aggressive` 判断底噪/人声细节取舍。
 - 如果本地服务没启动，可在项目根目录运行 `python3 -m http.server 38179`，然后打开上面的链接。
 
 ## 当前结果
@@ -18,7 +18,7 @@
 - 推荐部署方案：`c116` 空间特征 TCN + `hidden=24` oracle-blend learned gate。
 - 模型规模：TCN `140,276` 参数，gate `9,265` 参数，总计 `149,541` 参数，满足 150K 目标。
 - 实时链路：16 kHz，256 点 FFT，64 samples hop，4 ms 步进。
-- Python eval：全量 SI-SDR improvement `5.083 dB`，high-SNR 退化率 `0%`。
+- Python eval：当前主力 `c120_psm_gain_sisdr_m1.50` 全量 SI-SDR improvement 约 `5.69 dB`；新 residual-noise 训练版 `c116_psm_noise_loss_m1.50` 约 `5.55 dB`，后滤波版本约 `4.83 / 4.55 dB`，主观上更安静但会牺牲部分人声细节。
 - C Q15 模型 reference：mean abs diff `0.01703`，streaming 与 batch Q15 完全一致。
 - C learned gate reference：gate abs diff `0.0000039` against Python gate。
 - C gated realtime DSP reference：mean abs diff `0.00078` against Python gated realtime reference。
