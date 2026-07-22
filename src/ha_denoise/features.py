@@ -15,6 +15,7 @@ class FeatureConfig:
         max_gain: float = 1.0,
         mask_target: str = "magnitude",
         spatial_features: bool = False,
+        spatial_frontend: str = "delay_sum",
     ) -> None:
         self.sample_rate = sample_rate
         self.n_fft = n_fft
@@ -24,6 +25,7 @@ class FeatureConfig:
         self.max_gain = max_gain
         self.mask_target = mask_target
         self.spatial_features = spatial_features
+        self.spatial_frontend = spatial_frontend
 
     @property
     def feature_dim(self) -> int:
@@ -43,6 +45,7 @@ def feature_config_from_dict(config: dict) -> FeatureConfig:
         max_gain=float(config.get("max_gain", 1.0)),
         mask_target=str(config.get("mask_target", "magnitude")),
         spatial_features=spatial_features,
+        spatial_frontend=str(config.get("spatial_frontend", "delay_sum")),
     )
 
 

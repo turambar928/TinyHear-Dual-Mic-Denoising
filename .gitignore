@@ -86,6 +86,26 @@ runs/arctic_demand_tiny_deepfilter_quiet/*
 !runs/arctic_demand_tiny_deepfilter_quiet/listening_eval_loud/
 !runs/arctic_demand_tiny_deepfilter_quiet/listening_eval_loud/**
 
+# Beamformed DeepFilter checkpoint, metrics, and small listening-eval demo set.
+!runs/arctic_demand_tiny_deepfilter_beamform/
+runs/arctic_demand_tiny_deepfilter_beamform/*
+!runs/arctic_demand_tiny_deepfilter_beamform/best.pt
+!runs/arctic_demand_tiny_deepfilter_beamform/eval_loud/
+runs/arctic_demand_tiny_deepfilter_beamform/eval_loud/*
+!runs/arctic_demand_tiny_deepfilter_beamform/eval_loud/metrics.json
+!runs/arctic_demand_tiny_deepfilter_beamform/listening_eval_loud/
+!runs/arctic_demand_tiny_deepfilter_beamform/listening_eval_loud/**
+
+# Coherence-weighted DeepFilter checkpoint, metrics, and small listening-eval demo set.
+!runs/arctic_demand_tiny_deepfilter_coherence_mwf/
+runs/arctic_demand_tiny_deepfilter_coherence_mwf/*
+!runs/arctic_demand_tiny_deepfilter_coherence_mwf/best.pt
+!runs/arctic_demand_tiny_deepfilter_coherence_mwf/eval_loud/
+runs/arctic_demand_tiny_deepfilter_coherence_mwf/eval_loud/*
+!runs/arctic_demand_tiny_deepfilter_coherence_mwf/eval_loud/metrics.json
+!runs/arctic_demand_tiny_deepfilter_coherence_mwf/listening_eval_loud/
+!runs/arctic_demand_tiny_deepfilter_coherence_mwf/listening_eval_loud/**
+
 # C build output
 c_reference/tiny_tcn_ref
 c_reference/tiny_tcn_bench

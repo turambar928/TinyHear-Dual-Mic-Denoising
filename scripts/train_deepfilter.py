@@ -244,11 +244,17 @@ def main() -> None:
     parser.add_argument("--silence-threshold", type=float, default=0.03)
     parser.add_argument("--resume", help="Optional checkpoint to resume DeepFilter training from.")
     parser.add_argument("--reset-best-on-resume", action="store_true")
+    parser.add_argument(
+        "--spatial-frontend",
+        choices=["delay_sum", "coherence_mwf"],
+        default="delay_sum",
+        help="Mono spatial input used as the DeepFilter reference.",
+    )
     args = parser.parse_args()
 
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
-    cfg = FeatureConfig(spatial_features=True)
+    cfg = FeatureConfig(spatial_features=True, spatial_frontend=args.spatial_frontend)
     train_ds = WavPairDataset(args.data, "train", cfg, args.seconds, args.on_the_fly, return_audio=True)
     val_ds = WavPairDataset(args.data, "val", cfg, args.seconds, args.on_the_fly, return_audio=True)
     train_loader = DataLoader(train_ds, batch_size=args.batch_size, shuffle=True, collate_fn=pad_sequence_batch)
@@ -281,6 +287,7 @@ def main() -> None:
             print("skip_backbone_init=channel_mismatch")
     params = count_parameters(model)
     print(f"parameters={params} int8_weight_bytes~={params}")
+    print(f"spatial_frontend={cfg.spatial_frontend}")
     model.to(args.device)
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=1e-4)
     for epoch in range(1, args.epochs + 1):
@@ -324,6 +331,7 @@ def main() -> None:
                 "bands": cfg.bands,
                 "feature_dim": cfg.feature_dim,
                 "spatial_features": cfg.spatial_features,
+                "spatial_frontend": cfg.spatial_frontend,
                 "channels": args.channels,
                 "blocks": args.blocks,
                 "kernel_size": args.kernel_size,

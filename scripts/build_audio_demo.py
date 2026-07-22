@@ -10,6 +10,7 @@ from typing import Any
 
 
 DEFAULT_SETS = [
+    ("tiny_deepfilter_coherence_mwf", Path("runs/arctic_demand_tiny_deepfilter_coherence_mwf/listening_eval_loud")),
     ("tiny_deepfilter_beamform", Path("runs/arctic_demand_tiny_deepfilter_beamform/listening_eval_loud")),
     ("baseline", Path("runs/arctic_demand/listening_eval")),
     ("spatial_c120", Path("runs/arctic_demand_spatial_c120/listening_eval")),

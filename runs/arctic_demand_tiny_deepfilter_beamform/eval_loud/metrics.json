@@ -1,0 +1,1612 @@
+{
+  "summary": {
+    "items": 160,
+    "mean_noisy_si_sdr": 4.331035113846883,
+    "mean_enhanced_si_sdr": 13.718001483706757,
+    "mean_si_sdr_improvement": 9.386966369859874,
+    "mean_output_input_rms_ratio": 0.9937417980283498,
+    "mean_loudness_gain": 1.248744847252965
+  },
+  "items": [
+    {
+      "file": "mix_0000.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 13.94908332824707,
+      "noisy_si_sdr": 14.033246040344238,
+      "enhanced_si_sdr": 15.610235214233398,
+      "si_sdr_improvement": 1.5769891738891602,
+      "output_input_rms_ratio": 1.0,
+      "loudness_gain": 1.0570701360702515
+    },
+    {
+      "file": "mix_0001.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 10.722652435302734,
+      "noisy_si_sdr": 10.661760330200195,
+      "enhanced_si_sdr": 20.734079360961914,
+      "si_sdr_improvement": 10.072319030761719,
+      "output_input_rms_ratio": 1.0,
+      "loudness_gain": 1.0310392379760742
+    },
+    {
+      "file": "mix_0002.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": -4.173877716064453,
+      "noisy_si_sdr": -4.9359283447265625,
+      "enhanced_si_sdr": 15.542610168457031,
+      "si_sdr_improvement": 20.478538513183594,
+      "output_input_rms_ratio": 0.9999995231628418,
+      "loudness_gain": 1.90352463722229
+    },
+    {
+      "file": "mix_0003.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 3.2603681087493896,
+      "noisy_si_sdr": 2.944988250732422,
+      "enhanced_si_sdr": 15.155781745910645,
+      "si_sdr_improvement": 12.210793495178223,
+      "output_input_rms_ratio": 0.9999997615814209,
+      "loudness_gain": 1.1721577644348145
+    },
+    {
+      "file": "mix_0004.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 10.0852632522583,
+      "noisy_si_sdr": 9.465190887451172,
+      "enhanced_si_sdr": 16.23832893371582,
+      "si_sdr_improvement": 6.773138046264648,
+      "output_input_rms_ratio": 0.9999998807907104,
+      "loudness_gain": 1.0411252975463867
+    },
+    {
+      "file": "mix_0005.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 11.667831420898438,
+      "noisy_si_sdr": 11.958999633789062,
+      "enhanced_si_sdr": 14.099435806274414,
+      "si_sdr_improvement": 2.1404361724853516,
+      "output_input_rms_ratio": 0.9999998807907104,
+      "loudness_gain": 1.0438538789749146
+    },
+    {
+      "file": "mix_0006.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": -2.453927755355835,
+      "noisy_si_sdr": -2.7493038177490234,
+      "enhanced_si_sdr": 12.506865501403809,
+      "si_sdr_improvement": 15.256169319152832,
+      "output_input_rms_ratio": 0.9999994039535522,
+      "loudness_gain": 1.6892982721328735
+    },
+    {
+      "file": "mix_0007.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 11.808868408203125,
+      "noisy_si_sdr": 11.896754264831543,
+      "enhanced_si_sdr": 17.583654403686523,
+      "si_sdr_improvement": 5.6869001388549805,
+      "output_input_rms_ratio": 1.0,
+      "loudness_gain": 1.0361735820770264
+    },
+    {
+      "file": "mix_0008.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": -1.562311053276062,
+      "noisy_si_sdr": -2.382554531097412,
+      "enhanced_si_sdr": 11.372140884399414,
+      "si_sdr_improvement": 13.754695415496826,
+      "output_input_rms_ratio": 0.9999996423721313,
+      "loudness_gain": 1.545832872390747
+    },
+    {
+      "file": "mix_0009.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": -2.286203384399414,
+      "noisy_si_sdr": -2.1840176582336426,
+      "enhanced_si_sdr": 10.290454864501953,
+      "si_sdr_improvement": 12.474472522735596,
+      "output_input_rms_ratio": 0.9999992847442627,
+      "loudness_gain": 1.685954213142395
+    },
+    {
+      "file": "mix_0010.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 6.662517547607422,
+      "noisy_si_sdr": 6.190702438354492,
+      "enhanced_si_sdr": 16.5662841796875,
+      "si_sdr_improvement": 10.375581741333008,
+      "output_input_rms_ratio": 0.9999997615814209,
+      "loudness_gain": 1.205225944519043
+    },
+    {
+      "file": "mix_0011.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 3.5413992404937744,
+      "noisy_si_sdr": 3.1241631507873535,
+      "enhanced_si_sdr": 7.679252624511719,
+      "si_sdr_improvement": 4.555089473724365,
+      "output_input_rms_ratio": 0.9999997615814209,
+      "loudness_gain": 1.1593340635299683
+    },
+    {
+      "file": "mix_0012.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 5.5208821296691895,
+      "noisy_si_sdr": 5.3895087242126465,
+      "enhanced_si_sdr": 8.968111038208008,
+      "si_sdr_improvement": 3.5786023139953613,
+      "output_input_rms_ratio": 0.9999998211860657,
+      "loudness_gain": 1.1478136777877808
+    },
+    {
+      "file": "mix_0013.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 4.0378336906433105,
+      "noisy_si_sdr": 3.789794921875,
+      "enhanced_si_sdr": 9.645225524902344,
+      "si_sdr_improvement": 5.855430603027344,
+      "output_input_rms_ratio": 0.9999999403953552,
+      "loudness_gain": 1.1272305250167847
+    },
+    {
+      "file": "mix_0014.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 10.04576301574707,
+      "noisy_si_sdr": 9.298003196716309,
+      "enhanced_si_sdr": 17.722034454345703,
+      "si_sdr_improvement": 8.424031257629395,
+      "output_input_rms_ratio": 0.9999999403953552,
+      "loudness_gain": 1.0486658811569214
+    },
+    {
+      "file": "mix_0015.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 5.408503532409668,
+      "noisy_si_sdr": 4.570218086242676,
+      "enhanced_si_sdr": 19.045475006103516,
+      "si_sdr_improvement": 14.47525691986084,
+      "output_input_rms_ratio": 0.9999997615814209,
+      "loudness_gain": 1.143933653831482
+    },
+    {
+      "file": "mix_0016.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 13.215928077697754,
+      "noisy_si_sdr": 13.31392765045166,
+      "enhanced_si_sdr": 15.388980865478516,
+      "si_sdr_improvement": 2.0750532150268555,
+      "output_input_rms_ratio": 1.0,
+      "loudness_gain": 1.0100443363189697
+    },
+    {
+      "file": "mix_0017.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": -2.5165131092071533,
+      "noisy_si_sdr": -2.598923683166504,
+      "enhanced_si_sdr": 14.934303283691406,
+      "si_sdr_improvement": 17.53322696685791,
+      "output_input_rms_ratio": 0.9999993443489075,
+      "loudness_gain": 1.7072571516036987
+    },
+    {
+      "file": "mix_0018.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 1.649540662765503,
+      "noisy_si_sdr": 1.2584174871444702,
+      "enhanced_si_sdr": 16.90616226196289,
+      "si_sdr_improvement": 15.64774477481842,
+      "output_input_rms_ratio": 0.9999996423721313,
+      "loudness_gain": 1.2910090684890747
+    },
+    {
+      "file": "mix_0019.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 5.08134651184082,
+      "noisy_si_sdr": 4.496060371398926,
+      "enhanced_si_sdr": 8.698390007019043,
+      "si_sdr_improvement": 4.202329635620117,
+      "output_input_rms_ratio": 0.9999999403953552,
+      "loudness_gain": 1.09791898727417
+    },
+    {
+      "file": "mix_0020.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": -1.7110978364944458,
+      "noisy_si_sdr": -2.1301522254943848,
+      "enhanced_si_sdr": 2.797591209411621,
+      "si_sdr_improvement": 4.927743434906006,
+      "output_input_rms_ratio": 0.9999995231628418,
+      "loudness_gain": 1.481347918510437
+    },
+    {
+      "file": "mix_0021.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": -0.14589986205101013,
+      "noisy_si_sdr": -1.0694341659545898,
+      "enhanced_si_sdr": 11.841888427734375,
+      "si_sdr_improvement": 12.911322593688965,
+      "output_input_rms_ratio": 0.9999995827674866,
+      "loudness_gain": 1.4058716297149658
+    },
+    {
+      "file": "mix_0022.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 13.756200790405273,
+      "noisy_si_sdr": 13.703163146972656,
+      "enhanced_si_sdr": 17.44988250732422,
+      "si_sdr_improvement": 3.7467193603515625,
+      "output_input_rms_ratio": 1.0,
+      "loudness_gain": 1.0121347904205322
+    },
+    {
+      "file": "mix_0023.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": -1.8069803714752197,
+      "noisy_si_sdr": -2.5582754611968994,
+      "enhanced_si_sdr": 16.563302993774414,
+      "si_sdr_improvement": 19.121578454971313,
+      "output_input_rms_ratio": 0.9129577875137329,
+      "loudness_gain": 1.4501146078109741
+    },
+    {
+      "file": "mix_0024.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 7.7128143310546875,
+      "noisy_si_sdr": 7.477434158325195,
+      "enhanced_si_sdr": 11.297821044921875,
+      "si_sdr_improvement": 3.8203868865966797,
+      "output_input_rms_ratio": 0.9999997615814209,
+      "loudness_gain": 1.1022515296936035
+    },
+    {
+      "file": "mix_0025.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 14.040138244628906,
+      "noisy_si_sdr": 13.466239929199219,
+      "enhanced_si_sdr": 16.041889190673828,
+      "si_sdr_improvement": 2.5756492614746094,
+      "output_input_rms_ratio": 0.9999998807907104,
+      "loudness_gain": 0.9960434436798096
+    },
+    {
+      "file": "mix_0026.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 8.4168701171875,
+      "noisy_si_sdr": 8.576972961425781,
+      "enhanced_si_sdr": 15.288534164428711,
+      "si_sdr_improvement": 6.71156120300293,
+      "output_input_rms_ratio": 0.9999999403953552,
+      "loudness_gain": 1.088393211364746
+    },
+    {
+      "file": "mix_0027.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 12.616070747375488,
+      "noisy_si_sdr": 11.888922691345215,
+      "enhanced_si_sdr": 20.87356948852539,
+      "si_sdr_improvement": 8.984646797180176,
+      "output_input_rms_ratio": 0.9999998807907104,
+      "loudness_gain": 1.0355232954025269
+    },
+    {
+      "file": "mix_0028.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": -0.8721038699150085,
+      "noisy_si_sdr": -1.4980263710021973,
+      "enhanced_si_sdr": 4.016815662384033,
+      "si_sdr_improvement": 5.5148420333862305,
+      "output_input_rms_ratio": 0.9333368539810181,
+      "loudness_gain": 1.2202335596084595
+    },
+    {
+      "file": "mix_0029.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 4.617234230041504,
+      "noisy_si_sdr": 4.6213202476501465,
+      "enhanced_si_sdr": 10.33314323425293,
+      "si_sdr_improvement": 5.711822986602783,
+      "output_input_rms_ratio": 0.9999998211860657,
+      "loudness_gain": 1.1079347133636475
+    },
+    {
+      "file": "mix_0030.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 14.03826904296875,
+      "noisy_si_sdr": 14.074936866760254,
+      "enhanced_si_sdr": 16.418676376342773,
+      "si_sdr_improvement": 2.3437395095825195,
+      "output_input_rms_ratio": 1.0,
+      "loudness_gain": 1.0279940366744995
+    },
+    {
+      "file": "mix_0031.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 12.628287315368652,
+      "noisy_si_sdr": 11.928064346313477,
+      "enhanced_si_sdr": 13.662657737731934,
+      "si_sdr_improvement": 1.734593391418457,
+      "output_input_rms_ratio": 0.9999998807907104,
+      "loudness_gain": 1.020809531211853
+    },
+    {
+      "file": "mix_0032.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 10.117635726928711,
+      "noisy_si_sdr": 10.020467758178711,
+      "enhanced_si_sdr": 14.641337394714355,
+      "si_sdr_improvement": 4.6208696365356445,
+      "output_input_rms_ratio": 1.0,
+      "loudness_gain": 1.014377236366272
+    },
+    {
+      "file": "mix_0033.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 11.29747486114502,
+      "noisy_si_sdr": 10.644560813903809,
+      "enhanced_si_sdr": 19.132156372070312,
+      "si_sdr_improvement": 8.487595558166504,
+      "output_input_rms_ratio": 1.0000001192092896,
+      "loudness_gain": 1.0212446451187134
+    },
+    {
+      "file": "mix_0034.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": -1.4698809385299683,
+      "noisy_si_sdr": -1.2953550815582275,
+      "enhanced_si_sdr": 17.762392044067383,
+      "si_sdr_improvement": 19.05774712562561,
+      "output_input_rms_ratio": 0.9999995231628418,
+      "loudness_gain": 1.5172672271728516
+    },
+    {
+      "file": "mix_0035.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 0.3076174557209015,
+      "noisy_si_sdr": 0.19084316492080688,
+      "enhanced_si_sdr": 6.033114433288574,
+      "si_sdr_improvement": 5.842271268367767,
+      "output_input_rms_ratio": 0.9999997615814209,
+      "loudness_gain": 1.2475138902664185
+    },
+    {
+      "file": "mix_0036.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": -2.8723907470703125,
+      "noisy_si_sdr": -3.110715389251709,
+      "enhanced_si_sdr": 2.995511293411255,
+      "si_sdr_improvement": 6.106226682662964,
+      "output_input_rms_ratio": 0.9999995827674866,
+      "loudness_gain": 1.5004891157150269
+    },
+    {
+      "file": "mix_0037.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 4.334201812744141,
+      "noisy_si_sdr": 4.121194839477539,
+      "enhanced_si_sdr": 15.160416603088379,
+      "si_sdr_improvement": 11.03922176361084,
+      "output_input_rms_ratio": 0.9999998211860657,
+      "loudness_gain": 1.1527918577194214
+    },
+    {
+      "file": "mix_0038.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 4.121237754821777,
+      "noisy_si_sdr": 4.239287376403809,
+      "enhanced_si_sdr": 13.055024147033691,
+      "si_sdr_improvement": 8.815736770629883,
+      "output_input_rms_ratio": 0.9999997615814209,
+      "loudness_gain": 1.1660246849060059
+    },
+    {
+      "file": "mix_0039.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 14.760093688964844,
+      "noisy_si_sdr": 13.95627212524414,
+      "enhanced_si_sdr": 16.623600006103516,
+      "si_sdr_improvement": 2.667327880859375,
+      "output_input_rms_ratio": 1.0,
+      "loudness_gain": 1.0120971202850342
+    },
+    {
+      "file": "mix_0040.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 14.645127296447754,
+      "noisy_si_sdr": 14.16822624206543,
+      "enhanced_si_sdr": 13.77686882019043,
+      "si_sdr_improvement": -0.391357421875,
+      "output_input_rms_ratio": 1.0,
+      "loudness_gain": 1.021586298942566
+    },
+    {
+      "file": "mix_0041.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 1.8858094215393066,
+      "noisy_si_sdr": 1.8788740634918213,
+      "enhanced_si_sdr": 16.001279830932617,
+      "si_sdr_improvement": 14.122405767440796,
+      "output_input_rms_ratio": 0.9999997615814209,
+      "loudness_gain": 1.267298698425293
+    },
+    {
+      "file": "mix_0042.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 5.680480480194092,
+      "noisy_si_sdr": 5.452397346496582,
+      "enhanced_si_sdr": 18.2443790435791,
+      "si_sdr_improvement": 12.79198169708252,
+      "output_input_rms_ratio": 0.9999998211860657,
+      "loudness_gain": 1.1068370342254639
+    },
+    {
+      "file": "mix_0043.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 3.3532299995422363,
+      "noisy_si_sdr": 2.6801156997680664,
+      "enhanced_si_sdr": 7.9305548667907715,
+      "si_sdr_improvement": 5.250439167022705,
+      "output_input_rms_ratio": 0.9999998211860657,
+      "loudness_gain": 1.160258173942566
+    },
+    {
+      "file": "mix_0044.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 8.948134422302246,
+      "noisy_si_sdr": 8.234618186950684,
+      "enhanced_si_sdr": 21.509002685546875,
+      "si_sdr_improvement": 13.274384498596191,
+      "output_input_rms_ratio": 1.0,
+      "loudness_gain": 1.0652519464492798
+    },
+    {
+      "file": "mix_0045.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": -3.8343920707702637,
+      "noisy_si_sdr": -4.653110980987549,
+      "enhanced_si_sdr": 15.918482780456543,
+      "si_sdr_improvement": 20.571593761444092,
+      "output_input_rms_ratio": 0.9999994039535522,
+      "loudness_gain": 1.840981364250183
+    },
+    {
+      "file": "mix_0046.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": -1.507321834564209,
+      "noisy_si_sdr": -1.5121639966964722,
+      "enhanced_si_sdr": 4.8695068359375,
+      "si_sdr_improvement": 6.381670832633972,
+      "output_input_rms_ratio": 0.9999997615814209,
+      "loudness_gain": 1.4543269872665405
+    },
+    {
+      "file": "mix_0047.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 9.659049987792969,
+      "noisy_si_sdr": 10.088769912719727,
+      "enhanced_si_sdr": 14.504866600036621,
+      "si_sdr_improvement": 4.4160966873168945,
+      "output_input_rms_ratio": 0.9999998807907104,
+      "loudness_gain": 1.0639153718948364
+    },
+    {
+      "file": "mix_0048.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": -0.6823725700378418,
+      "noisy_si_sdr": -0.5809242725372314,
+      "enhanced_si_sdr": 12.142000198364258,
+      "si_sdr_improvement": 12.72292447090149,
+      "output_input_rms_ratio": 0.9999995827674866,
+      "loudness_gain": 1.521613597869873
+    },
+    {
+      "file": "mix_0049.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 6.551199913024902,
+      "noisy_si_sdr": 6.300352096557617,
+      "enhanced_si_sdr": 10.205069541931152,
+      "si_sdr_improvement": 3.904717445373535,
+      "output_input_rms_ratio": 1.0,
+      "loudness_gain": 1.0517339706420898
+    },
+    {
+      "file": "mix_0050.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 11.808012008666992,
+      "noisy_si_sdr": 11.223718643188477,
+      "enhanced_si_sdr": 18.6712589263916,
+      "si_sdr_improvement": 7.447540283203125,
+      "output_input_rms_ratio": 0.9999998807907104,
+      "loudness_gain": 1.0251282453536987
+    },
+    {
+      "file": "mix_0051.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 12.952996253967285,
+      "noisy_si_sdr": 12.872830390930176,
+      "enhanced_si_sdr": 17.063291549682617,
+      "si_sdr_improvement": 4.190461158752441,
+      "output_input_rms_ratio": 1.0,
+      "loudness_gain": 1.01753830909729
+    },
+    {
+      "file": "mix_0052.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": -3.4254846572875977,
+      "noisy_si_sdr": -3.302107810974121,
+      "enhanced_si_sdr": 11.320188522338867,
+      "si_sdr_improvement": 14.622296333312988,
+      "output_input_rms_ratio": 0.9075842499732971,
+      "loudness_gain": 1.608899474143982
+    },
+    {
+      "file": "mix_0053.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": -0.8818148970603943,
+      "noisy_si_sdr": -0.7000689506530762,
+      "enhanced_si_sdr": 5.394044399261475,
+      "si_sdr_improvement": 6.094113349914551,
+      "output_input_rms_ratio": 0.9534521102905273,
+      "loudness_gain": 1.500824213027954
+    },
+    {
+      "file": "mix_0054.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 15.265007019042969,
+      "noisy_si_sdr": 14.427650451660156,
+      "enhanced_si_sdr": 21.962921142578125,
+      "si_sdr_improvement": 7.535270690917969,
+      "output_input_rms_ratio": 0.9999998807907104,
+      "loudness_gain": 0.9969783425331116
+    },
+    {
+      "file": "mix_0055.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 1.714837670326233,
+      "noisy_si_sdr": 1.6761586666107178,
+      "enhanced_si_sdr": 11.771992683410645,
+      "si_sdr_improvement": 10.095834016799927,
+      "output_input_rms_ratio": 0.9999996423721313,
+      "loudness_gain": 1.3499984741210938
+    },
+    {
+      "file": "mix_0056.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 5.666182518005371,
+      "noisy_si_sdr": 5.829235076904297,
+      "enhanced_si_sdr": 17.240192413330078,
+      "si_sdr_improvement": 11.410957336425781,
+      "output_input_rms_ratio": 0.9999998211860657,
+      "loudness_gain": 1.1129770278930664
+    },
+    {
+      "file": "mix_0057.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 3.2644176483154297,
+      "noisy_si_sdr": 3.309019088745117,
+      "enhanced_si_sdr": 8.801098823547363,
+      "si_sdr_improvement": 5.492079734802246,
+      "output_input_rms_ratio": 0.9999997615814209,
+      "loudness_gain": 1.265077829360962
+    },
+    {
+      "file": "mix_0058.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": -3.8612875938415527,
+      "noisy_si_sdr": -4.403365135192871,
+      "enhanced_si_sdr": 15.204010009765625,
+      "si_sdr_improvement": 19.607375144958496,
+      "output_input_rms_ratio": 0.9911468625068665,
+      "loudness_gain": 1.7998924255371094
+    },
+    {
+      "file": "mix_0059.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 3.0953285694122314,
+      "noisy_si_sdr": 2.372466564178467,
+      "enhanced_si_sdr": 20.800987243652344,
+      "si_sdr_improvement": 18.428520679473877,
+      "output_input_rms_ratio": 0.9999997019767761,
+      "loudness_gain": 1.2184518575668335
+    },
+    {
+      "file": "mix_0060.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 12.596458435058594,
+      "noisy_si_sdr": 12.47307300567627,
+      "enhanced_si_sdr": 16.460044860839844,
+      "si_sdr_improvement": 3.986971855163574,
+      "output_input_rms_ratio": 1.000000238418579,
+      "loudness_gain": 1.0087873935699463
+    },
+    {
+      "file": "mix_0061.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 4.796492576599121,
+      "noisy_si_sdr": 4.94127082824707,
+      "enhanced_si_sdr": 16.09809112548828,
+      "si_sdr_improvement": 11.156820297241211,
+      "output_input_rms_ratio": 0.9999999403953552,
+      "loudness_gain": 1.148550271987915
+    },
+    {
+      "file": "mix_0062.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": -3.0012688636779785,
+      "noisy_si_sdr": -3.587698459625244,
+      "enhanced_si_sdr": 11.72889232635498,
+      "si_sdr_improvement": 15.316590785980225,
+      "output_input_rms_ratio": 0.8205119371414185,
+      "loudness_gain": 1.3926055431365967
+    },
+    {
+      "file": "mix_0063.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 3.843106985092163,
+      "noisy_si_sdr": 3.650540828704834,
+      "enhanced_si_sdr": 18.254436492919922,
+      "si_sdr_improvement": 14.603895664215088,
+      "output_input_rms_ratio": 0.9999998211860657,
+      "loudness_gain": 1.1760283708572388
+    },
+    {
+      "file": "mix_0064.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": -0.969935953617096,
+      "noisy_si_sdr": -1.4696961641311646,
+      "enhanced_si_sdr": 16.511415481567383,
+      "si_sdr_improvement": 17.981111645698547,
+      "output_input_rms_ratio": 0.9999996423721313,
+      "loudness_gain": 1.527947187423706
+    },
+    {
+      "file": "mix_0065.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 11.182137489318848,
+      "noisy_si_sdr": 11.069543838500977,
+      "enhanced_si_sdr": 19.457231521606445,
+      "si_sdr_improvement": 8.387687683105469,
+      "output_input_rms_ratio": 1.0,
+      "loudness_gain": 1.0212953090667725
+    },
+    {
+      "file": "mix_0066.wav",
+      "beamform_lag_samples": -1,
+      "beamformed_si_sdr": 1.4917526245117188,
+      "noisy_si_sdr": 1.5103806257247925,
+      "enhanced_si_sdr": 6.217103004455566,
+      "si_sdr_improvement": 4.706722378730774,
+      "output_input_rms_ratio": 0.9999997615814209,
+      "loudness_gain": 1.1871832609176636
+    },
+    {
+      "file": "mix_0067.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 0.04797205701470375,
+      "noisy_si_sdr": -0.33656567335128784,
+      "enhanced_si_sdr": 14.509662628173828,
+      "si_sdr_improvement": 14.846228301525116,
+      "output_input_rms_ratio": 0.9999996423721313,
+      "loudness_gain": 1.403315544128418
+    },
+    {
+      "file": "mix_0068.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": -4.584738254547119,
+      "noisy_si_sdr": -4.596324443817139,
+      "enhanced_si_sdr": 10.652303695678711,
+      "si_sdr_improvement": 15.24862813949585,
+      "output_input_rms_ratio": 0.817948043346405,
+      "loudness_gain": 1.6263848543167114
+    },
+    {
+      "file": "mix_0069.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": -0.6431496739387512,
+      "noisy_si_sdr": -0.8015191555023193,
+      "enhanced_si_sdr": 15.328739166259766,
+      "si_sdr_improvement": 16.130258321762085,
+      "output_input_rms_ratio": 0.9999995827674866,
+      "loudness_gain": 1.5985660552978516
+    },
+    {
+      "file": "mix_0070.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 9.077974319458008,
+      "noisy_si_sdr": 9.078606605529785,
+      "enhanced_si_sdr": 11.196185111999512,
+      "si_sdr_improvement": 2.1175785064697266,
+      "output_input_rms_ratio": 0.9999999403953552,
+      "loudness_gain": 1.0483899116516113
+    },
+    {
+      "file": "mix_0071.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": -4.971113681793213,
+      "noisy_si_sdr": -4.795764923095703,
+      "enhanced_si_sdr": 14.065346717834473,
+      "si_sdr_improvement": 18.861111640930176,
+      "output_input_rms_ratio": 0.999999463558197,
+      "loudness_gain": 2.076819896697998
+    },
+    {
+      "file": "mix_0072.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": -0.04147518053650856,
+      "noisy_si_sdr": -0.8255501985549927,
+      "enhanced_si_sdr": 17.442394256591797,
+      "si_sdr_improvement": 18.26794445514679,
+      "output_input_rms_ratio": 0.9999996423721313,
+      "loudness_gain": 1.3976942300796509
+    },
+    {
+      "file": "mix_0073.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 10.296492576599121,
+      "noisy_si_sdr": 10.379667282104492,
+      "enhanced_si_sdr": 15.80777645111084,
+      "si_sdr_improvement": 5.428109169006348,
+      "output_input_rms_ratio": 0.9999999403953552,
+      "loudness_gain": 1.043339490890503
+    },
+    {
+      "file": "mix_0074.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 1.3697832822799683,
+      "noisy_si_sdr": 1.1128709316253662,
+      "enhanced_si_sdr": 7.202864646911621,
+      "si_sdr_improvement": 6.089993715286255,
+      "output_input_rms_ratio": 0.9999997019767761,
+      "loudness_gain": 1.235630750656128
+    },
+    {
+      "file": "mix_0075.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 14.35352897644043,
+      "noisy_si_sdr": 13.766275405883789,
+      "enhanced_si_sdr": 10.964316368103027,
+      "si_sdr_improvement": -2.8019590377807617,
+      "output_input_rms_ratio": 1.0,
+      "loudness_gain": 1.0561020374298096
+    },
+    {
+      "file": "mix_0076.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 8.662885665893555,
+      "noisy_si_sdr": 8.275712013244629,
+      "enhanced_si_sdr": 18.484664916992188,
+      "si_sdr_improvement": 10.208952903747559,
+      "output_input_rms_ratio": 0.9999997615814209,
+      "loudness_gain": 1.087143898010254
+    },
+    {
+      "file": "mix_0077.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": -3.6783809661865234,
+      "noisy_si_sdr": -4.2855730056762695,
+      "enhanced_si_sdr": 14.280539512634277,
+      "si_sdr_improvement": 18.566112518310547,
+      "output_input_rms_ratio": 0.999999463558197,
+      "loudness_gain": 1.7973886728286743
+    },
+    {
+      "file": "mix_0078.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 1.225268840789795,
+      "noisy_si_sdr": 0.5435062646865845,
+      "enhanced_si_sdr": 10.591157913208008,
+      "si_sdr_improvement": 10.047651648521423,
+      "output_input_rms_ratio": 0.9999996423721313,
+      "loudness_gain": 1.3220133781433105
+    },
+    {
+      "file": "mix_0079.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": -3.6664819717407227,
+      "noisy_si_sdr": -3.687962532043457,
+      "enhanced_si_sdr": 11.296905517578125,
+      "si_sdr_improvement": 14.984868049621582,
+      "output_input_rms_ratio": 0.999999463558197,
+      "loudness_gain": 1.8349424600601196
+    },
+    {
+      "file": "mix_0080.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": -2.8418469429016113,
+      "noisy_si_sdr": -3.266026020050049,
+      "enhanced_si_sdr": 3.4504177570343018,
+      "si_sdr_improvement": 6.716443777084351,
+      "output_input_rms_ratio": 0.9980939626693726,
+      "loudness_gain": 1.4795031547546387
+    },
+    {
+      "file": "mix_0081.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": -3.531511068344116,
+      "noisy_si_sdr": -3.361937999725342,
+      "enhanced_si_sdr": 6.539788246154785,
+      "si_sdr_improvement": 9.901726245880127,
+      "output_input_rms_ratio": 0.9999995827674866,
+      "loudness_gain": 1.7624303102493286
+    },
+    {
+      "file": "mix_0082.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 2.92393159866333,
+      "noisy_si_sdr": 2.7022483348846436,
+      "enhanced_si_sdr": 19.18003273010254,
+      "si_sdr_improvement": 16.477784395217896,
+      "output_input_rms_ratio": 0.9999997019767761,
+      "loudness_gain": 1.2146990299224854
+    },
+    {
+      "file": "mix_0083.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 12.139528274536133,
+      "noisy_si_sdr": 12.108098030090332,
+      "enhanced_si_sdr": 13.247919082641602,
+      "si_sdr_improvement": 1.1398210525512695,
+      "output_input_rms_ratio": 0.9999998807907104,
+      "loudness_gain": 1.0248253345489502
+    },
+    {
+      "file": "mix_0084.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 8.838373184204102,
+      "noisy_si_sdr": 8.57829475402832,
+      "enhanced_si_sdr": 14.308832168579102,
+      "si_sdr_improvement": 5.730537414550781,
+      "output_input_rms_ratio": 0.9999999403953552,
+      "loudness_gain": 1.0907114744186401
+    },
+    {
+      "file": "mix_0085.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 7.078255653381348,
+      "noisy_si_sdr": 7.11733865737915,
+      "enhanced_si_sdr": 13.492450714111328,
+      "si_sdr_improvement": 6.375112056732178,
+      "output_input_rms_ratio": 0.9999997615814209,
+      "loudness_gain": 1.1382591724395752
+    },
+    {
+      "file": "mix_0086.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 9.086736679077148,
+      "noisy_si_sdr": 8.343426704406738,
+      "enhanced_si_sdr": 18.21660804748535,
+      "si_sdr_improvement": 9.873181343078613,
+      "output_input_rms_ratio": 0.9999999403953552,
+      "loudness_gain": 1.0566647052764893
+    },
+    {
+      "file": "mix_0087.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 2.749009132385254,
+      "noisy_si_sdr": 2.2914280891418457,
+      "enhanced_si_sdr": 6.568929672241211,
+      "si_sdr_improvement": 4.277501583099365,
+      "output_input_rms_ratio": 0.9999999403953552,
+      "loudness_gain": 1.1625707149505615
+    },
+    {
+      "file": "mix_0088.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 7.59311580657959,
+      "noisy_si_sdr": 7.4588942527771,
+      "enhanced_si_sdr": 17.412052154541016,
+      "si_sdr_improvement": 9.953157901763916,
+      "output_input_rms_ratio": 0.9999999403953552,
+      "loudness_gain": 1.0564961433410645
+    },
+    {
+      "file": "mix_0089.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 8.838171005249023,
+      "noisy_si_sdr": 8.607735633850098,
+      "enhanced_si_sdr": 19.0848331451416,
+      "si_sdr_improvement": 10.477097511291504,
+      "output_input_rms_ratio": 0.9999997019767761,
+      "loudness_gain": 1.0930148363113403
+    },
+    {
+      "file": "mix_0090.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": -3.7554099559783936,
+      "noisy_si_sdr": -3.817746877670288,
+      "enhanced_si_sdr": 10.904016494750977,
+      "si_sdr_improvement": 14.721763372421265,
+      "output_input_rms_ratio": 0.9999991655349731,
+      "loudness_gain": 2.1981568336486816
+    },
+    {
+      "file": "mix_0091.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 5.760040760040283,
+      "noisy_si_sdr": 5.0682220458984375,
+      "enhanced_si_sdr": 16.7771053314209,
+      "si_sdr_improvement": 11.708883285522461,
+      "output_input_rms_ratio": 0.9999997615814209,
+      "loudness_gain": 1.1164196729660034
+    },
+    {
+      "file": "mix_0092.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 8.094832420349121,
+      "noisy_si_sdr": 8.23838996887207,
+      "enhanced_si_sdr": 15.15693473815918,
+      "si_sdr_improvement": 6.918544769287109,
+      "output_input_rms_ratio": 1.0,
+      "loudness_gain": 1.0649821758270264
+    },
+    {
+      "file": "mix_0093.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 2.167819023132324,
+      "noisy_si_sdr": 2.2507710456848145,
+      "enhanced_si_sdr": 11.757539749145508,
+      "si_sdr_improvement": 9.506768703460693,
+      "output_input_rms_ratio": 0.9999996423721313,
+      "loudness_gain": 1.3261964321136475
+    },
+    {
+      "file": "mix_0094.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": -2.5759639739990234,
+      "noisy_si_sdr": -3.1643223762512207,
+      "enhanced_si_sdr": 11.419485092163086,
+      "si_sdr_improvement": 14.583807468414307,
+      "output_input_rms_ratio": 0.7718217372894287,
+      "loudness_gain": 1.306917428970337
+    },
+    {
+      "file": "mix_0095.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": -2.1548774242401123,
+      "noisy_si_sdr": -1.8323034048080444,
+      "enhanced_si_sdr": 10.072712898254395,
+      "si_sdr_improvement": 11.905016303062439,
+      "output_input_rms_ratio": 0.9999995231628418,
+      "loudness_gain": 1.6409835815429688
+    },
+    {
+      "file": "mix_0096.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 14.925690650939941,
+      "noisy_si_sdr": 14.419464111328125,
+      "enhanced_si_sdr": 20.033851623535156,
+      "si_sdr_improvement": 5.614387512207031,
+      "output_input_rms_ratio": 0.9999998807907104,
+      "loudness_gain": 1.0209800004959106
+    },
+    {
+      "file": "mix_0097.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 4.238308429718018,
+      "noisy_si_sdr": 4.561706066131592,
+      "enhanced_si_sdr": 15.94630241394043,
+      "si_sdr_improvement": 11.384596347808838,
+      "output_input_rms_ratio": 0.9999999403953552,
+      "loudness_gain": 1.1666960716247559
+    },
+    {
+      "file": "mix_0098.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": -2.016134738922119,
+      "noisy_si_sdr": -2.086452007293701,
+      "enhanced_si_sdr": 13.111883163452148,
+      "si_sdr_improvement": 15.19833517074585,
+      "output_input_rms_ratio": 0.9999995231628418,
+      "loudness_gain": 1.5762042999267578
+    },
+    {
+      "file": "mix_0099.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 6.466512680053711,
+      "noisy_si_sdr": 6.203106880187988,
+      "enhanced_si_sdr": 15.32487964630127,
+      "si_sdr_improvement": 9.121772766113281,
+      "output_input_rms_ratio": 0.9999999403953552,
+      "loudness_gain": 1.1292792558670044
+    },
+    {
+      "file": "mix_0100.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 5.605247497558594,
+      "noisy_si_sdr": 5.598968505859375,
+      "enhanced_si_sdr": 15.439396858215332,
+      "si_sdr_improvement": 9.840428352355957,
+      "output_input_rms_ratio": 0.9999998211860657,
+      "loudness_gain": 1.1350188255310059
+    },
+    {
+      "file": "mix_0101.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 13.666303634643555,
+      "noisy_si_sdr": 13.45361614227295,
+      "enhanced_si_sdr": 18.790498733520508,
+      "si_sdr_improvement": 5.336882591247559,
+      "output_input_rms_ratio": 1.0,
+      "loudness_gain": 1.003768801689148
+    },
+    {
+      "file": "mix_0102.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": -4.137670516967773,
+      "noisy_si_sdr": -4.824540138244629,
+      "enhanced_si_sdr": 0.06781857460737228,
+      "si_sdr_improvement": 4.892358712852001,
+      "output_input_rms_ratio": 0.9999997019767761,
+      "loudness_gain": 1.4177958965301514
+    },
+    {
+      "file": "mix_0103.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": -3.88301157951355,
+      "noisy_si_sdr": -4.204908847808838,
+      "enhanced_si_sdr": 1.2017072439193726,
+      "si_sdr_improvement": 5.4066160917282104,
+      "output_input_rms_ratio": 0.9999998211860657,
+      "loudness_gain": 1.5048240423202515
+    },
+    {
+      "file": "mix_0104.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 1.3201487064361572,
+      "noisy_si_sdr": 1.163352131843567,
+      "enhanced_si_sdr": 14.99531364440918,
+      "si_sdr_improvement": 13.831961512565613,
+      "output_input_rms_ratio": 0.9999997019767761,
+      "loudness_gain": 1.3195247650146484
+    },
+    {
+      "file": "mix_0105.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 12.785487174987793,
+      "noisy_si_sdr": 12.226799964904785,
+      "enhanced_si_sdr": 18.619243621826172,
+      "si_sdr_improvement": 6.392443656921387,
+      "output_input_rms_ratio": 1.0,
+      "loudness_gain": 1.0440741777420044
+    },
+    {
+      "file": "mix_0106.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 5.181820392608643,
+      "noisy_si_sdr": 4.545032024383545,
+      "enhanced_si_sdr": 17.194610595703125,
+      "si_sdr_improvement": 12.64957857131958,
+      "output_input_rms_ratio": 0.9999996423721313,
+      "loudness_gain": 1.2268036603927612
+    },
+    {
+      "file": "mix_0107.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 10.633358001708984,
+      "noisy_si_sdr": 10.682588577270508,
+      "enhanced_si_sdr": 14.75461196899414,
+      "si_sdr_improvement": 4.072023391723633,
+      "output_input_rms_ratio": 1.0,
+      "loudness_gain": 1.0114195346832275
+    },
+    {
+      "file": "mix_0108.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 7.306905746459961,
+      "noisy_si_sdr": 7.067493438720703,
+      "enhanced_si_sdr": 12.12738037109375,
+      "si_sdr_improvement": 5.059886932373047,
+      "output_input_rms_ratio": 0.9999999403953552,
+      "loudness_gain": 1.0482289791107178
+    },
+    {
+      "file": "mix_0109.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 6.104212284088135,
+      "noisy_si_sdr": 6.095209121704102,
+      "enhanced_si_sdr": 21.797042846679688,
+      "si_sdr_improvement": 15.701833724975586,
+      "output_input_rms_ratio": 0.9999999403953552,
+      "loudness_gain": 1.1170790195465088
+    },
+    {
+      "file": "mix_0110.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": -4.677493095397949,
+      "noisy_si_sdr": -5.028979778289795,
+      "enhanced_si_sdr": 0.8909444808959961,
+      "si_sdr_improvement": 5.919924259185791,
+      "output_input_rms_ratio": 0.9708262085914612,
+      "loudness_gain": 1.62041437625885
+    },
+    {
+      "file": "mix_0111.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": -1.5792245864868164,
+      "noisy_si_sdr": -1.604844331741333,
+      "enhanced_si_sdr": 16.66114044189453,
+      "si_sdr_improvement": 18.265984773635864,
+      "output_input_rms_ratio": 0.9999995231628418,
+      "loudness_gain": 1.5481290817260742
+    },
+    {
+      "file": "mix_0112.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 3.7995827198028564,
+      "noisy_si_sdr": 3.9329030513763428,
+      "enhanced_si_sdr": 17.068614959716797,
+      "si_sdr_improvement": 13.135711908340454,
+      "output_input_rms_ratio": 0.9999997019767761,
+      "loudness_gain": 1.180692195892334
+    },
+    {
+      "file": "mix_0113.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 13.88558292388916,
+      "noisy_si_sdr": 13.68059253692627,
+      "enhanced_si_sdr": 20.358407974243164,
+      "si_sdr_improvement": 6.6778154373168945,
+      "output_input_rms_ratio": 1.0000001192092896,
+      "loudness_gain": 1.0146671533584595
+    },
+    {
+      "file": "mix_0114.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 1.0847022533416748,
+      "noisy_si_sdr": 0.7014398574829102,
+      "enhanced_si_sdr": 8.059985160827637,
+      "si_sdr_improvement": 7.358545303344727,
+      "output_input_rms_ratio": 0.9999995827674866,
+      "loudness_gain": 1.3901517391204834
+    },
+    {
+      "file": "mix_0115.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 0.19569945335388184,
+      "noisy_si_sdr": 0.1903536170721054,
+      "enhanced_si_sdr": 12.952742576599121,
+      "si_sdr_improvement": 12.762388959527016,
+      "output_input_rms_ratio": 0.9999997019767761,
+      "loudness_gain": 1.3778772354125977
+    },
+    {
+      "file": "mix_0116.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 5.203034400939941,
+      "noisy_si_sdr": 4.891341686248779,
+      "enhanced_si_sdr": 17.223308563232422,
+      "si_sdr_improvement": 12.331966876983643,
+      "output_input_rms_ratio": 0.9999999403953552,
+      "loudness_gain": 1.1345959901809692
+    },
+    {
+      "file": "mix_0117.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 3.94987154006958,
+      "noisy_si_sdr": 3.265902519226074,
+      "enhanced_si_sdr": 17.998937606811523,
+      "si_sdr_improvement": 14.73303508758545,
+      "output_input_rms_ratio": 0.9999998211860657,
+      "loudness_gain": 1.1831600666046143
+    },
+    {
+      "file": "mix_0118.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 5.797577381134033,
+      "noisy_si_sdr": 5.0956926345825195,
+      "enhanced_si_sdr": 11.158306121826172,
+      "si_sdr_improvement": 6.062613487243652,
+      "output_input_rms_ratio": 0.9999998211860657,
+      "loudness_gain": 1.1725819110870361
+    },
+    {
+      "file": "mix_0119.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 1.8598153591156006,
+      "noisy_si_sdr": 1.8973714113235474,
+      "enhanced_si_sdr": 16.41446876525879,
+      "si_sdr_improvement": 14.517097353935242,
+      "output_input_rms_ratio": 0.9999998807907104,
+      "loudness_gain": 1.2609355449676514
+    },
+    {
+      "file": "mix_0120.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 11.968507766723633,
+      "noisy_si_sdr": 11.370809555053711,
+      "enhanced_si_sdr": 13.870635986328125,
+      "si_sdr_improvement": 2.499826431274414,
+      "output_input_rms_ratio": 1.0000001192092896,
+      "loudness_gain": 1.0210069417953491
+    },
+    {
+      "file": "mix_0121.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": -2.065154552459717,
+      "noisy_si_sdr": -2.2290656566619873,
+      "enhanced_si_sdr": 2.949779510498047,
+      "si_sdr_improvement": 5.178845167160034,
+      "output_input_rms_ratio": 0.9999996423721313,
+      "loudness_gain": 1.3640105724334717
+    },
+    {
+      "file": "mix_0122.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 14.233270645141602,
+      "noisy_si_sdr": 13.855876922607422,
+      "enhanced_si_sdr": 16.25501251220703,
+      "si_sdr_improvement": 2.3991355895996094,
+      "output_input_rms_ratio": 0.9999998807907104,
+      "loudness_gain": 1.0266977548599243
+    },
+    {
+      "file": "mix_0123.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 0.11608581990003586,
+      "noisy_si_sdr": -0.11170212179422379,
+      "enhanced_si_sdr": 13.957500457763672,
+      "si_sdr_improvement": 14.069202579557896,
+      "output_input_rms_ratio": 0.9999997615814209,
+      "loudness_gain": 1.3778694868087769
+    },
+    {
+      "file": "mix_0124.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 6.012831687927246,
+      "noisy_si_sdr": 5.638553619384766,
+      "enhanced_si_sdr": 12.144326210021973,
+      "si_sdr_improvement": 6.505772590637207,
+      "output_input_rms_ratio": 0.9999998211860657,
+      "loudness_gain": 1.1103178262710571
+    },
+    {
+      "file": "mix_0125.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 8.191308975219727,
+      "noisy_si_sdr": 8.291243553161621,
+      "enhanced_si_sdr": 17.165678024291992,
+      "si_sdr_improvement": 8.874434471130371,
+      "output_input_rms_ratio": 1.0,
+      "loudness_gain": 1.0744482278823853
+    },
+    {
+      "file": "mix_0126.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": -1.9268302917480469,
+      "noisy_si_sdr": -2.4328529834747314,
+      "enhanced_si_sdr": 2.10884165763855,
+      "si_sdr_improvement": 4.541694641113281,
+      "output_input_rms_ratio": 0.965461790561676,
+      "loudness_gain": 1.2209619283676147
+    },
+    {
+      "file": "mix_0127.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 0.9046393632888794,
+      "noisy_si_sdr": 0.8998125195503235,
+      "enhanced_si_sdr": 13.832643508911133,
+      "si_sdr_improvement": 12.93283098936081,
+      "output_input_rms_ratio": 0.9999997019767761,
+      "loudness_gain": 1.3020294904708862
+    },
+    {
+      "file": "mix_0128.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 12.098182678222656,
+      "noisy_si_sdr": 11.631251335144043,
+      "enhanced_si_sdr": 14.128570556640625,
+      "si_sdr_improvement": 2.497319221496582,
+      "output_input_rms_ratio": 1.0000001192092896,
+      "loudness_gain": 0.9967572689056396
+    },
+    {
+      "file": "mix_0129.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 3.9359686374664307,
+      "noisy_si_sdr": 3.910855770111084,
+      "enhanced_si_sdr": 17.431352615356445,
+      "si_sdr_improvement": 13.520496845245361,
+      "output_input_rms_ratio": 0.9999997615814209,
+      "loudness_gain": 1.1705780029296875
+    },
+    {
+      "file": "mix_0130.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": -4.084554195404053,
+      "noisy_si_sdr": -4.155619144439697,
+      "enhanced_si_sdr": 1.1583914756774902,
+      "si_sdr_improvement": 5.3140106201171875,
+      "output_input_rms_ratio": 0.9999997019767761,
+      "loudness_gain": 1.5371818542480469
+    },
+    {
+      "file": "mix_0131.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 9.393729209899902,
+      "noisy_si_sdr": 8.84201717376709,
+      "enhanced_si_sdr": 15.425434112548828,
+      "si_sdr_improvement": 6.583416938781738,
+      "output_input_rms_ratio": 0.9999998807907104,
+      "loudness_gain": 1.0387858152389526
+    },
+    {
+      "file": "mix_0132.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 6.078512668609619,
+      "noisy_si_sdr": 5.730229377746582,
+      "enhanced_si_sdr": 23.45047950744629,
+      "si_sdr_improvement": 17.720250129699707,
+      "output_input_rms_ratio": 0.9999998211860657,
+      "loudness_gain": 1.1246585845947266
+    },
+    {
+      "file": "mix_0133.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 12.278436660766602,
+      "noisy_si_sdr": 12.311749458312988,
+      "enhanced_si_sdr": 15.041223526000977,
+      "si_sdr_improvement": 2.7294740676879883,
+      "output_input_rms_ratio": 0.9999998807907104,
+      "loudness_gain": 1.062381386756897
+    },
+    {
+      "file": "mix_0134.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 12.371529579162598,
+      "noisy_si_sdr": 11.967950820922852,
+      "enhanced_si_sdr": 15.1951265335083,
+      "si_sdr_improvement": 3.227175712585449,
+      "output_input_rms_ratio": 0.9999998807907104,
+      "loudness_gain": 1.0371754169464111
+    },
+    {
+      "file": "mix_0135.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 1.5998854637145996,
+      "noisy_si_sdr": 1.1517678499221802,
+      "enhanced_si_sdr": 16.33159828186035,
+      "si_sdr_improvement": 15.179830431938171,
+      "output_input_rms_ratio": 0.9999997019767761,
+      "loudness_gain": 1.273582100868225
+    },
+    {
+      "file": "mix_0136.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 8.222790718078613,
+      "noisy_si_sdr": 7.593221664428711,
+      "enhanced_si_sdr": 19.631633758544922,
+      "si_sdr_improvement": 12.038412094116211,
+      "output_input_rms_ratio": 1.0,
+      "loudness_gain": 1.059333324432373
+    },
+    {
+      "file": "mix_0137.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 2.8158152103424072,
+      "noisy_si_sdr": 2.0059728622436523,
+      "enhanced_si_sdr": 16.36174964904785,
+      "si_sdr_improvement": 14.3557767868042,
+      "output_input_rms_ratio": 0.9999998211860657,
+      "loudness_gain": 1.2169251441955566
+    },
+    {
+      "file": "mix_0138.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 7.767629146575928,
+      "noisy_si_sdr": 7.478261947631836,
+      "enhanced_si_sdr": 13.831382751464844,
+      "si_sdr_improvement": 6.353120803833008,
+      "output_input_rms_ratio": 0.9999998211860657,
+      "loudness_gain": 1.0821034908294678
+    },
+    {
+      "file": "mix_0139.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 10.327415466308594,
+      "noisy_si_sdr": 9.863842010498047,
+      "enhanced_si_sdr": 19.994291305541992,
+      "si_sdr_improvement": 10.130449295043945,
+      "output_input_rms_ratio": 0.9999998807907104,
+      "loudness_gain": 1.0492223501205444
+    },
+    {
+      "file": "mix_0140.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": -1.9776766300201416,
+      "noisy_si_sdr": -1.7265903949737549,
+      "enhanced_si_sdr": 2.839515209197998,
+      "si_sdr_improvement": 4.566105604171753,
+      "output_input_rms_ratio": 0.9999996423721313,
+      "loudness_gain": 1.4315496683120728
+    },
+    {
+      "file": "mix_0141.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": -2.2103426456451416,
+      "noisy_si_sdr": -2.4723987579345703,
+      "enhanced_si_sdr": 13.761743545532227,
+      "si_sdr_improvement": 16.234142303466797,
+      "output_input_rms_ratio": 0.9555760622024536,
+      "loudness_gain": 1.5449849367141724
+    },
+    {
+      "file": "mix_0142.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 1.3883075714111328,
+      "noisy_si_sdr": 1.204827904701233,
+      "enhanced_si_sdr": 7.439352035522461,
+      "si_sdr_improvement": 6.234524130821228,
+      "output_input_rms_ratio": 0.9999997019767761,
+      "loudness_gain": 1.2486242055892944
+    },
+    {
+      "file": "mix_0143.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 3.094642400741577,
+      "noisy_si_sdr": 3.2726364135742188,
+      "enhanced_si_sdr": 16.196516036987305,
+      "si_sdr_improvement": 12.923879623413086,
+      "output_input_rms_ratio": 0.9999998211860657,
+      "loudness_gain": 1.2229459285736084
+    },
+    {
+      "file": "mix_0144.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": -1.4734762907028198,
+      "noisy_si_sdr": -1.254446029663086,
+      "enhanced_si_sdr": 3.4670801162719727,
+      "si_sdr_improvement": 4.721526145935059,
+      "output_input_rms_ratio": 0.9999997019767761,
+      "loudness_gain": 1.4588689804077148
+    },
+    {
+      "file": "mix_0145.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 14.638466835021973,
+      "noisy_si_sdr": 14.637338638305664,
+      "enhanced_si_sdr": 12.91252326965332,
+      "si_sdr_improvement": -1.7248153686523438,
+      "output_input_rms_ratio": 0.9999998807907104,
+      "loudness_gain": 1.022870659828186
+    },
+    {
+      "file": "mix_0146.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": -3.0727548599243164,
+      "noisy_si_sdr": -3.57442045211792,
+      "enhanced_si_sdr": 1.4188096523284912,
+      "si_sdr_improvement": 4.993230104446411,
+      "output_input_rms_ratio": 0.9999998211860657,
+      "loudness_gain": 1.4195607900619507
+    },
+    {
+      "file": "mix_0147.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 9.864372253417969,
+      "noisy_si_sdr": 9.268380165100098,
+      "enhanced_si_sdr": 20.89461898803711,
+      "si_sdr_improvement": 11.626238822937012,
+      "output_input_rms_ratio": 1.0,
+      "loudness_gain": 1.0257641077041626
+    },
+    {
+      "file": "mix_0148.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 11.076757431030273,
+      "noisy_si_sdr": 10.83127212524414,
+      "enhanced_si_sdr": 13.480595588684082,
+      "si_sdr_improvement": 2.6493234634399414,
+      "output_input_rms_ratio": 1.0,
+      "loudness_gain": 1.0479469299316406
+    },
+    {
+      "file": "mix_0149.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 12.795266151428223,
+      "noisy_si_sdr": 12.522706985473633,
+      "enhanced_si_sdr": 22.006065368652344,
+      "si_sdr_improvement": 9.483358383178711,
+      "output_input_rms_ratio": 0.9999998807907104,
+      "loudness_gain": 1.0179160833358765
+    },
+    {
+      "file": "mix_0150.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 0.2339869886636734,
+      "noisy_si_sdr": -0.3251153826713562,
+      "enhanced_si_sdr": 13.300675392150879,
+      "si_sdr_improvement": 13.625790774822235,
+      "output_input_rms_ratio": 0.9999995231628418,
+      "loudness_gain": 1.3909903764724731
+    },
+    {
+      "file": "mix_0151.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 0.491998553276062,
+      "noisy_si_sdr": -0.16656480729579926,
+      "enhanced_si_sdr": 6.001006126403809,
+      "si_sdr_improvement": 6.167570933699608,
+      "output_input_rms_ratio": 0.9999999403953552,
+      "loudness_gain": 1.2383102178573608
+    },
+    {
+      "file": "mix_0152.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 1.93350088596344,
+      "noisy_si_sdr": 2.165435552597046,
+      "enhanced_si_sdr": 18.624244689941406,
+      "si_sdr_improvement": 16.45880913734436,
+      "output_input_rms_ratio": 0.9999997615814209,
+      "loudness_gain": 1.271649956703186
+    },
+    {
+      "file": "mix_0153.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": -1.225939393043518,
+      "noisy_si_sdr": -1.0481209754943848,
+      "enhanced_si_sdr": 13.820391654968262,
+      "si_sdr_improvement": 14.868512630462646,
+      "output_input_rms_ratio": 0.999999463558197,
+      "loudness_gain": 1.539527416229248
+    },
+    {
+      "file": "mix_0154.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 3.7976531982421875,
+      "noisy_si_sdr": 3.1155362129211426,
+      "enhanced_si_sdr": 18.220460891723633,
+      "si_sdr_improvement": 15.10492467880249,
+      "output_input_rms_ratio": 0.9999997615814209,
+      "loudness_gain": 1.1793497800827026
+    },
+    {
+      "file": "mix_0155.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 11.658260345458984,
+      "noisy_si_sdr": 11.464130401611328,
+      "enhanced_si_sdr": 19.707931518554688,
+      "si_sdr_improvement": 8.24380111694336,
+      "output_input_rms_ratio": 1.0,
+      "loudness_gain": 1.020452857017517
+    },
+    {
+      "file": "mix_0156.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 3.035600185394287,
+      "noisy_si_sdr": 2.1253654956817627,
+      "enhanced_si_sdr": 20.18623161315918,
+      "si_sdr_improvement": 18.060866117477417,
+      "output_input_rms_ratio": 0.9999997615814209,
+      "loudness_gain": 1.1987102031707764
+    },
+    {
+      "file": "mix_0157.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 7.1902923583984375,
+      "noisy_si_sdr": 7.107222080230713,
+      "enhanced_si_sdr": 16.988828659057617,
+      "si_sdr_improvement": 9.881606578826904,
+      "output_input_rms_ratio": 0.9999997615814209,
+      "loudness_gain": 1.0891000032424927
+    },
+    {
+      "file": "mix_0158.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 4.286129951477051,
+      "noisy_si_sdr": 3.6235227584838867,
+      "enhanced_si_sdr": 18.210453033447266,
+      "si_sdr_improvement": 14.586930274963379,
+      "output_input_rms_ratio": 0.9999999403953552,
+      "loudness_gain": 1.1758460998535156
+    },
+    {
+      "file": "mix_0159.wav",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": -3.3147284984588623,
+      "noisy_si_sdr": -3.2312097549438477,
+      "enhanced_si_sdr": 2.7972869873046875,
+      "si_sdr_improvement": 6.028496742248535,
+      "output_input_rms_ratio": 0.9999995827674866,
+      "loudness_gain": 1.6058263778686523
+    }
+  ]
+}

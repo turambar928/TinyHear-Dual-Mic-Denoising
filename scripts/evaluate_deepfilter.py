@@ -12,7 +12,7 @@ from ha_denoise.audio import read_wav, write_wav
 from ha_denoise.features import enhance_with_deep_filter, extract_features, feature_config_from_dict, match_loudness, rms_ratio
 from ha_denoise.metrics import si_sdr
 from ha_denoise.model import TinyDeepFilterTCN
-from ha_denoise.spatial import delay_and_sum_beamform
+from ha_denoise.spatial import apply_spatial_frontend
 
 
 def load_model(checkpoint: str, device: str):
@@ -48,7 +48,7 @@ def process_one(model, cfg, mix_path: Path, device: str, loudness_match: bool, t
     _, clean_np = read_wav(clean_path, cfg.sample_rate)
     mix = torch.from_numpy(mix_np[:, :2].T).to(device)
     clean = torch.from_numpy(clean_np[:, 0]).to(device)
-    beamformed, beam_lag = delay_and_sum_beamform(mix, max_lag=8, analysis_samples=cfg.sample_rate // 2)
+    beamformed, spatial_info = apply_spatial_frontend(mix, cfg, max_lag=8, analysis_samples=cfg.sample_rate // 2)
     feat = extract_features(mix, cfg).transpose(0, 1).unsqueeze(0)
     gain, coef = model(feat)
     enhanced = enhance_with_deep_filter(beamformed, gain.squeeze(0).transpose(0, 1), coef.squeeze(0), cfg)
@@ -60,7 +60,7 @@ def process_one(model, cfg, mix_path: Path, device: str, loudness_match: bool, t
     loudness_gain = torch.ones((), device=device, dtype=enhanced.dtype)
     if loudness_match:
         enhanced, loudness_gain = match_loudness(beamformed, enhanced, target_rms_ratio, max_gain_db)
-    return sr, noisy, beamformed, clean, enhanced, beam_lag, float(loudness_gain.detach().cpu())
+    return sr, noisy, beamformed, clean, enhanced, spatial_info, float(loudness_gain.detach().cpu())
 
 
 def main() -> None:
@@ -92,7 +92,7 @@ def main() -> None:
     rows = []
     with torch.no_grad():
         for mix_path in tqdm(mix_files):
-            sr, noisy, beamformed, clean, enhanced, beam_lag, gain = process_one(
+            sr, noisy, beamformed, clean, enhanced, spatial_info, gain = process_one(
                 model,
                 cfg,
                 mix_path,
@@ -106,7 +106,10 @@ def main() -> None:
             rows.append(
                 {
                     "file": mix_path.name,
-                    "beamform_lag_samples": beam_lag,
+                    "spatial_frontend": spatial_info.get("mode"),
+                    "beamform_lag_samples": spatial_info.get("lag"),
+                    "mean_coherence": spatial_info.get("mean_coherence"),
+                    "mean_spatial_gain": spatial_info.get("mean_spatial_gain"),
                     "beamformed_si_sdr": float(si_sdr(beamformed.detach().cpu(), clean.detach().cpu())),
                     "noisy_si_sdr": noisy_score,
                     "enhanced_si_sdr": enhanced_score,
@@ -138,7 +141,7 @@ def main() -> None:
         listen_rows = []
         for out_idx, row_idx in enumerate(selected):
             mix_path = mix_files[row_idx]
-            sr, noisy, beamformed, clean, enhanced, beam_lag, gain = process_one(
+            sr, noisy, beamformed, clean, enhanced, spatial_info, gain = process_one(
                 model,
                 cfg,
                 mix_path,
@@ -163,7 +166,8 @@ def main() -> None:
                 {
                     "sample": prefix,
                     "source_mix": mix_path.name,
-                    "beamform_lag_samples": beam_lag,
+                    "spatial_frontend": spatial_info.get("mode"),
+                    "beamform_lag_samples": spatial_info.get("lag"),
                     "beamformed_si_sdr": row.get("beamformed_si_sdr"),
                     "loudness_gain": gain,
                     "noisy_si_sdr": row["noisy_si_sdr"],

@@ -9,16 +9,16 @@
 ## Demo
 
 - 本地网页试听 demo：`http://127.0.0.1:38179/runs/audio_demo/index.html`
-- 当前 demo 包含多组 noisy/clean/enhanced 对比。建议先听 `tiny_deepfilter_beamform` 的 `Realtime`，这是当前主力版本；再对比 `tiny_deepfilter_quiet_loud` 和 `tiny_deepfilter_residual_loud` 观察底噪/人声细节取舍。
+- 当前 demo 包含多组 noisy/clean/enhanced 对比。建议先听 `tiny_deepfilter_coherence_mwf` 的 `Realtime`，这是当前主力版本；再对比 `tiny_deepfilter_beamform` 和 `tiny_deepfilter_quiet_loud` 观察底噪/人声细节取舍。
 - 如果本地服务没启动，可在项目根目录运行 `python3 -m http.server 38179`，然后打开上面的链接。
 
 ## 当前结果
 
 - 推荐基线：CMU ARCTIC clean speech + DEMAND 多通道环境噪声。
-- 推荐部署方案：双麦 delay-and-sum beamforming + Tiny DeepFilter 后端。
+- 推荐部署方案：双麦 coherence-weighted spatial frontend + Tiny DeepFilter 后端。
 - 模型规模：`137,984` 参数，满足 150K 目标。
 - 实时链路：16 kHz，256 点 FFT，64 samples hop，4 ms 步进。
-- Python eval：当前主力 `tiny_deepfilter_beamform` 固定 160 条验证集 SI-SDR improvement 约 `+9.39 dB`，5 条听感样例约 `+9.45 dB`，输出/输入 RMS 比约 `0.99`；上一版 `tiny_deepfilter_quiet_loud` 约 `8.57 dB`，`tiny_deepfilter_residual_loud` 约 `8.29 dB`。当前版本是在双麦空间前端之后做轻量 DeepFilter，不再只靠频带 mask。
+- Python eval：当前主力 `tiny_deepfilter_coherence_mwf` 固定 160 条验证集 SI-SDR improvement 约 `+9.46 dB`，输出/输入 RMS 比约 `0.99`；上一版 `tiny_deepfilter_beamform` 约 `+9.39 dB`，`tiny_deepfilter_quiet_loud` 约 `8.57 dB`。当前版本是在双麦空间前端之后做轻量 DeepFilter，不再只靠频带 mask。
 - C Q15 模型 reference：mean abs diff `0.01703`，streaming 与 batch Q15 完全一致。
 - C learned gate reference：gate abs diff `0.0000039` against Python gate。
 - C gated realtime DSP reference：mean abs diff `0.00078` against Python gated realtime reference。
@@ -29,7 +29,7 @@
 
 - 采样率：16 kHz。
 - 分帧：256 点 FFT，64 点 hop，算法步进 4 ms；模型严格因果，不使用未来帧。
-- 空间前端：双麦整数延时估计 + delay-and-sum beamforming。
+- 空间前端：双麦整数延时估计 + delay-and-sum，再用跨麦相干性做轻量 Wiener/Zelinski 风格抑制。
 - 后端模型：Tiny DeepFilter TCN，控制在 100-150K 参数预算内。
 - 训练目标：对 beamformed mono 做轻量复数滤波/增强，而不是只做频带 mask。
 - 输出：对 beamformed mono 进行端侧可实现的增强重构。
@@ -71,9 +71,9 @@ python scripts/enhance_streaming.py --checkpoint runs/tiny_tcn/best.pt --input d
 # 完整实时链路增强：流式 STFT + 逐帧模型 + IRFFT overlap-add
 python scripts/enhance_realtime.py --checkpoint runs/tiny_tcn/best.pt --input data/synth/val/mix_0000.wav --output enhanced_realtime.wav
 
-# 最新听感检查：Tiny DeepFilter + beamforming
+# 最新听感检查：Tiny DeepFilter + coherence-weighted spatial frontend
 PYTHONPATH=src python3 scripts/enhance_deepfilter.py \
-  --checkpoint runs/arctic_demand_tiny_deepfilter_beamform/best.pt \
+  --checkpoint runs/arctic_demand_tiny_deepfilter_coherence_mwf/best.pt \
   --input data/arctic_demand_eval/val/mix_0000.wav \
   --output enhanced_deepfilter.wav \
   --loudness-match --target-rms-ratio 1.00 --max-gain-db 8.0
