@@ -8,6 +8,7 @@ import torch
 from ha_denoise.audio import read_wav, write_wav
 from ha_denoise.features import enhance_with_deep_filter, extract_features, feature_config_from_dict, match_loudness
 from ha_denoise.model import TinyDeepFilterTCN
+from ha_denoise.spatial import delay_and_sum_beamform
 
 
 def load_model(checkpoint: str, device: str):
@@ -46,11 +47,13 @@ def main() -> None:
         raise ValueError("input wav must be stereo dual-mic audio")
     mix = torch.from_numpy(wav[:, :2].T).to(args.device)
     with torch.no_grad():
+        beamformed, lag = delay_and_sum_beamform(mix, max_lag=8, analysis_samples=cfg.sample_rate // 2)
         feat = extract_features(mix, cfg).transpose(0, 1).unsqueeze(0)
         gain, coef = model(feat)
-        enhanced = enhance_with_deep_filter(mix[0], gain.squeeze(0).transpose(0, 1), coef.squeeze(0), cfg)
+        enhanced = enhance_with_deep_filter(beamformed, gain.squeeze(0).transpose(0, 1), coef.squeeze(0), cfg)
         if args.loudness_match:
-            enhanced, _ = match_loudness(mix[0], enhanced, args.target_rms_ratio, args.max_gain_db)
+            enhanced, _ = match_loudness(beamformed, enhanced, args.target_rms_ratio, args.max_gain_db)
+    print(f"beamform_lag_samples={lag}")
     write_wav(args.output, sr, enhanced.detach().cpu().numpy())
 
 

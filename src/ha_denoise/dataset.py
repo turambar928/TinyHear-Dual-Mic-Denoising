@@ -11,6 +11,7 @@ from torch.utils.data import Dataset
 
 from .audio import normalize_peak, read_wav, rms, write_wav
 from .features import FeatureConfig, extract_features, make_band_matrix, target_band_mask
+from .spatial import delay_and_sum_beamform
 
 
 def fractional_delay(x: np.ndarray, delay_samples: float) -> np.ndarray:
@@ -168,11 +169,12 @@ class WavPairDataset(Dataset):
 
         mix_t = torch.from_numpy(mix.astype(np.float32))
         clean_t = torch.from_numpy(clean_pair.astype(np.float32))
+        beamformed, _ = delay_and_sum_beamform(mix_t, max_lag=8, analysis_samples=self.cfg.sample_rate // 2)
         feat = extract_features(mix_t, self.cfg, self.band_matrix)
-        mask = target_band_mask(mix_t[0], clean_t[0], self.cfg, self.band_matrix)
+        mask = target_band_mask(beamformed, clean_t[0], self.cfg, self.band_matrix)
         t = min(feat.shape[0], mask.shape[0])
         if self.return_audio:
-            return feat[:t], mask[:t], mix_t[0], clean_t[0]
+            return feat[:t], mask[:t], beamformed, clean_t[0]
         return feat[:t], mask[:t]
 
 

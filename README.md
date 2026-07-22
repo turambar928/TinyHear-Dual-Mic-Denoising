@@ -4,21 +4,21 @@
 
 双麦端侧上行降噪原型。
 
-这个项目实现一个面向助听器/耳戴设备的双麦上行降噪原型：双通道音频输入，模型预测 32 个频带的软掩蔽，最后对参考麦克风频谱做增强重构。
+这个项目实现一个面向助听器/耳戴设备的双麦上行降噪原型：先做双麦空间前端，再用轻量 DeepFilter 做端侧增强。
 
 ## Demo
 
 - 本地网页试听 demo：`http://127.0.0.1:38179/runs/audio_demo/index.html`
-- 当前 demo 包含多组 noisy/clean/enhanced 对比。建议先听 `tiny_deepfilter_quiet_loud` 的 `Realtime`，这是当前主力版本；再对比 `tiny_deepfilter_residual_loud` 和 `c120_psm_gain_sisdr_m1.50` 观察底噪/人声细节取舍。
+- 当前 demo 包含多组 noisy/clean/enhanced 对比。建议先听 `tiny_deepfilter_beamform` 的 `Realtime`，这是当前主力版本；再对比 `tiny_deepfilter_quiet_loud` 和 `tiny_deepfilter_residual_loud` 观察底噪/人声细节取舍。
 - 如果本地服务没启动，可在项目根目录运行 `python3 -m http.server 38179`，然后打开上面的链接。
 
 ## 当前结果
 
 - 推荐基线：CMU ARCTIC clean speech + DEMAND 多通道环境噪声。
-- 推荐部署方案：`c116` 空间特征 TCN + `hidden=24` oracle-blend learned gate。
-- 模型规模：TCN `140,276` 参数，gate `9,265` 参数，总计 `149,541` 参数，满足 150K 目标。
+- 推荐部署方案：双麦 delay-and-sum beamforming + Tiny DeepFilter 后端。
+- 模型规模：`137,984` 参数，满足 150K 目标。
 - 实时链路：16 kHz，256 点 FFT，64 samples hop，4 ms 步进。
-- Python eval：当前主力 `tiny_deepfilter_quiet_loud` 全量 SI-SDR improvement 约 `8.57 dB`，输出/输入 RMS 比约 `0.99`；上一版 `tiny_deepfilter_residual_loud` 约 `8.29 dB`，旧 mask 主力 `c120_psm_gain_sisdr_m1.50` 约 `5.69 dB`。DeepFilter 版本不再只靠频带 mask，而是在低频预测多帧复数残差滤波器；quiet 版额外加入静音帧底噪约束。
+- Python eval：当前主力 `tiny_deepfilter_beamform` 固定 160 条验证集 SI-SDR improvement 约 `+9.39 dB`，5 条听感样例约 `+9.45 dB`，输出/输入 RMS 比约 `0.99`；上一版 `tiny_deepfilter_quiet_loud` 约 `8.57 dB`，`tiny_deepfilter_residual_loud` 约 `8.29 dB`。当前版本是在双麦空间前端之后做轻量 DeepFilter，不再只靠频带 mask。
 - C Q15 模型 reference：mean abs diff `0.01703`，streaming 与 batch Q15 完全一致。
 - C learned gate reference：gate abs diff `0.0000039` against Python gate。
 - C gated realtime DSP reference：mean abs diff `0.00078` against Python gated realtime reference。
@@ -29,11 +29,10 @@
 
 - 采样率：16 kHz。
 - 分帧：256 点 FFT，64 点 hop，算法步进 4 ms；模型严格因果，不使用未来帧。
-- 输入特征：参考麦与副麦的 32 频带 log power、频带能量比、IPD cos/sin、coherence，共 192 维。
-- 模型：Causal depthwise-separable TCN，推荐 `channels=116, blocks=8`。
-- learned gate：对整段/前缀特征做 mean/std pooling，MLP 判断增强或旁路，减少高 SNR 过处理。
-- 参数量：TCN + gate 共约 149.5K 参数，满足 100-150 KB 目标。
-- 输出：32 频带 mask，插值到 FFT bin 后乘到参考麦复数谱。
+- 空间前端：双麦整数延时估计 + delay-and-sum beamforming。
+- 后端模型：Tiny DeepFilter TCN，控制在 100-150K 参数预算内。
+- 训练目标：对 beamformed mono 做轻量复数滤波/增强，而不是只做频带 mask。
+- 输出：对 beamformed mono 进行端侧可实现的增强重构。
 - 整型路径：`scripts/export_int8.py` 会导出 per-tensor INT8 权重、scale 和 C 头文件；端侧可用 int8 卷积 + int32 累加实现。
 
 ## 数据集建议
@@ -72,9 +71,9 @@ python scripts/enhance_streaming.py --checkpoint runs/tiny_tcn/best.pt --input d
 # 完整实时链路增强：流式 STFT + 逐帧模型 + IRFFT overlap-add
 python scripts/enhance_realtime.py --checkpoint runs/tiny_tcn/best.pt --input data/synth/val/mix_0000.wav --output enhanced_realtime.wav
 
-# 最新听感检查：Tiny residual DeepFilter
+# 最新听感检查：Tiny DeepFilter + beamforming
 PYTHONPATH=src python3 scripts/enhance_deepfilter.py \
-  --checkpoint runs/arctic_demand_tiny_deepfilter_quiet/best.pt \
+  --checkpoint runs/arctic_demand_tiny_deepfilter_beamform/best.pt \
   --input data/arctic_demand_eval/val/mix_0000.wav \
   --output enhanced_deepfilter.wav \
   --loudness-match --target-rms-ratio 1.00 --max-gain-db 8.0
