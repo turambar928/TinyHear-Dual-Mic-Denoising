@@ -109,6 +109,46 @@ def residual_noise_loss(
     return torch.stack(losses).mean()
 
 
+def silence_floor_loss(
+    gain: torch.Tensor,
+    coef: torch.Tensor,
+    mix_refs: torch.Tensor,
+    clean_refs: torch.Tensor,
+    cfg: FeatureConfig,
+    silence_threshold: float,
+) -> torch.Tensor:
+    """Force clean-speech silence bins toward a lower output floor."""
+    window = torch.hann_window(cfg.n_fft, device=gain.device, dtype=mix_refs.dtype)
+    losses = []
+    threshold = float(max(silence_threshold, 1e-4))
+    for i in range(gain.shape[0]):
+        enhanced = enhance_with_deep_filter(mix_refs[i], gain[i].transpose(0, 1), coef[i], cfg)
+        n = min(enhanced.numel(), clean_refs[i].numel())
+        enh_spec = torch.stft(
+            enhanced[:n],
+            n_fft=cfg.n_fft,
+            hop_length=cfg.hop_length,
+            win_length=cfg.n_fft,
+            window=window,
+            center=True,
+            return_complex=True,
+        )
+        clean_spec = torch.stft(
+            clean_refs[i, :n],
+            n_fft=cfg.n_fft,
+            hop_length=cfg.hop_length,
+            win_length=cfg.n_fft,
+            window=window,
+            center=True,
+            return_complex=True,
+        )
+        clean_mag = clean_spec.abs()
+        frame_ref = clean_mag.mean(dim=0, keepdim=True).clamp_min(1e-5)
+        silence_weight = torch.clamp((threshold * frame_ref - clean_mag) / (threshold * frame_ref), 0.0, 1.0)
+        losses.append((enh_spec.abs() * silence_weight).sum() / silence_weight.sum().clamp_min(1.0))
+    return torch.stack(losses).mean()
+
+
 def run_epoch(
     model: TinyDeepFilterTCN,
     loader: DataLoader,
@@ -121,6 +161,8 @@ def run_epoch(
     coef_reg_weight: float,
     residual_noise_weight: float,
     residual_noise_threshold: float,
+    silence_floor_weight: float,
+    silence_threshold: float,
 ) -> float:
     train = optimizer is not None
     model.train(train)
@@ -151,6 +193,15 @@ def run_epoch(
                     clean_refs,
                     cfg,
                     residual_noise_threshold,
+                )
+            if silence_floor_weight > 0.0:
+                loss = loss + silence_floor_weight * silence_floor_loss(
+                    gain,
+                    coef,
+                    mix_refs,
+                    clean_refs,
+                    cfg,
+                    silence_threshold,
                 )
             if train:
                 optimizer.zero_grad(set_to_none=True)
@@ -189,6 +240,10 @@ def main() -> None:
     parser.add_argument("--coef-reg-weight", type=float, default=0.01)
     parser.add_argument("--residual-noise-loss-weight", type=float, default=0.10)
     parser.add_argument("--residual-noise-threshold", type=float, default=0.08)
+    parser.add_argument("--silence-floor-weight", type=float, default=0.12)
+    parser.add_argument("--silence-threshold", type=float, default=0.03)
+    parser.add_argument("--resume", help="Optional checkpoint to resume DeepFilter training from.")
+    parser.add_argument("--reset-best-on-resume", action="store_true")
     args = parser.parse_args()
 
     out = Path(args.out)
@@ -209,6 +264,13 @@ def main() -> None:
         args.df_order,
         args.coef_scale,
     )
+    best = float("inf")
+    if args.resume:
+        ckpt = torch.load(args.resume, map_location="cpu")
+        model.load_state_dict(ckpt["model"])
+        if ckpt.get("val_loss") is not None and not args.reset_best_on_resume:
+            best = float(ckpt["val_loss"])
+        print(f"resumed_from={args.resume}")
     if args.resume_denoiser:
         state, denoiser_cfg = load_denoiser_backbone(args.resume_denoiser, "cpu")
         if int(denoiser_cfg["feature_dim"]) != cfg.feature_dim:
@@ -221,7 +283,6 @@ def main() -> None:
     print(f"parameters={params} int8_weight_bytes~={params}")
     model.to(args.device)
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=1e-4)
-    best = float("inf")
     for epoch in range(1, args.epochs + 1):
         train_loss = run_epoch(
             model,
@@ -235,6 +296,8 @@ def main() -> None:
             args.coef_reg_weight,
             args.residual_noise_loss_weight,
             args.residual_noise_threshold,
+            args.silence_floor_weight,
+            args.silence_threshold,
         )
         val_loss = run_epoch(
             model,
@@ -248,6 +311,8 @@ def main() -> None:
             args.coef_reg_weight,
             args.residual_noise_loss_weight,
             args.residual_noise_threshold,
+            args.silence_floor_weight,
+            args.silence_threshold,
         )
         print(f"epoch={epoch} train_loss={train_loss:.6f} val_loss={val_loss:.6f}")
         state = {
@@ -272,6 +337,8 @@ def main() -> None:
                 "coef_reg_weight": args.coef_reg_weight,
                 "residual_noise_loss_weight": args.residual_noise_loss_weight,
                 "residual_noise_threshold": args.residual_noise_threshold,
+                "silence_floor_weight": args.silence_floor_weight,
+                "silence_threshold": args.silence_threshold,
             },
             "epoch": epoch,
             "val_loss": val_loss,

@@ -9,7 +9,7 @@
 ## Demo
 
 - 本地网页试听 demo：`http://127.0.0.1:38179/runs/audio_demo/index.html`
-- 当前 demo 包含多组 noisy/clean/enhanced 对比。建议先听 `tiny_deepfilter_residual_loud` 的 `Realtime`，这是当前主力版本；再对比 `c120_psm_gain_sisdr_m1.50` 观察 mask 模型和 DeepFilter 的底噪差异。
+- 当前 demo 包含多组 noisy/clean/enhanced 对比。建议先听 `tiny_deepfilter_quiet_loud` 的 `Realtime`，这是当前主力版本；再对比 `tiny_deepfilter_residual_loud` 和 `c120_psm_gain_sisdr_m1.50` 观察底噪/人声细节取舍。
 - 如果本地服务没启动，可在项目根目录运行 `python3 -m http.server 38179`，然后打开上面的链接。
 
 ## 当前结果
@@ -18,7 +18,7 @@
 - 推荐部署方案：`c116` 空间特征 TCN + `hidden=24` oracle-blend learned gate。
 - 模型规模：TCN `140,276` 参数，gate `9,265` 参数，总计 `149,541` 参数，满足 150K 目标。
 - 实时链路：16 kHz，256 点 FFT，64 samples hop，4 ms 步进。
-- Python eval：当前主力 `tiny_deepfilter_residual_loud` 全量 SI-SDR improvement 约 `8.29 dB`，输出/输入 RMS 比约 `0.99`；旧主力 `c120_psm_gain_sisdr_m1.50` 约 `5.69 dB`。DeepFilter 版本不再只靠频带 mask，而是在低频预测多帧复数残差滤波器，底噪控制明显更强。
+- Python eval：当前主力 `tiny_deepfilter_quiet_loud` 全量 SI-SDR improvement 约 `8.57 dB`，输出/输入 RMS 比约 `0.99`；上一版 `tiny_deepfilter_residual_loud` 约 `8.29 dB`，旧 mask 主力 `c120_psm_gain_sisdr_m1.50` 约 `5.69 dB`。DeepFilter 版本不再只靠频带 mask，而是在低频预测多帧复数残差滤波器；quiet 版额外加入静音帧底噪约束。
 - C Q15 模型 reference：mean abs diff `0.01703`，streaming 与 batch Q15 完全一致。
 - C learned gate reference：gate abs diff `0.0000039` against Python gate。
 - C gated realtime DSP reference：mean abs diff `0.00078` against Python gated realtime reference。
@@ -74,7 +74,7 @@ python scripts/enhance_realtime.py --checkpoint runs/tiny_tcn/best.pt --input da
 
 # 最新听感检查：Tiny residual DeepFilter
 PYTHONPATH=src python3 scripts/enhance_deepfilter.py \
-  --checkpoint runs/arctic_demand_tiny_deepfilter_residual/best.pt \
+  --checkpoint runs/arctic_demand_tiny_deepfilter_quiet/best.pt \
   --input data/arctic_demand_eval/val/mix_0000.wav \
   --output enhanced_deepfilter.wav \
   --loudness-match --target-rms-ratio 1.00 --max-gain-db 8.0

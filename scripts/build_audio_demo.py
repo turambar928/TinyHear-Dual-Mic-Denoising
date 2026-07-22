@@ -24,6 +24,7 @@ DEFAULT_SETS = [
     ("c116_psm_noise_loss_pf_clean", Path("runs/arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.50_pf_clean")),
     ("c116_psm_noise_loss_pf_aggressive", Path("runs/arctic_demand_spatial_c116_psm_noise_loss/listening_eval_gate_m1.65_pf_aggressive")),
     ("tiny_deepfilter_residual_loud", Path("runs/arctic_demand_tiny_deepfilter_residual/listening_eval_loud")),
+    ("tiny_deepfilter_quiet_loud", Path("runs/arctic_demand_tiny_deepfilter_quiet/listening_eval_loud")),
 ]
 
 

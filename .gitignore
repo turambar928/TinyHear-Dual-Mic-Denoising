@@ -79,6 +79,13 @@ runs/arctic_demand_tiny_deepfilter_residual/*
 !runs/arctic_demand_tiny_deepfilter_residual/listening_eval_loud/
 !runs/arctic_demand_tiny_deepfilter_residual/listening_eval_loud/**
 
+# Quiet-floor fine-tuned DeepFilter checkpoint and small listening-eval demo set.
+!runs/arctic_demand_tiny_deepfilter_quiet/
+runs/arctic_demand_tiny_deepfilter_quiet/*
+!runs/arctic_demand_tiny_deepfilter_quiet/best.pt
+!runs/arctic_demand_tiny_deepfilter_quiet/listening_eval_loud/
+!runs/arctic_demand_tiny_deepfilter_quiet/listening_eval_loud/**
+
 # C build output
 c_reference/tiny_tcn_ref
 c_reference/tiny_tcn_bench
