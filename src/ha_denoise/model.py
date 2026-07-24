@@ -122,3 +122,36 @@ class TinyDeepFilterTCN(nn.Module):
             if target_name in own and own[target_name].shape == value.shape:
                 copied[target_name] = value
         self.load_state_dict({**own, **copied})
+
+
+class TinyGRUDenoiser(nn.Module):
+    def __init__(
+        self,
+        feature_dim: int = 192,
+        bands: int = 32,
+        hidden: int = 96,
+        layers: int = 1,
+        min_gain: float = 0.02,
+        max_gain: float = 1.0,
+    ) -> None:
+        super().__init__()
+        self.feature_dim = feature_dim
+        self.bands = bands
+        self.hidden = hidden
+        self.layers = layers
+        self.min_gain = min_gain
+        self.max_gain = max_gain
+        self.input = nn.Sequential(nn.Linear(feature_dim, hidden), nn.ReLU())
+        self.gru = nn.GRU(hidden, hidden, num_layers=layers, batch_first=True)
+        self.gain_head = nn.Linear(hidden, bands)
+        self.vad_head = nn.Linear(hidden, 1)
+
+    def forward(self, x: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+        # x: [B, feature_dim, T]
+        y = x.transpose(1, 2)
+        y = self.input(y)
+        y, _ = self.gru(y)
+        unit_gain = torch.clamp(self.gain_head(y) * 0.2 + 0.5, 0.0, 1.0)
+        gain = self.min_gain + (self.max_gain - self.min_gain) * unit_gain
+        vad = torch.sigmoid(self.vad_head(y)).transpose(1, 2)
+        return gain.transpose(1, 2), vad

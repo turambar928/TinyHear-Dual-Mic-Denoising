@@ -10,6 +10,7 @@ from typing import Any
 
 
 DEFAULT_SETS = [
+    ("tiny_gru_h136", Path("runs/arctic_demand_tiny_gru_h136/listening_eval_loud")),
     ("stable_postfilter", Path("runs/arctic_demand_tiny_deepfilter_stable_postfilter/listening_eval_loud")),
     ("coherence_mwf_smooth", Path("runs/arctic_demand_tiny_deepfilter_coherence_smooth/listening_eval_loud")),
     ("low_noise_floor_mwf", Path("runs/arctic_demand_low_noise_floor/listening_eval_loud")),

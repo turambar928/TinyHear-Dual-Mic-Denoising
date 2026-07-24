@@ -124,6 +124,16 @@ runs/arctic_demand_tiny_deepfilter_stable_postfilter/eval_loud/*
 !runs/arctic_demand_tiny_deepfilter_stable_postfilter/listening_eval_loud/
 !runs/arctic_demand_tiny_deepfilter_stable_postfilter/listening_eval_loud/**
 
+# RNNoise-style TinyGRU checkpoint, metrics, and small listening-eval demo set.
+!runs/arctic_demand_tiny_gru_h136/
+runs/arctic_demand_tiny_gru_h136/*
+!runs/arctic_demand_tiny_gru_h136/best.pt
+!runs/arctic_demand_tiny_gru_h136/eval_loud/
+runs/arctic_demand_tiny_gru_h136/eval_loud/*
+!runs/arctic_demand_tiny_gru_h136/eval_loud/metrics.json
+!runs/arctic_demand_tiny_gru_h136/listening_eval_loud/
+!runs/arctic_demand_tiny_gru_h136/listening_eval_loud/**
+
 # C build output
 c_reference/tiny_tcn_ref
 c_reference/tiny_tcn_bench
