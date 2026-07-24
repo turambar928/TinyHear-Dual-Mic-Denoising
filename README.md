@@ -9,7 +9,7 @@
 ## Demo
 
 - 本地网页试听 demo：`http://127.0.0.1:38179/runs/audio_demo/index.html`
-- 当前 demo 包含多组 noisy/clean/enhanced 对比。建议先听 `tiny_deepfilter_coherence_mwf` 的 `Realtime`，这是当前主力版本；再对比 `tiny_deepfilter_beamform` 和 `tiny_deepfilter_quiet_loud` 观察底噪/人声细节取舍。
+- 当前 demo 包含多组 noisy/clean/enhanced 对比。建议先听 `coherence_mwf_smooth` 的 `Realtime`，这是当前处理呼呼声/气流感的版本；再对比 `tiny_deepfilter_coherence_mwf` 和 `tiny_deepfilter_beamform` 观察底噪/人声细节取舍。
 - 如果本地服务没启动，可在项目根目录运行 `python3 -m http.server 38179`，然后打开上面的链接。
 
 ## 当前结果
@@ -18,7 +18,7 @@
 - 推荐部署方案：双麦 coherence-weighted spatial frontend + Tiny DeepFilter 后端。
 - 模型规模：`137,984` 参数，满足 150K 目标。
 - 实时链路：16 kHz，256 点 FFT，64 samples hop，4 ms 步进。
-- Python eval：当前主力 `tiny_deepfilter_coherence_mwf` 固定 160 条验证集 SI-SDR improvement 约 `+9.46 dB`，输出/输入 RMS 比约 `0.99`；上一版 `tiny_deepfilter_beamform` 约 `+9.39 dB`，`tiny_deepfilter_quiet_loud` 约 `8.57 dB`。当前版本是在双麦空间前端之后做轻量 DeepFilter，不再只靠频带 mask。
+- Python eval：当前主力 `tiny_deepfilter_coherence_mwf` 固定 160 条验证集 SI-SDR improvement 约 `+9.46 dB`，输出/输入 RMS 比约 `0.99`；`coherence_mwf_smooth` 约 `+9.43 dB`，牺牲少量分数换更平稳的底噪；上一版 `tiny_deepfilter_beamform` 约 `+9.39 dB`。当前版本是在双麦空间前端之后做轻量 DeepFilter，不再只靠频带 mask。
 - C Q15 模型 reference：mean abs diff `0.01703`，streaming 与 batch Q15 完全一致。
 - C learned gate reference：gate abs diff `0.0000039` against Python gate。
 - C gated realtime DSP reference：mean abs diff `0.00078` against Python gated realtime reference。

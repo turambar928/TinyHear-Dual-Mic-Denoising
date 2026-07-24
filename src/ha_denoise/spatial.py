@@ -89,6 +89,18 @@ def _smoothed_coherence(
     return out
 
 
+def _temporal_smooth_gain(gain: torch.Tensor, alpha: float) -> torch.Tensor:
+    frames = gain.shape[-1]
+    if frames <= 1:
+        return gain
+    a = float(min(max(alpha, 0.0), 0.999))
+    out = torch.empty_like(gain)
+    out[:, 0] = gain[:, 0]
+    for t in range(1, frames):
+        out[:, t] = a * out[:, t - 1] + (1.0 - a) * gain[:, t]
+    return out
+
+
 def coherence_weighted_beamform(
     mix: torch.Tensor,
     cfg: FeatureConfig,
@@ -97,6 +109,8 @@ def coherence_weighted_beamform(
     floor: float = 0.22,
     alpha: float = 0.88,
     gamma: float = 0.70,
+    gain_smooth_alpha: float = 0.0,
+    mode_name: str = "coherence_mwf",
 ) -> tuple[torch.Tensor, dict[str, float | int | str]]:
     """Delay-align mics, then suppress bins with low inter-mic coherence.
 
@@ -117,10 +131,12 @@ def coherence_weighted_beamform(
     coherence = _smoothed_coherence(spec0[:, :frames], spec1[:, :frames], alpha=alpha)
     floor_t = summed_spec.real.new_tensor(min(max(float(floor), 0.0), 1.0))
     gain = floor_t + (1.0 - floor_t) * torch.pow(torch.clamp(coherence, 0.0, 1.0), float(max(gamma, 1e-4)))
+    if gain_smooth_alpha > 0.0:
+        gain = _temporal_smooth_gain(gain, gain_smooth_alpha)
     enhanced_spec = summed_spec[:, :frames] * torch.clamp(gain, floor_t, 1.0)
     enhanced = istft(enhanced_spec, length=mix.shape[-1], cfg=cfg)
     return enhanced, {
-        "mode": "coherence_mwf",
+        "mode": mode_name,
         "lag": lag,
         "mean_coherence": float(coherence.mean().detach().cpu()),
         "mean_spatial_gain": float(gain.mean().detach().cpu()),
@@ -139,4 +155,16 @@ def apply_spatial_frontend(
         return enhanced, {"mode": "delay_sum", "lag": lag}
     if mode in {"coherence", "coherence_mwf", "zelinski"}:
         return coherence_weighted_beamform(mix, cfg, max_lag=max_lag, analysis_samples=analysis_samples)
+    if mode in {"coherence_mwf_smooth", "zelinski_smooth"}:
+        return coherence_weighted_beamform(
+            mix,
+            cfg,
+            max_lag=max_lag,
+            analysis_samples=analysis_samples,
+            floor=0.32,
+            alpha=0.96,
+            gamma=0.60,
+            gain_smooth_alpha=0.92,
+            mode_name="coherence_mwf_smooth",
+        )
     raise ValueError(f"unsupported spatial_frontend: {mode}")

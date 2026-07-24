@@ -106,6 +106,15 @@ runs/arctic_demand_tiny_deepfilter_coherence_mwf/eval_loud/*
 !runs/arctic_demand_tiny_deepfilter_coherence_mwf/listening_eval_loud/
 !runs/arctic_demand_tiny_deepfilter_coherence_mwf/listening_eval_loud/**
 
+# Smoothed coherence-weighted DeepFilter metrics and small listening-eval demo set.
+!runs/arctic_demand_tiny_deepfilter_coherence_smooth/
+runs/arctic_demand_tiny_deepfilter_coherence_smooth/*
+!runs/arctic_demand_tiny_deepfilter_coherence_smooth/eval_loud/
+runs/arctic_demand_tiny_deepfilter_coherence_smooth/eval_loud/*
+!runs/arctic_demand_tiny_deepfilter_coherence_smooth/eval_loud/metrics.json
+!runs/arctic_demand_tiny_deepfilter_coherence_smooth/listening_eval_loud/
+!runs/arctic_demand_tiny_deepfilter_coherence_smooth/listening_eval_loud/**
+
 # C build output
 c_reference/tiny_tcn_ref
 c_reference/tiny_tcn_bench

@@ -76,9 +76,16 @@ def main() -> None:
     parser.add_argument("--loudness-match", action="store_true")
     parser.add_argument("--target-rms-ratio", type=float, default=0.92)
     parser.add_argument("--max-gain-db", type=float, default=5.0)
+    parser.add_argument(
+        "--spatial-frontend-override",
+        choices=["delay_sum", "coherence_mwf", "coherence_mwf_smooth"],
+        help="Override the checkpoint spatial frontend for artifact/listening experiments.",
+    )
     args = parser.parse_args()
 
     model, cfg = load_model(args.checkpoint, args.device)
+    if args.spatial_frontend_override:
+        cfg.spatial_frontend = args.spatial_frontend_override
     split_dir = Path(args.data) / args.split
     mix_files = sorted(split_dir.glob("mix_*.wav"))
     if args.max_items is not None:

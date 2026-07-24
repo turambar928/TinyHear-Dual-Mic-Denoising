@@ -250,11 +250,13 @@ def main() -> None:
         default="delay_sum",
         help="Mono spatial input used as the DeepFilter reference.",
     )
+    parser.add_argument("--min-gain", type=float, default=0.02,
+                        help="Minimum mask gain; lower values allow stronger noise suppression.")
     args = parser.parse_args()
 
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
-    cfg = FeatureConfig(spatial_features=True, spatial_frontend=args.spatial_frontend)
+    cfg = FeatureConfig(spatial_features=True, spatial_frontend=args.spatial_frontend, min_gain=args.min_gain)
     train_ds = WavPairDataset(args.data, "train", cfg, args.seconds, args.on_the_fly, return_audio=True)
     val_ds = WavPairDataset(args.data, "val", cfg, args.seconds, args.on_the_fly, return_audio=True)
     train_loader = DataLoader(train_ds, batch_size=args.batch_size, shuffle=True, collate_fn=pad_sequence_batch)
@@ -347,6 +349,8 @@ def main() -> None:
                 "residual_noise_threshold": args.residual_noise_threshold,
                 "silence_floor_weight": args.silence_floor_weight,
                 "silence_threshold": args.silence_threshold,
+                "min_gain": cfg.min_gain,
+                "max_gain": cfg.max_gain,
             },
             "epoch": epoch,
             "val_loss": val_loss,
