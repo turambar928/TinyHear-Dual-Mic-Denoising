@@ -9,7 +9,14 @@ import torch
 from tqdm import tqdm
 
 from ha_denoise.audio import read_wav, write_wav
-from ha_denoise.features import enhance_with_deep_filter, extract_features, feature_config_from_dict, match_loudness, rms_ratio
+from ha_denoise.features import (
+    enhance_with_deep_filter,
+    extract_features,
+    feature_config_from_dict,
+    match_loudness,
+    rms_ratio,
+    stationary_noise_floor_filter,
+)
 from ha_denoise.metrics import si_sdr
 from ha_denoise.model import TinyDeepFilterTCN
 from ha_denoise.spatial import apply_spatial_frontend
@@ -42,7 +49,16 @@ def quantile_indices(count: int, samples: int) -> list[int]:
     return sorted({round(i * (count - 1) / (samples - 1)) for i in range(samples)})
 
 
-def process_one(model, cfg, mix_path: Path, device: str, loudness_match: bool, target_rms_ratio: float, max_gain_db: float):
+def process_one(
+    model,
+    cfg,
+    mix_path: Path,
+    device: str,
+    loudness_match: bool,
+    target_rms_ratio: float,
+    max_gain_db: float,
+    stable_postfilter: bool,
+):
     clean_path = mix_path.with_name(mix_path.name.replace("mix_", "clean_"))
     sr, mix_np = read_wav(mix_path, cfg.sample_rate)
     _, clean_np = read_wav(clean_path, cfg.sample_rate)
@@ -51,7 +67,10 @@ def process_one(model, cfg, mix_path: Path, device: str, loudness_match: bool, t
     beamformed, spatial_info = apply_spatial_frontend(mix, cfg, max_lag=8, analysis_samples=cfg.sample_rate // 2)
     feat = extract_features(mix, cfg).transpose(0, 1).unsqueeze(0)
     gain, coef = model(feat)
-    enhanced = enhance_with_deep_filter(beamformed, gain.squeeze(0).transpose(0, 1), coef.squeeze(0), cfg)
+    band_gain = gain.squeeze(0).transpose(0, 1)
+    enhanced = enhance_with_deep_filter(beamformed, band_gain, coef.squeeze(0), cfg)
+    if stable_postfilter:
+        enhanced = stationary_noise_floor_filter(enhanced, band_gain, cfg)
     n = min(mix.shape[-1], clean.numel(), enhanced.numel())
     noisy = mix[0, :n]
     beamformed = beamformed[:n]
@@ -81,6 +100,7 @@ def main() -> None:
         choices=["delay_sum", "coherence_mwf", "coherence_mwf_smooth"],
         help="Override the checkpoint spatial frontend for artifact/listening experiments.",
     )
+    parser.add_argument("--stable-postfilter", action="store_true", help="Apply a conservative stationary-noise post-filter.")
     args = parser.parse_args()
 
     model, cfg = load_model(args.checkpoint, args.device)
@@ -107,6 +127,7 @@ def main() -> None:
                 args.loudness_match,
                 args.target_rms_ratio,
                 args.max_gain_db,
+                args.stable_postfilter,
             )
             noisy_score = float(si_sdr(noisy.detach().cpu(), clean.detach().cpu()))
             enhanced_score = float(si_sdr(enhanced.detach().cpu(), clean.detach().cpu()))
@@ -123,6 +144,7 @@ def main() -> None:
                     "si_sdr_improvement": enhanced_score - noisy_score,
                     "output_input_rms_ratio": float(rms_ratio(beamformed.detach().cpu(), enhanced.detach().cpu())),
                     "loudness_gain": gain,
+                    "stable_postfilter": args.stable_postfilter,
                 }
             )
             if save_dir:
@@ -156,6 +178,7 @@ def main() -> None:
                 args.loudness_match,
                 args.target_rms_ratio,
                 args.max_gain_db,
+                args.stable_postfilter,
             )
             row = rows[row_idx]
             prefix = f"sample_{out_idx:03d}"
@@ -177,6 +200,7 @@ def main() -> None:
                     "beamform_lag_samples": spatial_info.get("lag"),
                     "beamformed_si_sdr": row.get("beamformed_si_sdr"),
                     "loudness_gain": gain,
+                    "stable_postfilter": args.stable_postfilter,
                     "noisy_si_sdr": row["noisy_si_sdr"],
                     "offline_si_sdr": row["enhanced_si_sdr"],
                     "realtime_si_sdr": row["enhanced_si_sdr"],

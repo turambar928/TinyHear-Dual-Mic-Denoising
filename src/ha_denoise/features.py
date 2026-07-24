@@ -205,6 +205,51 @@ def mask_guided_post_filter(
     return istft(out, length=enhanced.numel(), cfg=cfg)
 
 
+def stationary_noise_floor_filter(
+    enhanced: torch.Tensor,
+    band_mask: torch.Tensor,
+    cfg: FeatureConfig,
+    strength: float = 0.35,
+    floor: float = 0.72,
+    speech_threshold: float = 0.62,
+    transition_width: float = 0.20,
+    noise_percentile: float = 20.0,
+    gain_smooth_alpha: float = 0.94,
+) -> torch.Tensor:
+    """Conservative stationary-noise suppressor for listening demos.
+
+    The filter estimates one stable noise spectrum from a low percentile across
+    the whole utterance. That avoids the frame-by-frame noise estimate pumping
+    that tends to sound like airflow or breathing.
+    """
+    if strength <= 0.0:
+        return enhanced
+    spec = stft(enhanced, cfg)
+    bin_mask = bands_to_bins(band_mask, cfg)
+    frames = min(spec.shape[-1], bin_mask.shape[-1])
+    if frames <= 1:
+        return enhanced
+    spec = spec[:, :frames]
+    bin_mask = bin_mask[:, :frames]
+    power = spec.abs().square()
+    q = min(max(float(noise_percentile) / 100.0, 0.01), 0.80)
+    noise = torch.quantile(power, q, dim=1, keepdim=True).clamp_min(1e-8)
+    snr = power / noise
+    raw_gain = torch.sqrt(snr / torch.clamp(snr + float(strength), min=1e-8))
+    raw_gain = torch.clamp(raw_gain, min=float(floor), max=1.0)
+    width = max(float(transition_width), 1e-6)
+    speech_presence = torch.clamp((bin_mask - float(speech_threshold)) / width, 0.0, 1.0)
+    gain = speech_presence + (1.0 - speech_presence) * raw_gain
+    if gain_smooth_alpha > 0.0:
+        out_gain = torch.empty_like(gain)
+        out_gain[:, 0] = gain[:, 0]
+        alpha = min(max(float(gain_smooth_alpha), 0.0), 0.999)
+        for t in range(1, frames):
+            out_gain[:, t] = alpha * out_gain[:, t - 1] + (1.0 - alpha) * gain[:, t]
+        gain = out_gain
+    return istft(spec * torch.clamp(gain, min=float(floor), max=1.0), length=enhanced.numel(), cfg=cfg)
+
+
 def enhance_with_deep_filter(
     mix_ref: torch.Tensor,
     band_mask: torch.Tensor,

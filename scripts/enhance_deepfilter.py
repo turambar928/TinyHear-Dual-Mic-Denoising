@@ -6,7 +6,13 @@ import argparse
 import torch
 
 from ha_denoise.audio import read_wav, write_wav
-from ha_denoise.features import enhance_with_deep_filter, extract_features, feature_config_from_dict, match_loudness
+from ha_denoise.features import (
+    enhance_with_deep_filter,
+    extract_features,
+    feature_config_from_dict,
+    match_loudness,
+    stationary_noise_floor_filter,
+)
 from ha_denoise.model import TinyDeepFilterTCN
 from ha_denoise.spatial import apply_spatial_frontend
 
@@ -44,6 +50,7 @@ def main() -> None:
         choices=["delay_sum", "coherence_mwf", "coherence_mwf_smooth"],
         help="Override the checkpoint spatial frontend for artifact/listening experiments.",
     )
+    parser.add_argument("--stable-postfilter", action="store_true", help="Apply a conservative stationary-noise post-filter.")
     args = parser.parse_args()
 
     model, cfg = load_model(args.checkpoint, args.device)
@@ -57,7 +64,10 @@ def main() -> None:
         beamformed, spatial_info = apply_spatial_frontend(mix, cfg, max_lag=8, analysis_samples=cfg.sample_rate // 2)
         feat = extract_features(mix, cfg).transpose(0, 1).unsqueeze(0)
         gain, coef = model(feat)
-        enhanced = enhance_with_deep_filter(beamformed, gain.squeeze(0).transpose(0, 1), coef.squeeze(0), cfg)
+        band_gain = gain.squeeze(0).transpose(0, 1)
+        enhanced = enhance_with_deep_filter(beamformed, band_gain, coef.squeeze(0), cfg)
+        if args.stable_postfilter:
+            enhanced = stationary_noise_floor_filter(enhanced, band_gain, cfg)
         if args.loudness_match:
             enhanced, _ = match_loudness(beamformed, enhanced, args.target_rms_ratio, args.max_gain_db)
     print(f"spatial_frontend={spatial_info.get('mode')} beamform_lag_samples={spatial_info.get('lag')}")
