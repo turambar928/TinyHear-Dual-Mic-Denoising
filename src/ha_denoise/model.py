@@ -155,3 +155,43 @@ class TinyGRUDenoiser(nn.Module):
         gain = self.min_gain + (self.max_gain - self.min_gain) * unit_gain
         vad = torch.sigmoid(self.vad_head(y)).transpose(1, 2)
         return gain.transpose(1, 2), vad
+
+
+class TinyComplexMaskTCN(nn.Module):
+    def __init__(
+        self,
+        feature_dim: int = 192,
+        freq_bins: int = 129,
+        channels: int = 80,
+        blocks: int = 8,
+        kernel_size: int = 5,
+        mask_scale: float = 2.0,
+    ) -> None:
+        super().__init__()
+        self.feature_dim = feature_dim
+        self.freq_bins = freq_bins
+        self.channels = channels
+        self.blocks = blocks
+        self.kernel_size = kernel_size
+        self.mask_scale = mask_scale
+        self.stem = nn.Sequential(nn.Conv1d(feature_dim, channels, kernel_size=1), nn.ReLU())
+        dilations = [1, 2, 4, 8]
+        self.tcn = nn.Sequential(
+            *[
+                CausalDepthwiseBlock(channels, kernel_size, dilations[i % len(dilations)])
+                for i in range(blocks)
+            ]
+        )
+        self.head = nn.Conv1d(channels, freq_bins * 2, kernel_size=1)
+        nn.init.zeros_(self.head.weight)
+        nn.init.zeros_(self.head.bias)
+        with torch.no_grad():
+            real_bias = torch.atanh(torch.tensor(min(0.99, 1.0 / max(mask_scale, 1e-6))))
+            self.head.bias.view(freq_bins, 2)[:, 0].fill_(float(real_bias))
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        y = self.stem(x)
+        y = self.tcn(y)
+        mask = torch.tanh(self.head(y)) * self.mask_scale
+        b, _, t = mask.shape
+        return mask.view(b, self.freq_bins, 2, t).permute(0, 3, 1, 2).contiguous()

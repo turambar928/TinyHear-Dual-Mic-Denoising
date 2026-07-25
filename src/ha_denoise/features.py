@@ -359,6 +359,42 @@ def enhance_with_deep_filter(
     return istft(enhanced, length=mix_ref.numel(), cfg=cfg)
 
 
+def target_complex_mask(
+    mix_ref: torch.Tensor,
+    clean_ref: torch.Tensor,
+    cfg: FeatureConfig,
+    clip: float = 2.0,
+) -> torch.Tensor:
+    noisy_spec = stft(mix_ref, cfg)
+    clean_spec = stft(clean_ref, cfg)
+    frames = min(noisy_spec.shape[-1], clean_spec.shape[-1])
+    noisy_spec = noisy_spec[:, :frames]
+    clean_spec = clean_spec[:, :frames]
+    denom = noisy_spec.real.square() + noisy_spec.imag.square() + 1e-8
+    real = (clean_spec.real * noisy_spec.real + clean_spec.imag * noisy_spec.imag) / denom
+    imag = (clean_spec.imag * noisy_spec.real - clean_spec.real * noisy_spec.imag) / denom
+    mask = torch.stack([real, imag], dim=-1).transpose(0, 1)
+    return torch.clamp(mask, -float(clip), float(clip))
+
+
+def enhance_with_complex_mask(
+    mix_ref: torch.Tensor,
+    complex_mask: torch.Tensor,
+    cfg: FeatureConfig,
+) -> torch.Tensor:
+    spec = stft(mix_ref, cfg)
+    frames = min(spec.shape[-1], complex_mask.shape[0])
+    bins = min(spec.shape[0], complex_mask.shape[1])
+    spec = spec[:bins, :frames]
+    mask = torch.complex(complex_mask[:frames, :bins, 0], complex_mask[:frames, :bins, 1]).transpose(0, 1)
+    enhanced = spec * mask
+    if bins < cfg.n_fft // 2 + 1:
+        padded = torch.zeros(cfg.n_fft // 2 + 1, frames, device=spec.device, dtype=spec.dtype)
+        padded[:bins] = enhanced
+        enhanced = padded
+    return istft(enhanced, length=mix_ref.numel(), cfg=cfg)
+
+
 def match_loudness(
     reference: torch.Tensor,
     enhanced: torch.Tensor,

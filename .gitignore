@@ -152,6 +152,16 @@ runs/arctic_demand_tiny_deepfilter_dehiss_aggressive/eval_loud/*
 !runs/arctic_demand_tiny_deepfilter_dehiss_aggressive/listening_eval_loud/
 !runs/arctic_demand_tiny_deepfilter_dehiss_aggressive/listening_eval_loud/**
 
+# Tiny complex-mask checkpoint, metrics, and small listening-eval demo set.
+!runs/arctic_demand_tiny_complex_mask/
+runs/arctic_demand_tiny_complex_mask/*
+!runs/arctic_demand_tiny_complex_mask/best.pt
+!runs/arctic_demand_tiny_complex_mask/eval_loud/
+runs/arctic_demand_tiny_complex_mask/eval_loud/*
+!runs/arctic_demand_tiny_complex_mask/eval_loud/metrics.json
+!runs/arctic_demand_tiny_complex_mask/listening_eval_loud/
+!runs/arctic_demand_tiny_complex_mask/listening_eval_loud/**
+
 # C build output
 c_reference/tiny_tcn_ref
 c_reference/tiny_tcn_bench

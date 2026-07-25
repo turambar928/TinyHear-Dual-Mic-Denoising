@@ -10,6 +10,7 @@ from typing import Any
 
 
 DEFAULT_SETS = [
+    ("tiny_complex_mask", Path("runs/arctic_demand_tiny_complex_mask/listening_eval_loud")),
     ("deepfilter_dehiss_aggressive", Path("runs/arctic_demand_tiny_deepfilter_dehiss_aggressive/listening_eval_loud")),
     ("deepfilter_dehiss", Path("runs/arctic_demand_tiny_deepfilter_dehiss/listening_eval_loud")),
     ("tiny_gru_h136", Path("runs/arctic_demand_tiny_gru_h136/listening_eval_loud")),
