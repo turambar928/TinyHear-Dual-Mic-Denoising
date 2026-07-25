@@ -11,6 +11,7 @@ from ha_denoise.features import (
     extract_features,
     feature_config_from_dict,
     match_loudness,
+    residual_dehiss_filter,
     stationary_noise_floor_filter,
 )
 from ha_denoise.model import TinyDeepFilterTCN
@@ -51,6 +52,12 @@ def main() -> None:
         help="Override the checkpoint spatial frontend for artifact/listening experiments.",
     )
     parser.add_argument("--stable-postfilter", action="store_true", help="Apply a conservative stationary-noise post-filter.")
+    parser.add_argument("--dehiss-postfilter", action="store_true", help="Apply high-frequency residual dehiss post-filter.")
+    parser.add_argument("--dehiss-strength", type=float, default=1.15)
+    parser.add_argument("--dehiss-low-floor", type=float, default=0.78)
+    parser.add_argument("--dehiss-high-floor", type=float, default=0.36)
+    parser.add_argument("--dehiss-high-start-hz", type=float, default=2600.0)
+    parser.add_argument("--dehiss-full-strength-hz", type=float, default=5200.0)
     args = parser.parse_args()
 
     model, cfg = load_model(args.checkpoint, args.device)
@@ -68,6 +75,17 @@ def main() -> None:
         enhanced = enhance_with_deep_filter(beamformed, band_gain, coef.squeeze(0), cfg)
         if args.stable_postfilter:
             enhanced = stationary_noise_floor_filter(enhanced, band_gain, cfg)
+        if args.dehiss_postfilter:
+            enhanced = residual_dehiss_filter(
+                enhanced,
+                band_gain,
+                cfg,
+                strength=args.dehiss_strength,
+                low_floor=args.dehiss_low_floor,
+                high_floor=args.dehiss_high_floor,
+                high_start_hz=args.dehiss_high_start_hz,
+                full_strength_hz=args.dehiss_full_strength_hz,
+            )
         if args.loudness_match:
             enhanced, _ = match_loudness(beamformed, enhanced, args.target_rms_ratio, args.max_gain_db)
     print(f"spatial_frontend={spatial_info.get('mode')} beamform_lag_samples={spatial_info.get('lag')}")

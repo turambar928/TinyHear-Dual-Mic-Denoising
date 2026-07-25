@@ -250,6 +250,74 @@ def stationary_noise_floor_filter(
     return istft(spec * torch.clamp(gain, min=float(floor), max=1.0), length=enhanced.numel(), cfg=cfg)
 
 
+def residual_dehiss_filter(
+    enhanced: torch.Tensor,
+    band_mask: torch.Tensor,
+    cfg: FeatureConfig,
+    strength: float = 1.15,
+    low_floor: float = 0.78,
+    high_floor: float = 0.36,
+    speech_threshold: float = 0.64,
+    transition_width: float = 0.18,
+    noise_percentile: float = 18.0,
+    high_start_hz: float = 2600.0,
+    full_strength_hz: float = 5200.0,
+    gain_smooth_alpha: float = 0.96,
+) -> torch.Tensor:
+    """Suppress steady high-frequency residual hiss without changing the model.
+
+    This is intentionally offline/demo-oriented: it estimates a stable residual
+    noise floor from the whole utterance, then applies extra Wiener attenuation
+    mainly above the speech formant region. The model mask protects bins that
+    look speech-like, which keeps consonants from being flattened as much as a
+    plain high-cut filter would.
+    """
+    if strength <= 0.0:
+        return enhanced
+    spec = stft(enhanced, cfg)
+    bin_mask = bands_to_bins(band_mask, cfg)
+    frames = min(spec.shape[-1], bin_mask.shape[-1])
+    if frames <= 1:
+        return enhanced
+    spec = spec[:, :frames]
+    bin_mask = bin_mask[:, :frames]
+    power = spec.abs().square()
+
+    q = min(max(float(noise_percentile) / 100.0, 0.01), 0.80)
+    noise = torch.quantile(power, q, dim=1, keepdim=True).clamp_min(1e-8)
+    snr = power / noise
+
+    freqs = torch.linspace(0.0, cfg.sample_rate / 2, cfg.n_fft // 2 + 1, device=spec.device, dtype=spec.real.dtype)
+    width_hz = max(float(full_strength_hz) - float(high_start_hz), 1.0)
+    high_weight = torch.clamp((freqs - float(high_start_hz)) / width_hz, 0.0, 1.0)[:, None]
+    floor = float(low_floor) * (1.0 - high_weight) + float(high_floor) * high_weight
+    band_strength = float(strength) * (0.35 + 0.65 * high_weight)
+
+    wiener = torch.sqrt(snr / torch.clamp(snr + band_strength, min=1e-8))
+    raw_gain = torch.minimum(torch.maximum(wiener, floor), torch.ones_like(wiener))
+
+    width = max(float(transition_width), 1e-6)
+    speech_presence = torch.clamp((bin_mask - float(speech_threshold)) / width, 0.0, 1.0)
+    protect = torch.clamp(0.25 + 0.75 * speech_presence, 0.0, 1.0)
+    gain = protect + (1.0 - protect) * raw_gain
+
+    if gain.shape[0] > 2:
+        gain_t = gain.transpose(0, 1).unsqueeze(1)
+        kernel = gain.new_tensor([0.18, 0.64, 0.18]).view(1, 1, 3)
+        gain = F.conv1d(F.pad(gain_t, (1, 1), mode="replicate"), kernel).squeeze(1).transpose(0, 1)
+
+    if gain_smooth_alpha > 0.0:
+        out_gain = torch.empty_like(gain)
+        out_gain[:, 0] = gain[:, 0]
+        alpha = min(max(float(gain_smooth_alpha), 0.0), 0.999)
+        for t in range(1, frames):
+            out_gain[:, t] = alpha * out_gain[:, t - 1] + (1.0 - alpha) * gain[:, t]
+        gain = out_gain
+
+    gain = torch.minimum(torch.maximum(gain, floor), torch.ones_like(gain))
+    return istft(spec * gain, length=enhanced.numel(), cfg=cfg)
+
+
 def enhance_with_deep_filter(
     mix_ref: torch.Tensor,
     band_mask: torch.Tensor,

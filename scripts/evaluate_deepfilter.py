@@ -14,6 +14,7 @@ from ha_denoise.features import (
     extract_features,
     feature_config_from_dict,
     match_loudness,
+    residual_dehiss_filter,
     rms_ratio,
     stationary_noise_floor_filter,
 )
@@ -58,6 +59,12 @@ def process_one(
     target_rms_ratio: float,
     max_gain_db: float,
     stable_postfilter: bool,
+    dehiss_postfilter: bool,
+    dehiss_strength: float,
+    dehiss_low_floor: float,
+    dehiss_high_floor: float,
+    dehiss_high_start_hz: float,
+    dehiss_full_strength_hz: float,
 ):
     clean_path = mix_path.with_name(mix_path.name.replace("mix_", "clean_"))
     sr, mix_np = read_wav(mix_path, cfg.sample_rate)
@@ -71,6 +78,17 @@ def process_one(
     enhanced = enhance_with_deep_filter(beamformed, band_gain, coef.squeeze(0), cfg)
     if stable_postfilter:
         enhanced = stationary_noise_floor_filter(enhanced, band_gain, cfg)
+    if dehiss_postfilter:
+        enhanced = residual_dehiss_filter(
+            enhanced,
+            band_gain,
+            cfg,
+            strength=dehiss_strength,
+            low_floor=dehiss_low_floor,
+            high_floor=dehiss_high_floor,
+            high_start_hz=dehiss_high_start_hz,
+            full_strength_hz=dehiss_full_strength_hz,
+        )
     n = min(mix.shape[-1], clean.numel(), enhanced.numel())
     noisy = mix[0, :n]
     beamformed = beamformed[:n]
@@ -101,6 +119,12 @@ def main() -> None:
         help="Override the checkpoint spatial frontend for artifact/listening experiments.",
     )
     parser.add_argument("--stable-postfilter", action="store_true", help="Apply a conservative stationary-noise post-filter.")
+    parser.add_argument("--dehiss-postfilter", action="store_true", help="Apply high-frequency residual dehiss post-filter.")
+    parser.add_argument("--dehiss-strength", type=float, default=1.15)
+    parser.add_argument("--dehiss-low-floor", type=float, default=0.78)
+    parser.add_argument("--dehiss-high-floor", type=float, default=0.36)
+    parser.add_argument("--dehiss-high-start-hz", type=float, default=2600.0)
+    parser.add_argument("--dehiss-full-strength-hz", type=float, default=5200.0)
     args = parser.parse_args()
 
     model, cfg = load_model(args.checkpoint, args.device)
@@ -128,6 +152,12 @@ def main() -> None:
                 args.target_rms_ratio,
                 args.max_gain_db,
                 args.stable_postfilter,
+                args.dehiss_postfilter,
+                args.dehiss_strength,
+                args.dehiss_low_floor,
+                args.dehiss_high_floor,
+                args.dehiss_high_start_hz,
+                args.dehiss_full_strength_hz,
             )
             noisy_score = float(si_sdr(noisy.detach().cpu(), clean.detach().cpu()))
             enhanced_score = float(si_sdr(enhanced.detach().cpu(), clean.detach().cpu()))
@@ -145,6 +175,12 @@ def main() -> None:
                     "output_input_rms_ratio": float(rms_ratio(beamformed.detach().cpu(), enhanced.detach().cpu())),
                     "loudness_gain": gain,
                     "stable_postfilter": args.stable_postfilter,
+                    "dehiss_postfilter": args.dehiss_postfilter,
+                    "dehiss_strength": args.dehiss_strength,
+                    "dehiss_low_floor": args.dehiss_low_floor,
+                    "dehiss_high_floor": args.dehiss_high_floor,
+                    "dehiss_high_start_hz": args.dehiss_high_start_hz,
+                    "dehiss_full_strength_hz": args.dehiss_full_strength_hz,
                 }
             )
             if save_dir:
@@ -179,6 +215,12 @@ def main() -> None:
                 args.target_rms_ratio,
                 args.max_gain_db,
                 args.stable_postfilter,
+                args.dehiss_postfilter,
+                args.dehiss_strength,
+                args.dehiss_low_floor,
+                args.dehiss_high_floor,
+                args.dehiss_high_start_hz,
+                args.dehiss_full_strength_hz,
             )
             row = rows[row_idx]
             prefix = f"sample_{out_idx:03d}"
@@ -201,6 +243,7 @@ def main() -> None:
                     "beamformed_si_sdr": row.get("beamformed_si_sdr"),
                     "loudness_gain": gain,
                     "stable_postfilter": args.stable_postfilter,
+                    "dehiss_postfilter": args.dehiss_postfilter,
                     "noisy_si_sdr": row["noisy_si_sdr"],
                     "offline_si_sdr": row["enhanced_si_sdr"],
                     "realtime_si_sdr": row["enhanced_si_sdr"],

@@ -9,7 +9,7 @@
 ## Demo
 
 - 本地网页试听 demo：`http://127.0.0.1:38180/runs/audio_demo/index.html`
-- 当前 demo 包含多组 noisy/clean/enhanced 对比。建议先听 `tiny_gru_h136` 的 `Realtime`，它是 RNNoise-style 时序基线，用来检查 GRU 连续建模是否能减少呼呼声/气流感；再对比 `stable_postfilter` 和 `tiny_deepfilter_coherence_mwf`，观察底噪、人声响度和音乐噪声的取舍。
+- 当前 demo 包含多组 noisy/clean/enhanced 对比。建议先听 `deepfilter_dehiss_aggressive` 和 `deepfilter_dehiss` 的 `Realtime`，这是 DeepFilter 主线后接残留高频 dehiss 后处理的两档版本，用来检查呼呼声/气流感是否下降；再对比 `stable_postfilter`、`tiny_deepfilter_coherence_mwf` 和 `tiny_gru_h136`，观察底噪、人声响度和音乐噪声的取舍。
 - 如果本地服务没启动，可在项目根目录运行 `python3 -m http.server 38180`，然后打开上面的链接。
 
 ## 当前结果
@@ -18,7 +18,7 @@
 - 推荐部署方案：双麦 coherence-weighted spatial frontend + Tiny DeepFilter 后端；同时保留 RNNoise-style TinyGRU 作为更平滑的听感对比基线。
 - 模型规模：Tiny DeepFilter `137,984` 参数，TinyGRU h136 `142,561` 参数，均满足 150K 目标。
 - 实时链路：16 kHz，256 点 FFT，64 samples hop，4 ms 步进。
-- Python eval：当前主力 `tiny_deepfilter_coherence_mwf` 固定 160 条验证集 SI-SDR improvement 约 `+9.46 dB`，输出/输入 RMS 比约 `0.99`；`coherence_mwf_smooth` 约 `+9.43 dB`；`stable_postfilter` 约 `+9.24 dB`，牺牲更多分数换更稳定的底噪。新增 `tiny_gru_h136` RNNoise-style 基线约 `+4.77 dB`，客观分数低于 DeepFilter，但用于主观比较时序 GRU 是否降低呼呼声伪影。
+- Python eval：当前主力 `tiny_deepfilter_coherence_mwf` 固定 160 条验证集 SI-SDR improvement 约 `+9.46 dB`，输出/输入 RMS 比约 `0.99`；`coherence_mwf_smooth` 约 `+9.43 dB`；`stable_postfilter` 约 `+9.24 dB`，牺牲更多分数换更稳定的底噪。新增 `deepfilter_dehiss`/`deepfilter_dehiss_aggressive` 不重新训练模型，在 DeepFilter 后压制高频残留呼呼声，固定 160 条验证集约 `+9.38 dB`/`+9.26 dB`；`tiny_gru_h136` RNNoise-style 基线约 `+4.77 dB`，客观分数低于 DeepFilter，但用于主观比较时序 GRU 是否降低呼呼声伪影。
 - C Q15 模型 reference：mean abs diff `0.01703`，streaming 与 batch Q15 完全一致。
 - C learned gate reference：gate abs diff `0.0000039` against Python gate。
 - C gated realtime DSP reference：mean abs diff `0.00078` against Python gated realtime reference。

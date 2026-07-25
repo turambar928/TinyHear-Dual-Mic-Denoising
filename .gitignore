@@ -134,6 +134,24 @@ runs/arctic_demand_tiny_gru_h136/eval_loud/*
 !runs/arctic_demand_tiny_gru_h136/listening_eval_loud/
 !runs/arctic_demand_tiny_gru_h136/listening_eval_loud/**
 
+# DeepFilter dehiss post-filter metrics and small listening-eval demo set.
+!runs/arctic_demand_tiny_deepfilter_dehiss/
+runs/arctic_demand_tiny_deepfilter_dehiss/*
+!runs/arctic_demand_tiny_deepfilter_dehiss/eval_loud/
+runs/arctic_demand_tiny_deepfilter_dehiss/eval_loud/*
+!runs/arctic_demand_tiny_deepfilter_dehiss/eval_loud/metrics.json
+!runs/arctic_demand_tiny_deepfilter_dehiss/listening_eval_loud/
+!runs/arctic_demand_tiny_deepfilter_dehiss/listening_eval_loud/**
+
+# More aggressive DeepFilter dehiss demo set for hiss/speech tradeoff checks.
+!runs/arctic_demand_tiny_deepfilter_dehiss_aggressive/
+runs/arctic_demand_tiny_deepfilter_dehiss_aggressive/*
+!runs/arctic_demand_tiny_deepfilter_dehiss_aggressive/eval_loud/
+runs/arctic_demand_tiny_deepfilter_dehiss_aggressive/eval_loud/*
+!runs/arctic_demand_tiny_deepfilter_dehiss_aggressive/eval_loud/metrics.json
+!runs/arctic_demand_tiny_deepfilter_dehiss_aggressive/listening_eval_loud/
+!runs/arctic_demand_tiny_deepfilter_dehiss_aggressive/listening_eval_loud/**
+
 # C build output
 c_reference/tiny_tcn_ref
 c_reference/tiny_tcn_bench

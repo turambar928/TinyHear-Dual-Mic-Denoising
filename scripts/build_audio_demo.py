@@ -10,6 +10,8 @@ from typing import Any
 
 
 DEFAULT_SETS = [
+    ("deepfilter_dehiss_aggressive", Path("runs/arctic_demand_tiny_deepfilter_dehiss_aggressive/listening_eval_loud")),
+    ("deepfilter_dehiss", Path("runs/arctic_demand_tiny_deepfilter_dehiss/listening_eval_loud")),
     ("tiny_gru_h136", Path("runs/arctic_demand_tiny_gru_h136/listening_eval_loud")),
     ("stable_postfilter", Path("runs/arctic_demand_tiny_deepfilter_stable_postfilter/listening_eval_loud")),
     ("coherence_mwf_smooth", Path("runs/arctic_demand_tiny_deepfilter_coherence_smooth/listening_eval_loud")),
