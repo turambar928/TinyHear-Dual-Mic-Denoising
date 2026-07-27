@@ -1,0 +1,102 @@
+{
+  "summary": {
+    "items": 5,
+    "mean_noisy_si_sdr": 4.396818375587463,
+    "mean_offline_si_sdr": 21.133600807189943,
+    "mean_realtime_si_sdr": 21.133600807189943,
+    "mean_offline_improvement": 16.736782431602478,
+    "mean_realtime_improvement": 16.736782431602478
+  },
+  "items": [
+    {
+      "sample": "sample_000",
+      "source_mix": "mix_0110.wav",
+      "noisy_si_sdr": -5.028979778289795,
+      "offline_si_sdr": 6.704253196716309,
+      "realtime_si_sdr": 6.704253196716309,
+      "offline_improvement": 11.733232975006104,
+      "realtime_improvement": 11.733232975006104,
+      "files": {
+        "noisy": "sample_000_noisy.wav",
+        "clean": "sample_000_clean.wav",
+        "offline": "sample_000_offline.wav",
+        "realtime": "sample_000_realtime.wav"
+      },
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "sample": "sample_001",
+      "source_mix": "mix_0072.wav",
+      "noisy_si_sdr": -0.8255501985549927,
+      "offline_si_sdr": 22.804563522338867,
+      "realtime_si_sdr": 22.804563522338867,
+      "offline_improvement": 23.63011372089386,
+      "realtime_improvement": 23.63011372089386,
+      "files": {
+        "noisy": "sample_001_noisy.wav",
+        "clean": "sample_001_clean.wav",
+        "offline": "sample_001_offline.wav",
+        "realtime": "sample_001_realtime.wav"
+      },
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "sample": "sample_002",
+      "source_mix": "mix_0112.wav",
+      "noisy_si_sdr": 3.9329030513763428,
+      "offline_si_sdr": 22.1632080078125,
+      "realtime_si_sdr": 22.1632080078125,
+      "offline_improvement": 18.230304956436157,
+      "realtime_improvement": 18.230304956436157,
+      "files": {
+        "noisy": "sample_002_noisy.wav",
+        "clean": "sample_002_clean.wav",
+        "offline": "sample_002_offline.wav",
+        "realtime": "sample_002_realtime.wav"
+      },
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "sample": "sample_003",
+      "source_mix": "mix_0147.wav",
+      "noisy_si_sdr": 9.268380165100098,
+      "offline_si_sdr": 27.324800491333008,
+      "realtime_si_sdr": 27.324800491333008,
+      "offline_improvement": 18.05642032623291,
+      "realtime_improvement": 18.05642032623291,
+      "files": {
+        "noisy": "sample_003_noisy.wav",
+        "clean": "sample_003_clean.wav",
+        "offline": "sample_003_offline.wav",
+        "realtime": "sample_003_realtime.wav"
+      },
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "sample": "sample_004",
+      "source_mix": "mix_0145.wav",
+      "noisy_si_sdr": 14.637338638305664,
+      "offline_si_sdr": 26.671178817749023,
+      "realtime_si_sdr": 26.671178817749023,
+      "offline_improvement": 12.03384017944336,
+      "realtime_improvement": 12.03384017944336,
+      "files": {
+        "noisy": "sample_004_noisy.wav",
+        "clean": "sample_004_clean.wav",
+        "offline": "sample_004_offline.wav",
+        "realtime": "sample_004_realtime.wav"
+      },
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    }
+  ]
+}

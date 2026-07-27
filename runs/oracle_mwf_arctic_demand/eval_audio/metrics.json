@@ -1,0 +1,1450 @@
+{
+  "summary": {
+    "items": 160,
+    "mean_noisy_si_sdr": 4.331035113846883,
+    "mean_enhanced_si_sdr": 20.392111325263976,
+    "mean_si_sdr_improvement": 16.061076211417095
+  },
+  "items": [
+    {
+      "file": "mix_0000.wav",
+      "noisy_si_sdr": 14.033246040344238,
+      "enhanced_si_sdr": 30.38613510131836,
+      "si_sdr_improvement": 16.35288906097412,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0001.wav",
+      "noisy_si_sdr": 10.661760330200195,
+      "enhanced_si_sdr": 25.102611541748047,
+      "si_sdr_improvement": 14.440851211547852,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0002.wav",
+      "noisy_si_sdr": -4.9359283447265625,
+      "enhanced_si_sdr": 22.46330451965332,
+      "si_sdr_improvement": 27.399232864379883,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0003.wav",
+      "noisy_si_sdr": 2.944988250732422,
+      "enhanced_si_sdr": 18.960651397705078,
+      "si_sdr_improvement": 16.015663146972656,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0004.wav",
+      "noisy_si_sdr": 9.465190887451172,
+      "enhanced_si_sdr": 19.659168243408203,
+      "si_sdr_improvement": 10.193977355957031,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0005.wav",
+      "noisy_si_sdr": 11.958999633789062,
+      "enhanced_si_sdr": 28.326065063476562,
+      "si_sdr_improvement": 16.3670654296875,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0006.wav",
+      "noisy_si_sdr": -2.7493038177490234,
+      "enhanced_si_sdr": 15.462799072265625,
+      "si_sdr_improvement": 18.21210289001465,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0007.wav",
+      "noisy_si_sdr": 11.896754264831543,
+      "enhanced_si_sdr": 21.575733184814453,
+      "si_sdr_improvement": 9.67897891998291,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0008.wav",
+      "noisy_si_sdr": -2.382554531097412,
+      "enhanced_si_sdr": 16.554372787475586,
+      "si_sdr_improvement": 18.936927318572998,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0009.wav",
+      "noisy_si_sdr": -2.1840176582336426,
+      "enhanced_si_sdr": 13.969158172607422,
+      "si_sdr_improvement": 16.153175830841064,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0010.wav",
+      "noisy_si_sdr": 6.190702438354492,
+      "enhanced_si_sdr": 29.473060607910156,
+      "si_sdr_improvement": 23.282358169555664,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0011.wav",
+      "noisy_si_sdr": 3.1241631507873535,
+      "enhanced_si_sdr": 15.25885009765625,
+      "si_sdr_improvement": 12.134686946868896,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0012.wav",
+      "noisy_si_sdr": 5.3895087242126465,
+      "enhanced_si_sdr": 14.424201011657715,
+      "si_sdr_improvement": 9.034692287445068,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0013.wav",
+      "noisy_si_sdr": 3.789794921875,
+      "enhanced_si_sdr": 13.672279357910156,
+      "si_sdr_improvement": 9.882484436035156,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0014.wav",
+      "noisy_si_sdr": 9.298003196716309,
+      "enhanced_si_sdr": 26.24192237854004,
+      "si_sdr_improvement": 16.94391918182373,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0015.wav",
+      "noisy_si_sdr": 4.570218086242676,
+      "enhanced_si_sdr": 29.2937068939209,
+      "si_sdr_improvement": 24.723488807678223,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0016.wav",
+      "noisy_si_sdr": 13.31392765045166,
+      "enhanced_si_sdr": 25.677204132080078,
+      "si_sdr_improvement": 12.363276481628418,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0017.wav",
+      "noisy_si_sdr": -2.598923683166504,
+      "enhanced_si_sdr": 19.67308807373047,
+      "si_sdr_improvement": 22.272011756896973,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0018.wav",
+      "noisy_si_sdr": 1.2584174871444702,
+      "enhanced_si_sdr": 25.968332290649414,
+      "si_sdr_improvement": 24.709914803504944,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0019.wav",
+      "noisy_si_sdr": 4.496060371398926,
+      "enhanced_si_sdr": 12.701125144958496,
+      "si_sdr_improvement": 8.20506477355957,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0020.wav",
+      "noisy_si_sdr": -2.1301522254943848,
+      "enhanced_si_sdr": 7.929189682006836,
+      "si_sdr_improvement": 10.05934190750122,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0021.wav",
+      "noisy_si_sdr": -1.0694341659545898,
+      "enhanced_si_sdr": 16.482749938964844,
+      "si_sdr_improvement": 17.552184104919434,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0022.wav",
+      "noisy_si_sdr": 13.703163146972656,
+      "enhanced_si_sdr": 20.47412109375,
+      "si_sdr_improvement": 6.770957946777344,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0023.wav",
+      "noisy_si_sdr": -2.5582754611968994,
+      "enhanced_si_sdr": 22.141511917114258,
+      "si_sdr_improvement": 24.699787378311157,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0024.wav",
+      "noisy_si_sdr": 7.477434158325195,
+      "enhanced_si_sdr": 23.84134292602539,
+      "si_sdr_improvement": 16.363908767700195,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0025.wav",
+      "noisy_si_sdr": 13.466239929199219,
+      "enhanced_si_sdr": 21.189434051513672,
+      "si_sdr_improvement": 7.723194122314453,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0026.wav",
+      "noisy_si_sdr": 8.576972961425781,
+      "enhanced_si_sdr": 31.657699584960938,
+      "si_sdr_improvement": 23.080726623535156,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0027.wav",
+      "noisy_si_sdr": 11.888922691345215,
+      "enhanced_si_sdr": 29.98354148864746,
+      "si_sdr_improvement": 18.094618797302246,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0028.wav",
+      "noisy_si_sdr": -1.4980263710021973,
+      "enhanced_si_sdr": 17.72833824157715,
+      "si_sdr_improvement": 19.226364612579346,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0029.wav",
+      "noisy_si_sdr": 4.6213202476501465,
+      "enhanced_si_sdr": 14.050783157348633,
+      "si_sdr_improvement": 9.429462909698486,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0030.wav",
+      "noisy_si_sdr": 14.074936866760254,
+      "enhanced_si_sdr": 30.786588668823242,
+      "si_sdr_improvement": 16.71165180206299,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0031.wav",
+      "noisy_si_sdr": 11.928064346313477,
+      "enhanced_si_sdr": 19.535470962524414,
+      "si_sdr_improvement": 7.6074066162109375,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0032.wav",
+      "noisy_si_sdr": 10.020467758178711,
+      "enhanced_si_sdr": 17.695091247558594,
+      "si_sdr_improvement": 7.674623489379883,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0033.wav",
+      "noisy_si_sdr": 10.644560813903809,
+      "enhanced_si_sdr": 24.359683990478516,
+      "si_sdr_improvement": 13.715123176574707,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0034.wav",
+      "noisy_si_sdr": -1.2953550815582275,
+      "enhanced_si_sdr": 21.829673767089844,
+      "si_sdr_improvement": 23.12502884864807,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0035.wav",
+      "noisy_si_sdr": 0.19084316492080688,
+      "enhanced_si_sdr": 10.799049377441406,
+      "si_sdr_improvement": 10.6082062125206,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0036.wav",
+      "noisy_si_sdr": -3.110715389251709,
+      "enhanced_si_sdr": 9.485505104064941,
+      "si_sdr_improvement": 12.59622049331665,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0037.wav",
+      "noisy_si_sdr": 4.121194839477539,
+      "enhanced_si_sdr": 17.206111907958984,
+      "si_sdr_improvement": 13.084917068481445,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0038.wav",
+      "noisy_si_sdr": 4.239287376403809,
+      "enhanced_si_sdr": 16.60675811767578,
+      "si_sdr_improvement": 12.367470741271973,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0039.wav",
+      "noisy_si_sdr": 13.95627212524414,
+      "enhanced_si_sdr": 22.333187103271484,
+      "si_sdr_improvement": 8.376914978027344,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0040.wav",
+      "noisy_si_sdr": 14.16822624206543,
+      "enhanced_si_sdr": 27.422182083129883,
+      "si_sdr_improvement": 13.253955841064453,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0041.wav",
+      "noisy_si_sdr": 1.8788740634918213,
+      "enhanced_si_sdr": 18.929664611816406,
+      "si_sdr_improvement": 17.050790548324585,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0042.wav",
+      "noisy_si_sdr": 5.452397346496582,
+      "enhanced_si_sdr": 25.815820693969727,
+      "si_sdr_improvement": 20.363423347473145,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0043.wav",
+      "noisy_si_sdr": 2.6801156997680664,
+      "enhanced_si_sdr": 12.784933090209961,
+      "si_sdr_improvement": 10.104817390441895,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0044.wav",
+      "noisy_si_sdr": 8.234618186950684,
+      "enhanced_si_sdr": 30.660465240478516,
+      "si_sdr_improvement": 22.425847053527832,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0045.wav",
+      "noisy_si_sdr": -4.653110980987549,
+      "enhanced_si_sdr": 22.102081298828125,
+      "si_sdr_improvement": 26.755192279815674,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0046.wav",
+      "noisy_si_sdr": -1.5121639966964722,
+      "enhanced_si_sdr": 9.693161010742188,
+      "si_sdr_improvement": 11.20532500743866,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0047.wav",
+      "noisy_si_sdr": 10.088769912719727,
+      "enhanced_si_sdr": 26.027870178222656,
+      "si_sdr_improvement": 15.93910026550293,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0048.wav",
+      "noisy_si_sdr": -0.5809242725372314,
+      "enhanced_si_sdr": 16.75483512878418,
+      "si_sdr_improvement": 17.33575940132141,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0049.wav",
+      "noisy_si_sdr": 6.300352096557617,
+      "enhanced_si_sdr": 13.826407432556152,
+      "si_sdr_improvement": 7.526055335998535,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0050.wav",
+      "noisy_si_sdr": 11.223718643188477,
+      "enhanced_si_sdr": 25.009023666381836,
+      "si_sdr_improvement": 13.78530502319336,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0051.wav",
+      "noisy_si_sdr": 12.872830390930176,
+      "enhanced_si_sdr": 23.565671920776367,
+      "si_sdr_improvement": 10.692841529846191,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0052.wav",
+      "noisy_si_sdr": -3.302107810974121,
+      "enhanced_si_sdr": 13.892675399780273,
+      "si_sdr_improvement": 17.194783210754395,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0053.wav",
+      "noisy_si_sdr": -0.7000689506530762,
+      "enhanced_si_sdr": 10.309895515441895,
+      "si_sdr_improvement": 11.00996446609497,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0054.wav",
+      "noisy_si_sdr": 14.427650451660156,
+      "enhanced_si_sdr": 29.77640151977539,
+      "si_sdr_improvement": 15.348751068115234,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0055.wav",
+      "noisy_si_sdr": 1.6761586666107178,
+      "enhanced_si_sdr": 19.570430755615234,
+      "si_sdr_improvement": 17.894272089004517,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0056.wav",
+      "noisy_si_sdr": 5.829235076904297,
+      "enhanced_si_sdr": 21.81743812561035,
+      "si_sdr_improvement": 15.988203048706055,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0057.wav",
+      "noisy_si_sdr": 3.309019088745117,
+      "enhanced_si_sdr": 12.68785285949707,
+      "si_sdr_improvement": 9.378833770751953,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0058.wav",
+      "noisy_si_sdr": -4.403365135192871,
+      "enhanced_si_sdr": 18.414527893066406,
+      "si_sdr_improvement": 22.817893028259277,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0059.wav",
+      "noisy_si_sdr": 2.372466564178467,
+      "enhanced_si_sdr": 26.234241485595703,
+      "si_sdr_improvement": 23.861774921417236,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0060.wav",
+      "noisy_si_sdr": 12.47307300567627,
+      "enhanced_si_sdr": 24.718368530273438,
+      "si_sdr_improvement": 12.245295524597168,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0061.wav",
+      "noisy_si_sdr": 4.94127082824707,
+      "enhanced_si_sdr": 21.057601928710938,
+      "si_sdr_improvement": 16.116331100463867,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0062.wav",
+      "noisy_si_sdr": -3.587698459625244,
+      "enhanced_si_sdr": 16.291919708251953,
+      "si_sdr_improvement": 19.879618167877197,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0063.wav",
+      "noisy_si_sdr": 3.650540828704834,
+      "enhanced_si_sdr": 21.304014205932617,
+      "si_sdr_improvement": 17.653473377227783,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0064.wav",
+      "noisy_si_sdr": -1.4696961641311646,
+      "enhanced_si_sdr": 21.562929153442383,
+      "si_sdr_improvement": 23.032625317573547,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0065.wav",
+      "noisy_si_sdr": 11.069543838500977,
+      "enhanced_si_sdr": 21.537628173828125,
+      "si_sdr_improvement": 10.468084335327148,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0066.wav",
+      "noisy_si_sdr": 1.5103806257247925,
+      "enhanced_si_sdr": 14.408227920532227,
+      "si_sdr_improvement": 12.897847294807434,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0067.wav",
+      "noisy_si_sdr": -0.33656567335128784,
+      "enhanced_si_sdr": 20.56454086303711,
+      "si_sdr_improvement": 20.901106536388397,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0068.wav",
+      "noisy_si_sdr": -4.596324443817139,
+      "enhanced_si_sdr": 13.448579788208008,
+      "si_sdr_improvement": 18.044904232025146,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0069.wav",
+      "noisy_si_sdr": -0.8015191555023193,
+      "enhanced_si_sdr": 24.566734313964844,
+      "si_sdr_improvement": 25.368253469467163,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0070.wav",
+      "noisy_si_sdr": 9.078606605529785,
+      "enhanced_si_sdr": 16.823436737060547,
+      "si_sdr_improvement": 7.744830131530762,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0071.wav",
+      "noisy_si_sdr": -4.795764923095703,
+      "enhanced_si_sdr": 18.303617477416992,
+      "si_sdr_improvement": 23.099382400512695,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0072.wav",
+      "noisy_si_sdr": -0.8255501985549927,
+      "enhanced_si_sdr": 22.804563522338867,
+      "si_sdr_improvement": 23.63011372089386,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0073.wav",
+      "noisy_si_sdr": 10.379667282104492,
+      "enhanced_si_sdr": 26.03949737548828,
+      "si_sdr_improvement": 15.659830093383789,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0074.wav",
+      "noisy_si_sdr": 1.1128709316253662,
+      "enhanced_si_sdr": 11.93713092803955,
+      "si_sdr_improvement": 10.824259996414185,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0075.wav",
+      "noisy_si_sdr": 13.766275405883789,
+      "enhanced_si_sdr": 27.363874435424805,
+      "si_sdr_improvement": 13.597599029541016,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0076.wav",
+      "noisy_si_sdr": 8.275712013244629,
+      "enhanced_si_sdr": 27.255430221557617,
+      "si_sdr_improvement": 18.97971820831299,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0077.wav",
+      "noisy_si_sdr": -4.2855730056762695,
+      "enhanced_si_sdr": 17.876808166503906,
+      "si_sdr_improvement": 22.162381172180176,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0078.wav",
+      "noisy_si_sdr": 0.5435062646865845,
+      "enhanced_si_sdr": 15.511529922485352,
+      "si_sdr_improvement": 14.968023657798767,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0079.wav",
+      "noisy_si_sdr": -3.687962532043457,
+      "enhanced_si_sdr": 13.774014472961426,
+      "si_sdr_improvement": 17.461977005004883,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0080.wav",
+      "noisy_si_sdr": -3.266026020050049,
+      "enhanced_si_sdr": 8.0046968460083,
+      "si_sdr_improvement": 11.27072286605835,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0081.wav",
+      "noisy_si_sdr": -3.361937999725342,
+      "enhanced_si_sdr": 11.346959114074707,
+      "si_sdr_improvement": 14.708897113800049,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0082.wav",
+      "noisy_si_sdr": 2.7022483348846436,
+      "enhanced_si_sdr": 22.61138916015625,
+      "si_sdr_improvement": 19.909140825271606,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0083.wav",
+      "noisy_si_sdr": 12.108098030090332,
+      "enhanced_si_sdr": 22.547340393066406,
+      "si_sdr_improvement": 10.439242362976074,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0084.wav",
+      "noisy_si_sdr": 8.57829475402832,
+      "enhanced_si_sdr": 24.0902156829834,
+      "si_sdr_improvement": 15.511920928955078,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0085.wav",
+      "noisy_si_sdr": 7.11733865737915,
+      "enhanced_si_sdr": 19.497676849365234,
+      "si_sdr_improvement": 12.380338191986084,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0086.wav",
+      "noisy_si_sdr": 8.343426704406738,
+      "enhanced_si_sdr": 31.562631607055664,
+      "si_sdr_improvement": 23.219204902648926,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0087.wav",
+      "noisy_si_sdr": 2.2914280891418457,
+      "enhanced_si_sdr": 11.952204704284668,
+      "si_sdr_improvement": 9.660776615142822,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0088.wav",
+      "noisy_si_sdr": 7.4588942527771,
+      "enhanced_si_sdr": 20.729740142822266,
+      "si_sdr_improvement": 13.270845890045166,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0089.wav",
+      "noisy_si_sdr": 8.607735633850098,
+      "enhanced_si_sdr": 28.40152359008789,
+      "si_sdr_improvement": 19.793787956237793,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0090.wav",
+      "noisy_si_sdr": -3.817746877670288,
+      "enhanced_si_sdr": 23.06786346435547,
+      "si_sdr_improvement": 26.885610342025757,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0091.wav",
+      "noisy_si_sdr": 5.0682220458984375,
+      "enhanced_si_sdr": 24.406715393066406,
+      "si_sdr_improvement": 19.33849334716797,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0092.wav",
+      "noisy_si_sdr": 8.23838996887207,
+      "enhanced_si_sdr": 22.91461181640625,
+      "si_sdr_improvement": 14.67622184753418,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0093.wav",
+      "noisy_si_sdr": 2.2507710456848145,
+      "enhanced_si_sdr": 21.963768005371094,
+      "si_sdr_improvement": 19.71299695968628,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0094.wav",
+      "noisy_si_sdr": -3.1643223762512207,
+      "enhanced_si_sdr": 15.976760864257812,
+      "si_sdr_improvement": 19.141083240509033,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0095.wav",
+      "noisy_si_sdr": -1.8323034048080444,
+      "enhanced_si_sdr": 14.06214714050293,
+      "si_sdr_improvement": 15.894450545310974,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0096.wav",
+      "noisy_si_sdr": 14.419464111328125,
+      "enhanced_si_sdr": 33.980377197265625,
+      "si_sdr_improvement": 19.5609130859375,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0097.wav",
+      "noisy_si_sdr": 4.561706066131592,
+      "enhanced_si_sdr": 20.13907241821289,
+      "si_sdr_improvement": 15.577366352081299,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0098.wav",
+      "noisy_si_sdr": -2.086452007293701,
+      "enhanced_si_sdr": 16.082422256469727,
+      "si_sdr_improvement": 18.168874263763428,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0099.wav",
+      "noisy_si_sdr": 6.203106880187988,
+      "enhanced_si_sdr": 25.239604949951172,
+      "si_sdr_improvement": 19.036498069763184,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0100.wav",
+      "noisy_si_sdr": 5.598968505859375,
+      "enhanced_si_sdr": 28.025758743286133,
+      "si_sdr_improvement": 22.426790237426758,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0101.wav",
+      "noisy_si_sdr": 13.45361614227295,
+      "enhanced_si_sdr": 26.029911041259766,
+      "si_sdr_improvement": 12.576294898986816,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0102.wav",
+      "noisy_si_sdr": -4.824540138244629,
+      "enhanced_si_sdr": 8.504453659057617,
+      "si_sdr_improvement": 13.328993797302246,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0103.wav",
+      "noisy_si_sdr": -4.204908847808838,
+      "enhanced_si_sdr": 8.323498725891113,
+      "si_sdr_improvement": 12.528407573699951,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0104.wav",
+      "noisy_si_sdr": 1.163352131843567,
+      "enhanced_si_sdr": 26.734176635742188,
+      "si_sdr_improvement": 25.57082450389862,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0105.wav",
+      "noisy_si_sdr": 12.226799964904785,
+      "enhanced_si_sdr": 31.947067260742188,
+      "si_sdr_improvement": 19.720267295837402,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0106.wav",
+      "noisy_si_sdr": 4.545032024383545,
+      "enhanced_si_sdr": 29.657955169677734,
+      "si_sdr_improvement": 25.11292314529419,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0107.wav",
+      "noisy_si_sdr": 10.682588577270508,
+      "enhanced_si_sdr": 21.139677047729492,
+      "si_sdr_improvement": 10.457088470458984,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0108.wav",
+      "noisy_si_sdr": 7.067493438720703,
+      "enhanced_si_sdr": 14.874835968017578,
+      "si_sdr_improvement": 7.807342529296875,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0109.wav",
+      "noisy_si_sdr": 6.095209121704102,
+      "enhanced_si_sdr": 27.668760299682617,
+      "si_sdr_improvement": 21.573551177978516,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0110.wav",
+      "noisy_si_sdr": -5.028979778289795,
+      "enhanced_si_sdr": 6.704253196716309,
+      "si_sdr_improvement": 11.733232975006104,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0111.wav",
+      "noisy_si_sdr": -1.604844331741333,
+      "enhanced_si_sdr": 20.060426712036133,
+      "si_sdr_improvement": 21.665271043777466,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0112.wav",
+      "noisy_si_sdr": 3.9329030513763428,
+      "enhanced_si_sdr": 22.1632080078125,
+      "si_sdr_improvement": 18.230304956436157,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0113.wav",
+      "noisy_si_sdr": 13.68059253692627,
+      "enhanced_si_sdr": 24.731971740722656,
+      "si_sdr_improvement": 11.051379203796387,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0114.wav",
+      "noisy_si_sdr": 0.7014398574829102,
+      "enhanced_si_sdr": 15.937190055847168,
+      "si_sdr_improvement": 15.235750198364258,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0115.wav",
+      "noisy_si_sdr": 0.1903536170721054,
+      "enhanced_si_sdr": 15.673022270202637,
+      "si_sdr_improvement": 15.482668653130531,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0116.wav",
+      "noisy_si_sdr": 4.891341686248779,
+      "enhanced_si_sdr": 22.024290084838867,
+      "si_sdr_improvement": 17.132948398590088,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0117.wav",
+      "noisy_si_sdr": 3.265902519226074,
+      "enhanced_si_sdr": 20.580463409423828,
+      "si_sdr_improvement": 17.314560890197754,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0118.wav",
+      "noisy_si_sdr": 5.0956926345825195,
+      "enhanced_si_sdr": 22.824499130249023,
+      "si_sdr_improvement": 17.728806495666504,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0119.wav",
+      "noisy_si_sdr": 1.8973714113235474,
+      "enhanced_si_sdr": 17.61167335510254,
+      "si_sdr_improvement": 15.714301943778992,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0120.wav",
+      "noisy_si_sdr": 11.370809555053711,
+      "enhanced_si_sdr": 21.69712257385254,
+      "si_sdr_improvement": 10.326313018798828,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0121.wav",
+      "noisy_si_sdr": -2.2290656566619873,
+      "enhanced_si_sdr": 9.676263809204102,
+      "si_sdr_improvement": 11.905329465866089,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0122.wav",
+      "noisy_si_sdr": 13.855876922607422,
+      "enhanced_si_sdr": 32.322444915771484,
+      "si_sdr_improvement": 18.466567993164062,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0123.wav",
+      "noisy_si_sdr": -0.11170212179422379,
+      "enhanced_si_sdr": 17.669546127319336,
+      "si_sdr_improvement": 17.78124824911356,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0124.wav",
+      "noisy_si_sdr": 5.638553619384766,
+      "enhanced_si_sdr": 20.512584686279297,
+      "si_sdr_improvement": 14.874031066894531,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0125.wav",
+      "noisy_si_sdr": 8.291243553161621,
+      "enhanced_si_sdr": 31.85004234313965,
+      "si_sdr_improvement": 23.558798789978027,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0126.wav",
+      "noisy_si_sdr": -2.4328529834747314,
+      "enhanced_si_sdr": 12.394224166870117,
+      "si_sdr_improvement": 14.827077150344849,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0127.wav",
+      "noisy_si_sdr": 0.8998125195503235,
+      "enhanced_si_sdr": 15.981250762939453,
+      "si_sdr_improvement": 15.08143824338913,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0128.wav",
+      "noisy_si_sdr": 11.631251335144043,
+      "enhanced_si_sdr": 25.98537826538086,
+      "si_sdr_improvement": 14.354126930236816,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0129.wav",
+      "noisy_si_sdr": 3.910855770111084,
+      "enhanced_si_sdr": 20.330184936523438,
+      "si_sdr_improvement": 16.419329166412354,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0130.wav",
+      "noisy_si_sdr": -4.155619144439697,
+      "enhanced_si_sdr": 7.930953502655029,
+      "si_sdr_improvement": 12.086572647094727,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0131.wav",
+      "noisy_si_sdr": 8.84201717376709,
+      "enhanced_si_sdr": 25.75809669494629,
+      "si_sdr_improvement": 16.9160795211792,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0132.wav",
+      "noisy_si_sdr": 5.730229377746582,
+      "enhanced_si_sdr": 30.308368682861328,
+      "si_sdr_improvement": 24.578139305114746,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0133.wav",
+      "noisy_si_sdr": 12.311749458312988,
+      "enhanced_si_sdr": 26.876605987548828,
+      "si_sdr_improvement": 14.56485652923584,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0134.wav",
+      "noisy_si_sdr": 11.967950820922852,
+      "enhanced_si_sdr": 18.01069450378418,
+      "si_sdr_improvement": 6.042743682861328,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0135.wav",
+      "noisy_si_sdr": 1.1517678499221802,
+      "enhanced_si_sdr": 19.2066650390625,
+      "si_sdr_improvement": 18.05489718914032,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0136.wav",
+      "noisy_si_sdr": 7.593221664428711,
+      "enhanced_si_sdr": 24.458913803100586,
+      "si_sdr_improvement": 16.865692138671875,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0137.wav",
+      "noisy_si_sdr": 2.0059728622436523,
+      "enhanced_si_sdr": 24.397445678710938,
+      "si_sdr_improvement": 22.391472816467285,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0138.wav",
+      "noisy_si_sdr": 7.478261947631836,
+      "enhanced_si_sdr": 16.32019805908203,
+      "si_sdr_improvement": 8.841936111450195,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0139.wav",
+      "noisy_si_sdr": 9.863842010498047,
+      "enhanced_si_sdr": 29.533803939819336,
+      "si_sdr_improvement": 19.66996192932129,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0140.wav",
+      "noisy_si_sdr": -1.7265903949737549,
+      "enhanced_si_sdr": 6.911477565765381,
+      "si_sdr_improvement": 8.638067960739136,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0141.wav",
+      "noisy_si_sdr": -2.4723987579345703,
+      "enhanced_si_sdr": 15.976096153259277,
+      "si_sdr_improvement": 18.448494911193848,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0142.wav",
+      "noisy_si_sdr": 1.204827904701233,
+      "enhanced_si_sdr": 11.713801383972168,
+      "si_sdr_improvement": 10.508973479270935,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0143.wav",
+      "noisy_si_sdr": 3.2726364135742188,
+      "enhanced_si_sdr": 20.127286911010742,
+      "si_sdr_improvement": 16.854650497436523,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0144.wav",
+      "noisy_si_sdr": -1.254446029663086,
+      "enhanced_si_sdr": 8.207650184631348,
+      "si_sdr_improvement": 9.462096214294434,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0145.wav",
+      "noisy_si_sdr": 14.637338638305664,
+      "enhanced_si_sdr": 26.671178817749023,
+      "si_sdr_improvement": 12.03384017944336,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0146.wav",
+      "noisy_si_sdr": -3.57442045211792,
+      "enhanced_si_sdr": 8.041566848754883,
+      "si_sdr_improvement": 11.615987300872803,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0147.wav",
+      "noisy_si_sdr": 9.268380165100098,
+      "enhanced_si_sdr": 27.324800491333008,
+      "si_sdr_improvement": 18.05642032623291,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0148.wav",
+      "noisy_si_sdr": 10.83127212524414,
+      "enhanced_si_sdr": 26.765583038330078,
+      "si_sdr_improvement": 15.934310913085938,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0149.wav",
+      "noisy_si_sdr": 12.522706985473633,
+      "enhanced_si_sdr": 27.122703552246094,
+      "si_sdr_improvement": 14.599996566772461,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0150.wav",
+      "noisy_si_sdr": -0.3251153826713562,
+      "enhanced_si_sdr": 21.01596450805664,
+      "si_sdr_improvement": 21.341079890727997,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0151.wav",
+      "noisy_si_sdr": -0.16656480729579926,
+      "enhanced_si_sdr": 11.056618690490723,
+      "si_sdr_improvement": 11.223183497786522,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0152.wav",
+      "noisy_si_sdr": 2.165435552597046,
+      "enhanced_si_sdr": 25.384361267089844,
+      "si_sdr_improvement": 23.218925714492798,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0153.wav",
+      "noisy_si_sdr": -1.0481209754943848,
+      "enhanced_si_sdr": 17.822397232055664,
+      "si_sdr_improvement": 18.87051820755005,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0154.wav",
+      "noisy_si_sdr": 3.1155362129211426,
+      "enhanced_si_sdr": 21.0518856048584,
+      "si_sdr_improvement": 17.936349391937256,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0155.wav",
+      "noisy_si_sdr": 11.464130401611328,
+      "enhanced_si_sdr": 22.00828742980957,
+      "si_sdr_improvement": 10.544157028198242,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0156.wav",
+      "noisy_si_sdr": 2.1253654956817627,
+      "enhanced_si_sdr": 27.074024200439453,
+      "si_sdr_improvement": 24.94865870475769,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0157.wav",
+      "noisy_si_sdr": 7.107222080230713,
+      "enhanced_si_sdr": 23.458478927612305,
+      "si_sdr_improvement": 16.351256847381592,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0158.wav",
+      "noisy_si_sdr": 3.6235227584838867,
+      "enhanced_si_sdr": 22.360347747802734,
+      "si_sdr_improvement": 18.736824989318848,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    },
+    {
+      "file": "mix_0159.wav",
+      "noisy_si_sdr": -3.2312097549438477,
+      "enhanced_si_sdr": 8.22206974029541,
+      "si_sdr_improvement": 11.453279495239258,
+      "oracle_window": 9,
+      "oracle_causal": false,
+      "diagonal_loading": 0.01
+    }
+  ]
+}
