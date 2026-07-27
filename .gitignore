@@ -165,6 +165,7 @@ runs/arctic_demand_tiny_complex_mask/eval_loud/*
 # Oracle MWF teacher metrics and small listening-eval demo set.
 !runs/oracle_mwf_arctic_demand/
 runs/oracle_mwf_arctic_demand/*
+!runs/oracle_mwf_arctic_demand/README.md
 !runs/oracle_mwf_arctic_demand/eval_audio/
 runs/oracle_mwf_arctic_demand/eval_audio/*
 !runs/oracle_mwf_arctic_demand/eval_audio/metrics.json
