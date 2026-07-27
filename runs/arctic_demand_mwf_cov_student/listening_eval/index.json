@@ -1,0 +1,392 @@
+{
+  "summary": {
+    "items": 20,
+    "mean_noisy_si_sdr": 4.352336168289185,
+    "mean_offline_si_sdr": 12.7756626913324,
+    "mean_realtime_si_sdr": 12.7756626913324,
+    "mean_offline_improvement": 8.423326523043215,
+    "mean_realtime_improvement": 8.423326523043215
+  },
+  "items": [
+    {
+      "sample": "sample_000",
+      "source_mix": "mix_0110.wav",
+      "spatial_frontend": "coherence_mwf",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": -4.690291404724121,
+      "loudness_gain": 1.3568212985992432,
+      "noisy_si_sdr": -5.028979778289795,
+      "offline_si_sdr": -0.04352852329611778,
+      "realtime_si_sdr": -0.04352852329611778,
+      "offline_improvement": 4.985451254993677,
+      "realtime_improvement": 4.985451254993677,
+      "files": {
+        "noisy": "sample_000_noisy.wav",
+        "clean": "sample_000_clean.wav",
+        "offline": "sample_000_offline.wav",
+        "realtime": "sample_000_realtime.wav"
+      }
+    },
+    {
+      "sample": "sample_001",
+      "source_mix": "mix_0103.wav",
+      "spatial_frontend": "coherence_mwf",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": -3.89931583404541,
+      "loudness_gain": 1.2714749574661255,
+      "noisy_si_sdr": -4.204908847808838,
+      "offline_si_sdr": -0.05979396402835846,
+      "realtime_si_sdr": -0.05979396402835846,
+      "offline_improvement": 4.145114883780479,
+      "realtime_improvement": 4.145114883780479,
+      "files": {
+        "noisy": "sample_001_noisy.wav",
+        "clean": "sample_001_clean.wav",
+        "offline": "sample_001_offline.wav",
+        "realtime": "sample_001_realtime.wav"
+      }
+    },
+    {
+      "sample": "sample_002",
+      "source_mix": "mix_0159.wav",
+      "spatial_frontend": "coherence_mwf",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": -3.324749231338501,
+      "loudness_gain": 1.3334935903549194,
+      "noisy_si_sdr": -3.2312097549438477,
+      "offline_si_sdr": 1.290192723274231,
+      "realtime_si_sdr": 1.290192723274231,
+      "offline_improvement": 4.521402478218079,
+      "realtime_improvement": 4.521402478218079,
+      "files": {
+        "noisy": "sample_002_noisy.wav",
+        "clean": "sample_002_clean.wav",
+        "offline": "sample_002_offline.wav",
+        "realtime": "sample_002_realtime.wav"
+      }
+    },
+    {
+      "sample": "sample_003",
+      "source_mix": "mix_0008.wav",
+      "spatial_frontend": "coherence_mwf",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": -1.571635127067566,
+      "loudness_gain": 1.490653157234192,
+      "noisy_si_sdr": -2.382554531097412,
+      "offline_si_sdr": 11.749761581420898,
+      "realtime_si_sdr": 11.749761581420898,
+      "offline_improvement": 14.13231611251831,
+      "realtime_improvement": 14.13231611251831,
+      "files": {
+        "noisy": "sample_003_noisy.wav",
+        "clean": "sample_003_clean.wav",
+        "offline": "sample_003_offline.wav",
+        "realtime": "sample_003_realtime.wav"
+      }
+    },
+    {
+      "sample": "sample_004",
+      "source_mix": "mix_0046.wav",
+      "spatial_frontend": "coherence_mwf",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": -1.5190339088439941,
+      "loudness_gain": 1.2868266105651855,
+      "noisy_si_sdr": -1.5121639966964722,
+      "offline_si_sdr": 3.708449363708496,
+      "realtime_si_sdr": 3.708449363708496,
+      "offline_improvement": 5.220613360404968,
+      "realtime_improvement": 5.220613360404968,
+      "files": {
+        "noisy": "sample_004_noisy.wav",
+        "clean": "sample_004_clean.wav",
+        "offline": "sample_004_offline.wav",
+        "realtime": "sample_004_realtime.wav"
+      }
+    },
+    {
+      "sample": "sample_005",
+      "source_mix": "mix_0053.wav",
+      "spatial_frontend": "coherence_mwf",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": -0.8922303318977356,
+      "loudness_gain": 1.2356780767440796,
+      "noisy_si_sdr": -0.7000689506530762,
+      "offline_si_sdr": 3.6307291984558105,
+      "realtime_si_sdr": 3.6307291984558105,
+      "offline_improvement": 4.330798149108887,
+      "realtime_improvement": 4.330798149108887,
+      "files": {
+        "noisy": "sample_005_noisy.wav",
+        "clean": "sample_005_clean.wav",
+        "offline": "sample_005_offline.wav",
+        "realtime": "sample_005_realtime.wav"
+      }
+    },
+    {
+      "sample": "sample_006",
+      "source_mix": "mix_0078.wav",
+      "spatial_frontend": "coherence_mwf",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 1.2241413593292236,
+      "loudness_gain": 1.248712182044983,
+      "noisy_si_sdr": 0.5435062646865845,
+      "offline_si_sdr": 11.469979286193848,
+      "realtime_si_sdr": 11.469979286193848,
+      "offline_improvement": 10.926473021507263,
+      "realtime_improvement": 10.926473021507263,
+      "files": {
+        "noisy": "sample_006_noisy.wav",
+        "clean": "sample_006_clean.wav",
+        "offline": "sample_006_offline.wav",
+        "realtime": "sample_006_realtime.wav"
+      }
+    },
+    {
+      "sample": "sample_007",
+      "source_mix": "mix_0055.wav",
+      "spatial_frontend": "coherence_mwf",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 1.7108296155929565,
+      "loudness_gain": 1.229866862297058,
+      "noisy_si_sdr": 1.6761586666107178,
+      "offline_si_sdr": 12.4794282913208,
+      "realtime_si_sdr": 12.4794282913208,
+      "offline_improvement": 10.803269624710083,
+      "realtime_improvement": 10.803269624710083,
+      "files": {
+        "noisy": "sample_007_noisy.wav",
+        "clean": "sample_007_clean.wav",
+        "offline": "sample_007_offline.wav",
+        "realtime": "sample_007_realtime.wav"
+      }
+    },
+    {
+      "sample": "sample_008",
+      "source_mix": "mix_0059.wav",
+      "spatial_frontend": "coherence_mwf",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 3.095027446746826,
+      "loudness_gain": 1.1868442296981812,
+      "noisy_si_sdr": 2.372466564178467,
+      "offline_si_sdr": 23.115121841430664,
+      "realtime_si_sdr": 23.115121841430664,
+      "offline_improvement": 20.742655277252197,
+      "realtime_improvement": 20.742655277252197,
+      "files": {
+        "noisy": "sample_008_noisy.wav",
+        "clean": "sample_008_clean.wav",
+        "offline": "sample_008_offline.wav",
+        "realtime": "sample_008_realtime.wav"
+      }
+    },
+    {
+      "sample": "sample_009",
+      "source_mix": "mix_0057.wav",
+      "spatial_frontend": "coherence_mwf",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 3.2652711868286133,
+      "loudness_gain": 1.1075490713119507,
+      "noisy_si_sdr": 3.309019088745117,
+      "offline_si_sdr": 7.606893062591553,
+      "realtime_si_sdr": 7.606893062591553,
+      "offline_improvement": 4.2978739738464355,
+      "realtime_improvement": 4.2978739738464355,
+      "files": {
+        "noisy": "sample_009_noisy.wav",
+        "clean": "sample_009_clean.wav",
+        "offline": "sample_009_offline.wav",
+        "realtime": "sample_009_realtime.wav"
+      }
+    },
+    {
+      "sample": "sample_010",
+      "source_mix": "mix_0106.wav",
+      "spatial_frontend": "coherence_mwf",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 5.183144569396973,
+      "loudness_gain": 1.1065915822982788,
+      "noisy_si_sdr": 4.545032024383545,
+      "offline_si_sdr": 20.165281295776367,
+      "realtime_si_sdr": 20.165281295776367,
+      "offline_improvement": 15.620249271392822,
+      "realtime_improvement": 15.620249271392822,
+      "files": {
+        "noisy": "sample_010_noisy.wav",
+        "clean": "sample_010_clean.wav",
+        "offline": "sample_010_offline.wav",
+        "realtime": "sample_010_realtime.wav"
+      }
+    },
+    {
+      "sample": "sample_011",
+      "source_mix": "mix_0012.wav",
+      "spatial_frontend": "coherence_mwf",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 5.521778106689453,
+      "loudness_gain": 1.0287724733352661,
+      "noisy_si_sdr": 5.3895087242126465,
+      "offline_si_sdr": 8.673419952392578,
+      "realtime_si_sdr": 8.673419952392578,
+      "offline_improvement": 3.2839112281799316,
+      "realtime_improvement": 3.2839112281799316,
+      "files": {
+        "noisy": "sample_011_noisy.wav",
+        "clean": "sample_011_clean.wav",
+        "offline": "sample_011_offline.wav",
+        "realtime": "sample_011_realtime.wav"
+      }
+    },
+    {
+      "sample": "sample_012",
+      "source_mix": "mix_0099.wav",
+      "spatial_frontend": "coherence_mwf",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 6.467373371124268,
+      "loudness_gain": 1.052475094795227,
+      "noisy_si_sdr": 6.203106880187988,
+      "offline_si_sdr": 17.701780319213867,
+      "realtime_si_sdr": 17.701780319213867,
+      "offline_improvement": 11.498673439025879,
+      "realtime_improvement": 11.498673439025879,
+      "files": {
+        "noisy": "sample_012_noisy.wav",
+        "clean": "sample_012_clean.wav",
+        "offline": "sample_012_offline.wav",
+        "realtime": "sample_012_realtime.wav"
+      }
+    },
+    {
+      "sample": "sample_013",
+      "source_mix": "mix_0044.wav",
+      "spatial_frontend": "coherence_mwf",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 8.950308799743652,
+      "loudness_gain": 1.0240421295166016,
+      "noisy_si_sdr": 8.234618186950684,
+      "offline_si_sdr": 20.034374237060547,
+      "realtime_si_sdr": 20.034374237060547,
+      "offline_improvement": 11.799756050109863,
+      "realtime_improvement": 11.799756050109863,
+      "files": {
+        "noisy": "sample_013_noisy.wav",
+        "clean": "sample_013_clean.wav",
+        "offline": "sample_013_offline.wav",
+        "realtime": "sample_013_realtime.wav"
+      }
+    },
+    {
+      "sample": "sample_014",
+      "source_mix": "mix_0131.wav",
+      "spatial_frontend": "coherence_mwf",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 9.396515846252441,
+      "loudness_gain": 1.0230339765548706,
+      "noisy_si_sdr": 8.84201717376709,
+      "offline_si_sdr": 24.12206268310547,
+      "realtime_si_sdr": 24.12206268310547,
+      "offline_improvement": 15.280045509338379,
+      "realtime_improvement": 15.280045509338379,
+      "files": {
+        "noisy": "sample_014_noisy.wav",
+        "clean": "sample_014_clean.wav",
+        "offline": "sample_014_offline.wav",
+        "realtime": "sample_014_realtime.wav"
+      }
+    },
+    {
+      "sample": "sample_015",
+      "source_mix": "mix_0033.wav",
+      "spatial_frontend": "coherence_mwf",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 11.30075454711914,
+      "loudness_gain": 1.005016565322876,
+      "noisy_si_sdr": 10.644560813903809,
+      "offline_si_sdr": 22.057357788085938,
+      "realtime_si_sdr": 22.057357788085938,
+      "offline_improvement": 11.412796974182129,
+      "realtime_improvement": 11.412796974182129,
+      "files": {
+        "noisy": "sample_015_noisy.wav",
+        "clean": "sample_015_clean.wav",
+        "offline": "sample_015_offline.wav",
+        "realtime": "sample_015_realtime.wav"
+      }
+    },
+    {
+      "sample": "sample_016",
+      "source_mix": "mix_0128.wav",
+      "spatial_frontend": "coherence_mwf",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 12.10054874420166,
+      "loudness_gain": 0.981869637966156,
+      "noisy_si_sdr": 11.631251335144043,
+      "offline_si_sdr": 13.459823608398438,
+      "realtime_si_sdr": 13.459823608398438,
+      "offline_improvement": 1.8285722732543945,
+      "realtime_improvement": 1.8285722732543945,
+      "files": {
+        "noisy": "sample_016_noisy.wav",
+        "clean": "sample_016_clean.wav",
+        "offline": "sample_016_offline.wav",
+        "realtime": "sample_016_realtime.wav"
+      }
+    },
+    {
+      "sample": "sample_017",
+      "source_mix": "mix_0133.wav",
+      "spatial_frontend": "coherence_mwf",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 12.278498649597168,
+      "loudness_gain": 0.9923595786094666,
+      "noisy_si_sdr": 12.311749458312988,
+      "offline_si_sdr": 22.047767639160156,
+      "realtime_si_sdr": 22.047767639160156,
+      "offline_improvement": 9.736018180847168,
+      "realtime_improvement": 9.736018180847168,
+      "files": {
+        "noisy": "sample_017_noisy.wav",
+        "clean": "sample_017_clean.wav",
+        "offline": "sample_017_offline.wav",
+        "realtime": "sample_017_realtime.wav"
+      }
+    },
+    {
+      "sample": "sample_018",
+      "source_mix": "mix_0075.wav",
+      "spatial_frontend": "coherence_mwf",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 14.355087280273438,
+      "loudness_gain": 1.026014804840088,
+      "noisy_si_sdr": 13.766275405883789,
+      "offline_si_sdr": 11.56956672668457,
+      "realtime_si_sdr": 11.56956672668457,
+      "offline_improvement": -2.1967086791992188,
+      "realtime_improvement": -2.1967086791992188,
+      "files": {
+        "noisy": "sample_018_noisy.wav",
+        "clean": "sample_018_clean.wav",
+        "offline": "sample_018_offline.wav",
+        "realtime": "sample_018_realtime.wav"
+      }
+    },
+    {
+      "sample": "sample_019",
+      "source_mix": "mix_0145.wav",
+      "spatial_frontend": "coherence_mwf",
+      "beamform_lag_samples": 0,
+      "beamformed_si_sdr": 14.63862419128418,
+      "loudness_gain": 0.9803491830825806,
+      "noisy_si_sdr": 14.637338638305664,
+      "offline_si_sdr": 20.734586715698242,
+      "realtime_si_sdr": 20.734586715698242,
+      "offline_improvement": 6.097248077392578,
+      "realtime_improvement": 6.097248077392578,
+      "files": {
+        "noisy": "sample_019_noisy.wav",
+        "clean": "sample_019_clean.wav",
+        "offline": "sample_019_offline.wav",
+        "realtime": "sample_019_realtime.wav"
+      }
+    }
+  ]
+}

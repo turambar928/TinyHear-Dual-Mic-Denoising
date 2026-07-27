@@ -395,6 +395,69 @@ def enhance_with_complex_mask(
     return istft(enhanced, length=mix_ref.numel(), cfg=cfg)
 
 
+def enhance_with_mwf_masks(
+    mix_pair: torch.Tensor,
+    mwf_masks: torch.Tensor,
+    cfg: FeatureConfig,
+    covariance_alpha: float = 0.96,
+    diagonal_loading: float = 0.01,
+    min_mask: float = 0.02,
+) -> torch.Tensor:
+    """Apply a causal 2x2 MWF using predicted speech/noise masks.
+
+    mix_pair: [2, samples]
+    mwf_masks: [frames, freq_bins, 2], where channel 0 is speech probability
+      and channel 1 is noise probability.
+
+    The masks estimate speech and noise covariance matrices from the noisy
+    two-mic STFT. The actual filtering is a small deterministic DSP block:
+    w = (Rss + Rnn)^-1 Rss u, where u selects mic0 as the target reference.
+    """
+    if mix_pair.ndim != 2 or mix_pair.shape[0] != 2:
+        raise ValueError("mix_pair must have shape [2, samples]")
+    spec0 = stft(mix_pair[0], cfg)
+    spec1 = stft(mix_pair[1], cfg)
+    frames = min(spec0.shape[-1], spec1.shape[-1], mwf_masks.shape[0])
+    bins = min(spec0.shape[0], spec1.shape[0], mwf_masks.shape[1])
+    if frames <= 0 or bins <= 0:
+        return mix_pair[0]
+
+    x = torch.stack([spec0[:bins, :frames], spec1[:bins, :frames]], dim=0)
+    masks = torch.clamp(mwf_masks[:frames, :bins].to(x.device), min=float(min_mask), max=1.0)
+    speech = masks[:, :, 0].transpose(0, 1)
+    noise = masks[:, :, 1].transpose(0, 1)
+    total = torch.clamp(speech + noise, min=1e-6)
+    speech = speech / total
+    noise = noise / total
+
+    alpha = float(min(max(covariance_alpha, 0.0), 0.999))
+    one_minus = 1.0 - alpha
+    r_ss = torch.zeros(bins, 2, 2, device=x.device, dtype=x.dtype)
+    r_nn = torch.zeros_like(r_ss)
+    enhanced = torch.empty(bins, frames, device=x.device, dtype=x.dtype)
+    eye = torch.eye(2, device=x.device, dtype=x.dtype).unsqueeze(0)
+    u = torch.zeros(bins, 2, 1, device=x.device, dtype=x.dtype)
+    u[:, 0, 0] = 1.0
+
+    for t in range(frames):
+        xt = x[:, :, t].transpose(0, 1)
+        outer = xt[:, :, None] * torch.conj(xt[:, None, :])
+        r_ss = alpha * r_ss + one_minus * speech[:, t, None, None] * outer
+        r_nn = alpha * r_nn + one_minus * noise[:, t, None, None] * outer
+        trace = (r_ss[:, 0, 0].real + r_ss[:, 1, 1].real + r_nn[:, 0, 0].real + r_nn[:, 1, 1].real).clamp_min(1e-8)
+        load = (float(diagonal_loading) * trace + 1e-8).to(x.dtype)
+        r_yy = r_ss + r_nn + load[:, None, None] * eye
+        rhs = torch.matmul(r_ss, u)
+        w = torch.linalg.solve(r_yy, rhs).squeeze(-1)
+        enhanced[:, t] = torch.sum(torch.conj(w) * xt, dim=-1)
+
+    if bins < cfg.n_fft // 2 + 1:
+        padded = torch.zeros(cfg.n_fft // 2 + 1, frames, device=x.device, dtype=x.dtype)
+        padded[:bins] = enhanced
+        enhanced = padded
+    return istft(enhanced, length=mix_pair.shape[-1], cfg=cfg)
+
+
 def match_loudness(
     reference: torch.Tensor,
     enhanced: torch.Tensor,

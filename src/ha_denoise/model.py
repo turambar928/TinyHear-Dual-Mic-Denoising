@@ -195,3 +195,43 @@ class TinyComplexMaskTCN(nn.Module):
         mask = torch.tanh(self.head(y)) * self.mask_scale
         b, _, t = mask.shape
         return mask.view(b, self.freq_bins, 2, t).permute(0, 3, 1, 2).contiguous()
+
+
+class TinyMwfMaskTCN(nn.Module):
+    def __init__(
+        self,
+        feature_dim: int = 192,
+        freq_bins: int = 129,
+        channels: int = 80,
+        blocks: int = 8,
+        kernel_size: int = 5,
+    ) -> None:
+        super().__init__()
+        self.feature_dim = feature_dim
+        self.freq_bins = freq_bins
+        self.channels = channels
+        self.blocks = blocks
+        self.kernel_size = kernel_size
+        self.stem = nn.Sequential(nn.Conv1d(feature_dim, channels, kernel_size=1), nn.ReLU())
+        dilations = [1, 2, 4, 8]
+        self.tcn = nn.Sequential(
+            *[
+                CausalDepthwiseBlock(channels, kernel_size, dilations[i % len(dilations)])
+                for i in range(blocks)
+            ]
+        )
+        self.speech_head = nn.Conv1d(channels, freq_bins, kernel_size=1)
+        self.noise_head = nn.Conv1d(channels, freq_bins, kernel_size=1)
+        nn.init.zeros_(self.speech_head.weight)
+        nn.init.constant_(self.speech_head.bias, 2.0)
+        nn.init.zeros_(self.noise_head.weight)
+        nn.init.constant_(self.noise_head.bias, -2.0)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        y = self.stem(x)
+        y = self.tcn(y)
+        speech = torch.sigmoid(self.speech_head(y))
+        noise = torch.sigmoid(self.noise_head(y))
+        b, _, t = speech.shape
+        out = torch.stack([speech, noise], dim=-1)
+        return out.permute(0, 2, 1, 3).contiguous()
