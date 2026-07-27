@@ -458,4 +458,19 @@ def pad_sequence_batch(items):
             clean_refs[i, :n] = item[3]
             audio_valid[i, :n] = 1.0
         return feats, masks, valid, mix_refs, clean_refs, audio_valid
+    if len(items[0]) == 6:
+        max_n = max(item[2].numel() for item in items)
+        mix_refs = torch.zeros(len(items), max_n)
+        clean_refs = torch.zeros(len(items), max_n)
+        audio_valid = torch.zeros(len(items), max_n)
+        mix_pairs = torch.zeros(len(items), 2, max_n)
+        clean_pairs = torch.zeros(len(items), 2, max_n)
+        for i, item in enumerate(items):
+            n = item[2].numel()
+            mix_refs[i, :n] = item[2]
+            clean_refs[i, :n] = item[3]
+            audio_valid[i, :n] = 1.0
+            mix_pairs[i, :, : item[4].shape[-1]] = item[4]
+            clean_pairs[i, :, : item[5].shape[-1]] = item[5]
+        return feats, masks, valid, mix_refs, clean_refs, audio_valid, mix_pairs, clean_pairs
     return feats, masks, valid

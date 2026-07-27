@@ -172,6 +172,17 @@ runs/oracle_mwf_arctic_demand/eval_audio/*
 !runs/oracle_mwf_arctic_demand/listening_eval/
 !runs/oracle_mwf_arctic_demand/listening_eval/**
 
+# MWF teacher-student checkpoint, metrics, and small listening-eval demo set.
+!runs/arctic_demand_mwf_student/
+runs/arctic_demand_mwf_student/*
+!runs/arctic_demand_mwf_student/README.md
+!runs/arctic_demand_mwf_student/best.pt
+!runs/arctic_demand_mwf_student/eval_audio/
+runs/arctic_demand_mwf_student/eval_audio/*
+!runs/arctic_demand_mwf_student/eval_audio/metrics.json
+!runs/arctic_demand_mwf_student/listening_eval/
+!runs/arctic_demand_mwf_student/listening_eval/**
+
 # C build output
 c_reference/tiny_tcn_ref
 c_reference/tiny_tcn_bench
