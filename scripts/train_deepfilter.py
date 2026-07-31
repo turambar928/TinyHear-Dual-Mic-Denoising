@@ -226,6 +226,16 @@ def main() -> None:
     parser.add_argument("--lr", type=float, default=3e-4)
     parser.add_argument("--seconds", type=float, default=2.0)
     parser.add_argument("--on-the-fly", action="store_true")
+    parser.add_argument("--virtual-multiplier", type=int, default=1)
+    parser.add_argument("--snr-min-db", type=float, default=-5.0)
+    parser.add_argument("--snr-max-db", type=float, default=15.0)
+    parser.add_argument("--noise-mix-prob", type=float, default=0.0)
+    parser.add_argument("--mic-distance-min-m", type=float, default=0.014)
+    parser.add_argument("--mic-distance-max-m", type=float, default=0.022)
+    parser.add_argument("--self-noise-prob", type=float, default=0.0)
+    parser.add_argument("--self-noise-db", type=float, default=-36.0)
+    parser.add_argument("--wind-noise-prob", type=float, default=0.0)
+    parser.add_argument("--wind-noise-db", type=float, default=-22.0)
     parser.add_argument("--device", default="cpu")
     parser.add_argument("--resume-denoiser", help="Initialize stem/tcn/gain head from a TinyCausalTCN checkpoint.")
     parser.add_argument("--channels", type=int, default=96)
@@ -257,8 +267,41 @@ def main() -> None:
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
     cfg = FeatureConfig(spatial_features=True, spatial_frontend=args.spatial_frontend, min_gain=args.min_gain)
-    train_ds = WavPairDataset(args.data, "train", cfg, args.seconds, args.on_the_fly, return_audio=True)
-    val_ds = WavPairDataset(args.data, "val", cfg, args.seconds, args.on_the_fly, return_audio=True)
+    train_ds = WavPairDataset(
+        args.data,
+        "train",
+        cfg,
+        args.seconds,
+        args.on_the_fly,
+        return_audio=True,
+        virtual_multiplier=args.virtual_multiplier,
+        snr_min_db=args.snr_min_db,
+        snr_max_db=args.snr_max_db,
+        noise_mix_prob=args.noise_mix_prob,
+        mic_distance_min_m=args.mic_distance_min_m,
+        mic_distance_max_m=args.mic_distance_max_m,
+        self_noise_prob=args.self_noise_prob,
+        self_noise_db=args.self_noise_db,
+        wind_noise_prob=args.wind_noise_prob,
+        wind_noise_db=args.wind_noise_db,
+    )
+    val_ds = WavPairDataset(
+        args.data,
+        "val",
+        cfg,
+        args.seconds,
+        args.on_the_fly,
+        return_audio=True,
+        snr_min_db=args.snr_min_db,
+        snr_max_db=args.snr_max_db,
+        noise_mix_prob=args.noise_mix_prob,
+        mic_distance_min_m=args.mic_distance_min_m,
+        mic_distance_max_m=args.mic_distance_max_m,
+        self_noise_prob=args.self_noise_prob,
+        self_noise_db=args.self_noise_db,
+        wind_noise_prob=args.wind_noise_prob,
+        wind_noise_db=args.wind_noise_db,
+    )
     train_loader = DataLoader(train_ds, batch_size=args.batch_size, shuffle=True, collate_fn=pad_sequence_batch)
     val_loader = DataLoader(val_ds, batch_size=args.batch_size, shuffle=False, collate_fn=pad_sequence_batch)
 
@@ -351,6 +394,16 @@ def main() -> None:
                 "silence_threshold": args.silence_threshold,
                 "min_gain": cfg.min_gain,
                 "max_gain": cfg.max_gain,
+                "virtual_multiplier": args.virtual_multiplier,
+                "snr_min_db": args.snr_min_db,
+                "snr_max_db": args.snr_max_db,
+                "noise_mix_prob": args.noise_mix_prob,
+                "mic_distance_min_m": args.mic_distance_min_m,
+                "mic_distance_max_m": args.mic_distance_max_m,
+                "self_noise_prob": args.self_noise_prob,
+                "self_noise_db": args.self_noise_db,
+                "wind_noise_prob": args.wind_noise_prob,
+                "wind_noise_db": args.wind_noise_db,
             },
             "epoch": epoch,
             "val_loss": val_loss,

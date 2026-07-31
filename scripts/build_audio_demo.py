@@ -10,6 +10,8 @@ from typing import Any
 
 
 DEFAULT_SETS = [
+    ("deepfilter_coherence_mwf_aug2_loud", Path("runs/arctic_demand_tiny_deepfilter_coherence_mwf_aug2/listening_eval_loud")),
+    ("deepfilter_coherence_mwf_aug2_nomatch", Path("runs/arctic_demand_tiny_deepfilter_coherence_mwf_aug2/listening_eval_nomatch")),
     ("oracle_mwf_teacher", Path("runs/oracle_mwf_arctic_demand/listening_eval")),
     ("mwf_cov_student_92k_strong_nomatch", Path("runs/arctic_demand_mwf_cov_student/listening_eval_strong_nomatch")),
     ("mwf_cov_student_92k_strong", Path("runs/arctic_demand_mwf_cov_student/listening_eval_strong")),

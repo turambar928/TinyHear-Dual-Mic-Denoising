@@ -27,6 +27,15 @@ def crop_or_tile(x: np.ndarray, length: int, rng: random.Random) -> np.ndarray:
     return np.tile(x, repeats)[:length].astype(np.float32)
 
 
+def lowpass_random_noise(length: int, channels: int, rng: random.Random, kernel_size: int) -> np.ndarray:
+    noise = np.random.default_rng(rng.randint(0, 2**31 - 1)).standard_normal((channels, length)).astype(np.float32)
+    kernel_size = max(3, int(kernel_size) | 1)
+    kernel = np.hanning(kernel_size).astype(np.float32)
+    kernel = kernel / max(float(kernel.sum()), 1e-8)
+    out = np.stack([np.convolve(noise[ch], kernel, mode="same") for ch in range(channels)], axis=0)
+    return out.astype(np.float32)
+
+
 def convolve_rir(x: np.ndarray, rir: np.ndarray) -> np.ndarray:
     if rir.ndim == 2:
         rir = rir[:, 0]
@@ -107,6 +116,16 @@ class WavPairDataset(Dataset):
         on_the_fly: bool = False,
         return_audio: bool = False,
         return_mix_pair: bool = False,
+        virtual_multiplier: int = 1,
+        snr_min_db: float = -5.0,
+        snr_max_db: float = 15.0,
+        noise_mix_prob: float = 0.0,
+        mic_distance_min_m: float = 0.014,
+        mic_distance_max_m: float = 0.022,
+        self_noise_prob: float = 0.0,
+        self_noise_db: float = -36.0,
+        wind_noise_prob: float = 0.0,
+        wind_noise_db: float = -22.0,
     ) -> None:
         self.root = Path(root)
         self.split = split
@@ -115,6 +134,16 @@ class WavPairDataset(Dataset):
         self.on_the_fly = on_the_fly
         self.return_audio = return_audio
         self.return_mix_pair = return_mix_pair
+        self.virtual_multiplier = max(1, int(virtual_multiplier))
+        self.snr_min_db = float(snr_min_db)
+        self.snr_max_db = float(snr_max_db)
+        self.noise_mix_prob = float(noise_mix_prob)
+        self.mic_distance_min_m = float(mic_distance_min_m)
+        self.mic_distance_max_m = float(mic_distance_max_m)
+        self.self_noise_prob = float(self_noise_prob)
+        self.self_noise_db = float(self_noise_db)
+        self.wind_noise_prob = float(wind_noise_prob)
+        self.wind_noise_db = float(wind_noise_db)
         self.length = int(cfg.sample_rate * seconds)
         self.rng = random.Random(1234 if split == "train" else 4321)
         self.band_matrix = make_band_matrix(cfg.n_fft, cfg.bands, cfg.sample_rate)
@@ -135,6 +164,8 @@ class WavPairDataset(Dataset):
             self.items = self.mix_files
 
     def __len__(self) -> int:
+        if self.on_the_fly:
+            return len(self.items) * self.virtual_multiplier
         return len(self.items)
 
     def __getitem__(self, idx: int) -> tuple[torch.Tensor, torch.Tensor]:
@@ -144,6 +175,12 @@ class WavPairDataset(Dataset):
             clean = crop_or_tile(clean[:, 0], self.length, self.rng)
             noise_src = noise[:, :2] if noise.shape[1] >= 2 else noise[:, 0]
             noise = crop_or_tile(noise_src, self.length, self.rng)
+            if self.rng.random() < self.noise_mix_prob:
+                _, noise_b = read_wav(self.rng.choice(self.noise_files), self.cfg.sample_rate)
+                noise_b_src = noise_b[:, :2] if noise_b.shape[1] >= 2 else noise_b[:, 0]
+                noise_b = crop_or_tile(noise_b_src, self.length, self.rng)
+                mix_weight = self.rng.uniform(0.25, 0.75)
+                noise = (mix_weight * noise + (1.0 - mix_weight) * noise_b).astype(np.float32)
             clean_rir = None
             noise_rir = None
             if self.rir_files:
@@ -155,12 +192,26 @@ class WavPairDataset(Dataset):
                 clean,
                 noise,
                 self.cfg.sample_rate,
-                snr_db=self.rng.uniform(-5.0, 15.0),
+                snr_db=self.rng.uniform(self.snr_min_db, self.snr_max_db),
+                mic_distance_m=self.rng.uniform(self.mic_distance_min_m, self.mic_distance_max_m),
                 noise_angle_deg=self.rng.uniform(-90.0, 90.0),
                 clean_rir=clean_rir,
                 noise_rir=noise_rir,
                 rng=self.rng,
             )
+            clean_rms = max(rms(clean_pair), 1e-5)
+            if self.rng.random() < self.self_noise_prob:
+                mic_noise = np.random.default_rng(self.rng.randint(0, 2**31 - 1)).standard_normal(mix.shape).astype(np.float32)
+                mic_noise = mic_noise / max(rms(mic_noise), 1e-5) * clean_rms * (10.0 ** (self.self_noise_db / 20.0))
+                mix = mix + mic_noise
+            if self.rng.random() < self.wind_noise_prob:
+                wind = lowpass_random_noise(mix.shape[-1], 2, self.rng, kernel_size=max(33, self.cfg.sample_rate // 50))
+                wind = wind / max(rms(wind), 1e-5) * clean_rms * (10.0 ** (self.wind_noise_db / 20.0))
+                mix = mix + wind
+            scale = max(float(np.max(np.abs(mix))), float(np.max(np.abs(clean_pair))), 1e-4)
+            if scale > 0.98:
+                mix = mix / (scale / 0.98)
+                clean_pair = clean_pair / (scale / 0.98)
         else:
             mix_path = self.mix_files[idx]
             clean_path = mix_path.with_name(mix_path.name.replace("mix_", "clean_"))
