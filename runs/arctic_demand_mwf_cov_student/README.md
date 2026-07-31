@@ -114,6 +114,10 @@ mean_enhanced_si_sdr:    15.118 dB
 mean_si_sdr_improvement: 10.787 dB
 ```
 
+`listening_eval_strong_nomatch` disables noisy-RMS loudness matching. This usually
+sounds more like real denoising because residual noise is not amplified back toward
+the noisy input level.
+
 ## Next Step
 
 The next useful improvement is longer training with more on-the-fly mixtures and a

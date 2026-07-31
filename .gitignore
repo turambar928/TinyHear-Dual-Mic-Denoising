@@ -198,6 +198,11 @@ runs/arctic_demand_mwf_cov_student/eval_audio_strong/*
 !runs/arctic_demand_mwf_cov_student/eval_audio_strong/metrics.json
 !runs/arctic_demand_mwf_cov_student/listening_eval_strong/
 !runs/arctic_demand_mwf_cov_student/listening_eval_strong/**
+!runs/arctic_demand_mwf_cov_student/eval_audio_strong_nomatch/
+runs/arctic_demand_mwf_cov_student/eval_audio_strong_nomatch/*
+!runs/arctic_demand_mwf_cov_student/eval_audio_strong_nomatch/metrics.json
+!runs/arctic_demand_mwf_cov_student/listening_eval_strong_nomatch/
+!runs/arctic_demand_mwf_cov_student/listening_eval_strong_nomatch/**
 
 # C build output
 c_reference/tiny_tcn_ref
