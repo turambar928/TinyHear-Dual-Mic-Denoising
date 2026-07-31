@@ -14,7 +14,10 @@ from ha_denoise.features import (
     enhance_with_mwf_masks,
     extract_features,
     feature_config_from_dict,
+    make_band_matrix,
     match_loudness,
+    residual_dehiss_filter,
+    stationary_noise_floor_filter,
     rms_ratio,
 )
 from ha_denoise.metrics import si_sdr
@@ -54,6 +57,13 @@ def process_one(
     loudness_match: bool,
     target_rms_ratio: float,
     max_gain_db: float,
+    stable_postfilter: bool,
+    dehiss_postfilter: bool,
+    dehiss_strength: float,
+    dehiss_low_floor: float,
+    dehiss_high_floor: float,
+    dehiss_high_start_hz: float,
+    dehiss_full_strength_hz: float,
 ):
     clean_path = mix_path.with_name(mix_path.name.replace("mix_", "clean_"))
     sr, mix_np = read_wav(mix_path, cfg.sample_rate)
@@ -64,6 +74,21 @@ def process_one(
     feat = extract_features(mix, cfg).transpose(0, 1).unsqueeze(0)
     mwf_masks = model(feat).squeeze(0)
     enhanced = enhance_with_mwf_masks(mix, mwf_masks, cfg)
+    band_matrix = make_band_matrix(cfg.n_fft, cfg.bands, cfg.sample_rate).to(mwf_masks.device, mwf_masks.dtype)
+    band_gain = torch.clamp(mwf_masks[:, :, 0] @ band_matrix, 0.0, 1.0)
+    if stable_postfilter:
+        enhanced = stationary_noise_floor_filter(enhanced, band_gain, cfg)
+    if dehiss_postfilter:
+        enhanced = residual_dehiss_filter(
+            enhanced,
+            band_gain,
+            cfg,
+            strength=dehiss_strength,
+            low_floor=dehiss_low_floor,
+            high_floor=dehiss_high_floor,
+            high_start_hz=dehiss_high_start_hz,
+            full_strength_hz=dehiss_full_strength_hz,
+        )
     n = min(mix.shape[-1], clean.numel(), enhanced.numel())
     noisy = mix[0, :n]
     beamformed = beamformed[:n]
@@ -88,6 +113,13 @@ def main() -> None:
     parser.add_argument("--loudness-match", action="store_true")
     parser.add_argument("--target-rms-ratio", type=float, default=0.95)
     parser.add_argument("--max-gain-db", type=float, default=5.0)
+    parser.add_argument("--stable-postfilter", action="store_true")
+    parser.add_argument("--dehiss-postfilter", action="store_true")
+    parser.add_argument("--dehiss-strength", type=float, default=1.15)
+    parser.add_argument("--dehiss-low-floor", type=float, default=0.78)
+    parser.add_argument("--dehiss-high-floor", type=float, default=0.36)
+    parser.add_argument("--dehiss-high-start-hz", type=float, default=2600.0)
+    parser.add_argument("--dehiss-full-strength-hz", type=float, default=5200.0)
     args = parser.parse_args()
 
     model, cfg = load_model(args.checkpoint, args.device)
@@ -112,6 +144,13 @@ def main() -> None:
                 args.loudness_match,
                 args.target_rms_ratio,
                 args.max_gain_db,
+                args.stable_postfilter,
+                args.dehiss_postfilter,
+                args.dehiss_strength,
+                args.dehiss_low_floor,
+                args.dehiss_high_floor,
+                args.dehiss_high_start_hz,
+                args.dehiss_full_strength_hz,
             )
             noisy_score = float(si_sdr(noisy.detach().cpu(), clean.detach().cpu()))
             enhanced_score = float(si_sdr(enhanced.detach().cpu(), clean.detach().cpu()))
@@ -161,6 +200,13 @@ def main() -> None:
                 args.loudness_match,
                 args.target_rms_ratio,
                 args.max_gain_db,
+                args.stable_postfilter,
+                args.dehiss_postfilter,
+                args.dehiss_strength,
+                args.dehiss_low_floor,
+                args.dehiss_high_floor,
+                args.dehiss_high_start_hz,
+                args.dehiss_full_strength_hz,
             )
             row = rows[row_idx]
             prefix = f"sample_{out_idx:03d}"

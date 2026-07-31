@@ -11,6 +11,7 @@ from typing import Any
 
 DEFAULT_SETS = [
     ("oracle_mwf_teacher", Path("runs/oracle_mwf_arctic_demand/listening_eval")),
+    ("mwf_cov_student_92k_strong", Path("runs/arctic_demand_mwf_cov_student/listening_eval_strong")),
     ("mwf_cov_student_92k", Path("runs/arctic_demand_mwf_cov_student/listening_eval")),
     ("mwf_student_92k", Path("runs/arctic_demand_mwf_student/listening_eval")),
     ("tiny_complex_mask", Path("runs/arctic_demand_tiny_complex_mask/listening_eval_loud")),

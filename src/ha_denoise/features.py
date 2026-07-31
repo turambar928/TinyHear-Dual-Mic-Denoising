@@ -402,6 +402,8 @@ def enhance_with_mwf_masks(
     covariance_alpha: float = 0.96,
     diagonal_loading: float = 0.01,
     min_mask: float = 0.02,
+    speech_power: float = 0.90,
+    noise_power: float = 1.35,
 ) -> torch.Tensor:
     """Apply a causal 2x2 MWF using predicted speech/noise masks.
 
@@ -424,8 +426,8 @@ def enhance_with_mwf_masks(
 
     x = torch.stack([spec0[:bins, :frames], spec1[:bins, :frames]], dim=0)
     masks = torch.clamp(mwf_masks[:frames, :bins].to(x.device), min=float(min_mask), max=1.0)
-    speech = masks[:, :, 0].transpose(0, 1)
-    noise = masks[:, :, 1].transpose(0, 1)
+    speech = masks[:, :, 0].transpose(0, 1).pow(float(speech_power))
+    noise = masks[:, :, 1].transpose(0, 1).pow(float(noise_power))
     total = torch.clamp(speech + noise, min=1e-6)
     speech = speech / total
     noise = noise / total

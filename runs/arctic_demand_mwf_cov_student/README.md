@@ -103,6 +103,17 @@ mwf_cov_student_92k: +11.345 dB SI-SDR improvement
 The oracle MWF teacher is still much stronger, but this version closes part of that
 gap while staying deployable in principle.
 
+For a more listenable demo, the repository also tracks a stronger post-filtered
+variant under `listening_eval_strong`, built from the same checkpoint but with
+more aggressive residual suppression.
+
+Strong demo run:
+
+```text
+mean_enhanced_si_sdr:    15.118 dB
+mean_si_sdr_improvement: 10.787 dB
+```
+
 ## Next Step
 
 The next useful improvement is longer training with more on-the-fly mixtures and a
