@@ -148,6 +148,39 @@ runs/arctic_wind_demand_tiny_deepfilter_coherence_mwf/eval_demand_nomatch/*
 !runs/arctic_wind_demand_tiny_deepfilter_coherence_mwf/listening_eval_demand_nomatch/
 !runs/arctic_wind_demand_tiny_deepfilter_coherence_mwf/listening_eval_demand_nomatch/**
 
+# MWF-teacher DeepFilter wind experiments. The conservative run is the current
+# recommended wind-noise model; the aggressive run is kept as a diagnostic
+# ablation showing that over-weighted teacher targets can hurt.
+!runs/arctic_wind_teacher_deepfilter_mwf/
+runs/arctic_wind_teacher_deepfilter_mwf/*
+!runs/arctic_wind_teacher_deepfilter_mwf/README.md
+!runs/arctic_wind_teacher_deepfilter_mwf/best.pt
+!runs/arctic_wind_teacher_deepfilter_mwf/eval_wind_zenodo/
+runs/arctic_wind_teacher_deepfilter_mwf/eval_wind_zenodo/*
+!runs/arctic_wind_teacher_deepfilter_mwf/eval_wind_zenodo/metrics.json
+!runs/arctic_wind_teacher_deepfilter_mwf/listening_eval_wind_zenodo/
+!runs/arctic_wind_teacher_deepfilter_mwf/listening_eval_wind_zenodo/**
+!runs/arctic_wind_teacher_deepfilter_mwf/eval_demand_nomatch/
+runs/arctic_wind_teacher_deepfilter_mwf/eval_demand_nomatch/*
+!runs/arctic_wind_teacher_deepfilter_mwf/eval_demand_nomatch/metrics.json
+!runs/arctic_wind_teacher_deepfilter_mwf/listening_eval_demand_nomatch/
+!runs/arctic_wind_teacher_deepfilter_mwf/listening_eval_demand_nomatch/**
+
+!runs/arctic_wind_teacher_deepfilter_mwf_conservative/
+runs/arctic_wind_teacher_deepfilter_mwf_conservative/*
+!runs/arctic_wind_teacher_deepfilter_mwf_conservative/README.md
+!runs/arctic_wind_teacher_deepfilter_mwf_conservative/best.pt
+!runs/arctic_wind_teacher_deepfilter_mwf_conservative/eval_wind_zenodo/
+runs/arctic_wind_teacher_deepfilter_mwf_conservative/eval_wind_zenodo/*
+!runs/arctic_wind_teacher_deepfilter_mwf_conservative/eval_wind_zenodo/metrics.json
+!runs/arctic_wind_teacher_deepfilter_mwf_conservative/listening_eval_wind_zenodo/
+!runs/arctic_wind_teacher_deepfilter_mwf_conservative/listening_eval_wind_zenodo/**
+!runs/arctic_wind_teacher_deepfilter_mwf_conservative/eval_demand_nomatch/
+runs/arctic_wind_teacher_deepfilter_mwf_conservative/eval_demand_nomatch/*
+!runs/arctic_wind_teacher_deepfilter_mwf_conservative/eval_demand_nomatch/metrics.json
+!runs/arctic_wind_teacher_deepfilter_mwf_conservative/listening_eval_demand_nomatch/
+!runs/arctic_wind_teacher_deepfilter_mwf_conservative/listening_eval_demand_nomatch/**
+
 # Smoothed coherence-weighted DeepFilter metrics and small listening-eval demo set.
 !runs/arctic_demand_tiny_deepfilter_coherence_smooth/
 runs/arctic_demand_tiny_deepfilter_coherence_smooth/*

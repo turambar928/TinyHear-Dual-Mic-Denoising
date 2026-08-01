@@ -5,18 +5,113 @@ import argparse
 from pathlib import Path
 
 import torch
+import torch.nn.functional as F
 from torch import nn
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from ha_denoise.dataset import WavPairDataset
-from ha_denoise.features import FeatureConfig, enhance_with_deep_filter, pad_sequence_batch
+from ha_denoise.features import FeatureConfig, enhance_with_deep_filter, istft, pad_sequence_batch, stft, target_band_mask
 from ha_denoise.metrics import si_sdr
 from ha_denoise.model import TinyCausalTCN, TinyDeepFilterTCN, count_parameters
 
 
 def masked_mse(pred: torch.Tensor, target: torch.Tensor, valid: torch.Tensor) -> torch.Tensor:
     return (((pred - target) ** 2) * valid).sum() / valid.sum().clamp_min(1.0)
+
+
+def moving_average(x: torch.Tensor, window: int, causal: bool) -> torch.Tensor:
+    if window <= 1:
+        return x
+    kernel = torch.ones(1, 1, window, device=x.device, dtype=x.dtype) / float(window)
+    flat = x.reshape(-1, 1, x.shape[-1])
+    if causal:
+        padded = F.pad(flat, (window - 1, 0), mode="replicate")
+    else:
+        left = window // 2
+        right = window - 1 - left
+        padded = F.pad(flat, (left, right), mode="replicate")
+    out = F.conv1d(padded, kernel)
+    return out.reshape_as(x)
+
+
+def moving_average_complex(x: torch.Tensor, window: int, causal: bool) -> torch.Tensor:
+    return torch.complex(moving_average(x.real, window, causal), moving_average(x.imag, window, causal))
+
+
+def oracle_local_mwf_waveform(
+    mix: torch.Tensor,
+    clean: torch.Tensor,
+    cfg: FeatureConfig,
+    window: int,
+    causal: bool,
+    diagonal_loading: float,
+) -> torch.Tensor:
+    """Oracle two-mic local MWF teacher estimating clean mic0."""
+    mix_spec = torch.stack([stft(mix[0], cfg), stft(mix[1], cfg)], dim=0)
+    clean_spec = torch.stack([stft(clean[0], cfg), stft(clean[1], cfg)], dim=0)
+    frames = min(mix_spec.shape[-1], clean_spec.shape[-1])
+    mix_spec = mix_spec[:, :, :frames]
+    clean_spec = clean_spec[:, :, :frames]
+    x0 = mix_spec[0]
+    x1 = mix_spec[1]
+    s0 = clean_spec[0]
+
+    r00 = moving_average_complex(x0 * torch.conj(x0), window, causal).real
+    r01 = moving_average_complex(x0 * torch.conj(x1), window, causal)
+    r10 = torch.conj(r01)
+    r11 = moving_average_complex(x1 * torch.conj(x1), window, causal).real
+    p0 = moving_average_complex(x0 * torch.conj(s0), window, causal)
+    p1 = moving_average_complex(x1 * torch.conj(s0), window, causal)
+
+    trace = (r00 + r11).clamp_min(1e-8)
+    load = float(diagonal_loading) * trace + 1e-8
+    a = r00 + load
+    d = r11 + load
+    b = r01
+    c = r10
+    det = a * d - b * c + 1e-8
+    w0 = (d * p0 - b * p1) / det
+    w1 = (-c * p0 + a * p1) / det
+    enhanced_spec = torch.conj(w0) * x0 + torch.conj(w1) * x1
+    return istft(enhanced_spec, length=mix.shape[-1], cfg=cfg)
+
+
+def build_mwf_teacher_targets(
+    mix_pairs: torch.Tensor,
+    clean_pairs: torch.Tensor,
+    clean_refs: torch.Tensor,
+    cfg: FeatureConfig,
+    oracle_window: int,
+    oracle_causal: bool,
+    diagonal_loading: float,
+    teacher_blend: float,
+) -> torch.Tensor:
+    targets = torch.zeros_like(clean_refs)
+    blend = float(min(max(teacher_blend, 0.0), 1.0))
+    for i in range(mix_pairs.shape[0]):
+        teacher = oracle_local_mwf_waveform(
+            mix_pairs[i],
+            clean_pairs[i],
+            cfg,
+            oracle_window,
+            oracle_causal,
+            diagonal_loading,
+        )
+        n = min(teacher.numel(), clean_refs.shape[1])
+        targets[i, :n] = blend * teacher[:n] + (1.0 - blend) * clean_refs[i, :n]
+    return targets
+
+
+def build_target_masks(mix_refs: torch.Tensor, target_refs: torch.Tensor, cfg: FeatureConfig, bands: int, frames: int) -> torch.Tensor:
+    masks = mix_refs.new_zeros((mix_refs.shape[0], bands, frames))
+    for i in range(mix_refs.shape[0]):
+        n = min(mix_refs[i].numel(), target_refs[i].numel())
+        mask = target_band_mask(mix_refs[i, :n], target_refs[i, :n], cfg).transpose(0, 1)
+        t = min(mask.shape[-1], frames)
+        b = min(mask.shape[0], bands)
+        masks[i, :b, :t] = mask[:b, :t]
+    return masks
 
 
 def waveform_l1_loss(gain: torch.Tensor, coef: torch.Tensor, mix_refs: torch.Tensor, clean_refs: torch.Tensor, cfg: FeatureConfig) -> torch.Tensor:
@@ -163,26 +258,52 @@ def run_epoch(
     residual_noise_threshold: float,
     silence_floor_weight: float,
     silence_threshold: float,
+    teacher_mwf: bool,
+    teacher_mask_weight: float,
+    teacher_blend: float,
+    oracle_window: int,
+    oracle_causal: bool,
+    diagonal_loading: float,
 ) -> float:
     train = optimizer is not None
     model.train(train)
     total = 0.0
     with torch.set_grad_enabled(train):
         for batch in tqdm(loader, leave=False):
-            feats, masks, valid, mix_refs, clean_refs, _ = batch
+            if teacher_mwf:
+                feats, masks, valid, mix_refs, clean_refs, _, mix_pairs, clean_pairs = batch
+            else:
+                feats, masks, valid, mix_refs, clean_refs, _ = batch
             feats = feats.to(device)
             masks = masks.to(device)
             valid = valid.to(device)
             mix_refs = mix_refs.to(device)
             clean_refs = clean_refs.to(device)
+            if teacher_mwf:
+                mix_pairs = mix_pairs.to(device)
+                clean_pairs = clean_pairs.to(device)
+                with torch.no_grad():
+                    target_refs = build_mwf_teacher_targets(
+                        mix_pairs,
+                        clean_pairs,
+                        clean_refs,
+                        cfg,
+                        oracle_window,
+                        oracle_causal,
+                        diagonal_loading,
+                        teacher_blend,
+                    )
+                    masks = build_target_masks(mix_refs, target_refs, cfg, masks.shape[1], masks.shape[2])
+            else:
+                target_refs = clean_refs
             gain, coef = model(feats)
-            loss = masked_mse(gain, masks, valid)
+            loss = teacher_mask_weight * masked_mse(gain, masks, valid)
             if waveform_weight > 0.0:
-                loss = loss + waveform_weight * waveform_l1_loss(gain, coef, mix_refs, clean_refs, cfg)
+                loss = loss + waveform_weight * waveform_l1_loss(gain, coef, mix_refs, target_refs, cfg)
             if stft_weight > 0.0:
-                loss = loss + stft_weight * stft_logmag_loss(gain, coef, mix_refs, clean_refs, cfg)
+                loss = loss + stft_weight * stft_logmag_loss(gain, coef, mix_refs, target_refs, cfg)
             if sisdr_weight > 0.0:
-                loss = loss + sisdr_weight * si_sdr_loss(gain, coef, mix_refs, clean_refs, cfg)
+                loss = loss + sisdr_weight * si_sdr_loss(gain, coef, mix_refs, target_refs, cfg)
             if coef_reg_weight > 0.0:
                 loss = loss + coef_reg_weight * coef_energy_loss(coef)
             if residual_noise_weight > 0.0:
@@ -190,7 +311,7 @@ def run_epoch(
                     gain,
                     coef,
                     mix_refs,
-                    clean_refs,
+                    target_refs,
                     cfg,
                     residual_noise_threshold,
                 )
@@ -199,7 +320,7 @@ def run_epoch(
                     gain,
                     coef,
                     mix_refs,
-                    clean_refs,
+                    target_refs,
                     cfg,
                     silence_threshold,
                 )
@@ -252,6 +373,12 @@ def main() -> None:
     parser.add_argument("--residual-noise-threshold", type=float, default=0.08)
     parser.add_argument("--silence-floor-weight", type=float, default=0.12)
     parser.add_argument("--silence-threshold", type=float, default=0.03)
+    parser.add_argument("--teacher-mwf", action="store_true", help="Distill from an oracle local MWF teacher during training.")
+    parser.add_argument("--teacher-mask-weight", type=float, default=1.0)
+    parser.add_argument("--teacher-blend", type=float, default=0.85, help="Blend teacher waveform with clean mic0 target.")
+    parser.add_argument("--oracle-window", type=int, default=9)
+    parser.add_argument("--oracle-causal", action="store_true")
+    parser.add_argument("--diagonal-loading", type=float, default=0.01)
     parser.add_argument("--resume", help="Optional checkpoint to resume DeepFilter training from.")
     parser.add_argument("--reset-best-on-resume", action="store_true")
     parser.add_argument(
@@ -274,6 +401,7 @@ def main() -> None:
         args.seconds,
         args.on_the_fly,
         return_audio=True,
+        return_mix_pair=args.teacher_mwf,
         virtual_multiplier=args.virtual_multiplier,
         snr_min_db=args.snr_min_db,
         snr_max_db=args.snr_max_db,
@@ -292,6 +420,7 @@ def main() -> None:
         args.seconds,
         args.on_the_fly,
         return_audio=True,
+        return_mix_pair=args.teacher_mwf,
         snr_min_db=args.snr_min_db,
         snr_max_db=args.snr_max_db,
         noise_mix_prob=args.noise_mix_prob,
@@ -333,6 +462,12 @@ def main() -> None:
     params = count_parameters(model)
     print(f"parameters={params} int8_weight_bytes~={params}")
     print(f"spatial_frontend={cfg.spatial_frontend}")
+    if args.teacher_mwf:
+        print(
+            "teacher=oracle_local_mwf "
+            f"window={args.oracle_window} causal={args.oracle_causal} "
+            f"diagonal_loading={args.diagonal_loading} blend={args.teacher_blend}"
+        )
     model.to(args.device)
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=1e-4)
     for epoch in range(1, args.epochs + 1):
@@ -350,6 +485,12 @@ def main() -> None:
             args.residual_noise_threshold,
             args.silence_floor_weight,
             args.silence_threshold,
+            args.teacher_mwf,
+            args.teacher_mask_weight,
+            args.teacher_blend,
+            args.oracle_window,
+            args.oracle_causal,
+            args.diagonal_loading,
         )
         val_loss = run_epoch(
             model,
@@ -365,6 +506,12 @@ def main() -> None:
             args.residual_noise_threshold,
             args.silence_floor_weight,
             args.silence_threshold,
+            args.teacher_mwf,
+            args.teacher_mask_weight,
+            args.teacher_blend,
+            args.oracle_window,
+            args.oracle_causal,
+            args.diagonal_loading,
         )
         print(f"epoch={epoch} train_loss={train_loss:.6f} val_loss={val_loss:.6f}")
         state = {
@@ -392,6 +539,12 @@ def main() -> None:
                 "residual_noise_threshold": args.residual_noise_threshold,
                 "silence_floor_weight": args.silence_floor_weight,
                 "silence_threshold": args.silence_threshold,
+                "teacher_mwf": args.teacher_mwf,
+                "teacher_mask_weight": args.teacher_mask_weight,
+                "teacher_blend": args.teacher_blend,
+                "oracle_window": args.oracle_window,
+                "oracle_causal": args.oracle_causal,
+                "diagonal_loading": args.diagonal_loading,
                 "min_gain": cfg.min_gain,
                 "max_gain": cfg.max_gain,
                 "virtual_multiplier": args.virtual_multiplier,

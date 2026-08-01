@@ -10,7 +10,10 @@ from typing import Any
 
 
 DEFAULT_SETS = [
+    ("teacher_deepfilter_conservative_on_wind_eval", Path("runs/arctic_wind_teacher_deepfilter_mwf_conservative/listening_eval_wind_zenodo")),
+    ("teacher_deepfilter_conservative_on_demand_eval", Path("runs/arctic_wind_teacher_deepfilter_mwf_conservative/listening_eval_demand_nomatch")),
     ("wind_finetune_on_wind_eval", Path("runs/arctic_wind_demand_tiny_deepfilter_coherence_mwf/listening_eval_wind_zenodo")),
+    ("teacher_deepfilter_aggressive_on_wind_eval", Path("runs/arctic_wind_teacher_deepfilter_mwf/listening_eval_wind_zenodo")),
     ("aug2_baseline_on_wind_eval", Path("runs/arctic_demand_tiny_deepfilter_coherence_mwf_aug2/listening_eval_wind_zenodo")),
     ("wind_finetune_on_demand_eval", Path("runs/arctic_wind_demand_tiny_deepfilter_coherence_mwf/listening_eval_demand_nomatch")),
     ("deepfilter_coherence_mwf_aug2_airflow", Path("runs/arctic_demand_tiny_deepfilter_coherence_mwf_aug2/listening_eval_airflow")),
