@@ -117,10 +117,15 @@ runs/arctic_demand_tiny_deepfilter_coherence_mwf_aug2/eval_loud/*
 !runs/arctic_demand_tiny_deepfilter_coherence_mwf_aug2/eval_nomatch/
 runs/arctic_demand_tiny_deepfilter_coherence_mwf_aug2/eval_nomatch/*
 !runs/arctic_demand_tiny_deepfilter_coherence_mwf_aug2/eval_nomatch/metrics.json
+!runs/arctic_demand_tiny_deepfilter_coherence_mwf_aug2/eval_airflow/
+runs/arctic_demand_tiny_deepfilter_coherence_mwf_aug2/eval_airflow/*
+!runs/arctic_demand_tiny_deepfilter_coherence_mwf_aug2/eval_airflow/metrics.json
 !runs/arctic_demand_tiny_deepfilter_coherence_mwf_aug2/listening_eval_loud/
 !runs/arctic_demand_tiny_deepfilter_coherence_mwf_aug2/listening_eval_loud/**
 !runs/arctic_demand_tiny_deepfilter_coherence_mwf_aug2/listening_eval_nomatch/
 !runs/arctic_demand_tiny_deepfilter_coherence_mwf_aug2/listening_eval_nomatch/**
+!runs/arctic_demand_tiny_deepfilter_coherence_mwf_aug2/listening_eval_airflow/
+!runs/arctic_demand_tiny_deepfilter_coherence_mwf_aug2/listening_eval_airflow/**
 
 # Smoothed coherence-weighted DeepFilter metrics and small listening-eval demo set.
 !runs/arctic_demand_tiny_deepfilter_coherence_smooth/

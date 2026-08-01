@@ -78,6 +78,7 @@ Two listening sets were generated:
 
 - `listening_eval_loud`: uses loudness matching with target RMS ratio `0.90` and max gain `4 dB`.
 - `listening_eval_nomatch`: does not apply loudness matching, so it may avoid lifting residual noise.
+- `listening_eval_airflow`: adds a stronger residual-airflow postfilter for checking whether breath/wind-like background noise can be reduced without retraining.
 
 Both use the same dehiss postfilter:
 
@@ -91,8 +92,10 @@ Summary on `data/arctic_demand_eval/val`, 160 items:
 | --- | ---: | ---: | ---: | ---: |
 | loud | 4.33 | 13.35 | +9.02 | 0.89 |
 | nomatch | 4.33 | 13.35 | +9.02 | 0.80 |
+| airflow | 4.33 | 11.90 | +7.57 | 0.67 |
 
 The loud set is easier for speech volume comparison. The nomatch set is better for checking whether residual background noise is being amplified by loudness recovery.
+The airflow set is intentionally more aggressive and should be judged by listening first, because it trades some objective SI-SDR for lower residual background energy.
 
 ## Dataset note
 

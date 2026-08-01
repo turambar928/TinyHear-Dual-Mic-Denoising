@@ -14,6 +14,7 @@ from ha_denoise.features import (
     extract_features,
     feature_config_from_dict,
     match_loudness,
+    residual_airflow_filter,
     residual_dehiss_filter,
     rms_ratio,
     stationary_noise_floor_filter,
@@ -65,6 +66,11 @@ def process_one(
     dehiss_high_floor: float,
     dehiss_high_start_hz: float,
     dehiss_full_strength_hz: float,
+    airflow_postfilter: bool,
+    airflow_strength: float,
+    airflow_low_floor: float,
+    airflow_mid_floor: float,
+    airflow_high_floor: float,
 ):
     clean_path = mix_path.with_name(mix_path.name.replace("mix_", "clean_"))
     sr, mix_np = read_wav(mix_path, cfg.sample_rate)
@@ -88,6 +94,16 @@ def process_one(
             high_floor=dehiss_high_floor,
             high_start_hz=dehiss_high_start_hz,
             full_strength_hz=dehiss_full_strength_hz,
+        )
+    if airflow_postfilter:
+        enhanced = residual_airflow_filter(
+            enhanced,
+            band_gain,
+            cfg,
+            strength=airflow_strength,
+            low_floor=airflow_low_floor,
+            mid_floor=airflow_mid_floor,
+            high_floor=airflow_high_floor,
         )
     n = min(mix.shape[-1], clean.numel(), enhanced.numel())
     noisy = mix[0, :n]
@@ -125,6 +141,11 @@ def main() -> None:
     parser.add_argument("--dehiss-high-floor", type=float, default=0.36)
     parser.add_argument("--dehiss-high-start-hz", type=float, default=2600.0)
     parser.add_argument("--dehiss-full-strength-hz", type=float, default=5200.0)
+    parser.add_argument("--airflow-postfilter", action="store_true", help="Apply stronger residual airflow/wind-like noise post-filter.")
+    parser.add_argument("--airflow-strength", type=float, default=1.55)
+    parser.add_argument("--airflow-low-floor", type=float, default=0.34)
+    parser.add_argument("--airflow-mid-floor", type=float, default=0.58)
+    parser.add_argument("--airflow-high-floor", type=float, default=0.30)
     args = parser.parse_args()
 
     model, cfg = load_model(args.checkpoint, args.device)
@@ -158,6 +179,11 @@ def main() -> None:
                 args.dehiss_high_floor,
                 args.dehiss_high_start_hz,
                 args.dehiss_full_strength_hz,
+                args.airflow_postfilter,
+                args.airflow_strength,
+                args.airflow_low_floor,
+                args.airflow_mid_floor,
+                args.airflow_high_floor,
             )
             noisy_score = float(si_sdr(noisy.detach().cpu(), clean.detach().cpu()))
             enhanced_score = float(si_sdr(enhanced.detach().cpu(), clean.detach().cpu()))
@@ -181,6 +207,11 @@ def main() -> None:
                     "dehiss_high_floor": args.dehiss_high_floor,
                     "dehiss_high_start_hz": args.dehiss_high_start_hz,
                     "dehiss_full_strength_hz": args.dehiss_full_strength_hz,
+                    "airflow_postfilter": args.airflow_postfilter,
+                    "airflow_strength": args.airflow_strength,
+                    "airflow_low_floor": args.airflow_low_floor,
+                    "airflow_mid_floor": args.airflow_mid_floor,
+                    "airflow_high_floor": args.airflow_high_floor,
                 }
             )
             if save_dir:
@@ -221,6 +252,11 @@ def main() -> None:
                 args.dehiss_high_floor,
                 args.dehiss_high_start_hz,
                 args.dehiss_full_strength_hz,
+                args.airflow_postfilter,
+                args.airflow_strength,
+                args.airflow_low_floor,
+                args.airflow_mid_floor,
+                args.airflow_high_floor,
             )
             row = rows[row_idx]
             prefix = f"sample_{out_idx:03d}"
@@ -244,6 +280,7 @@ def main() -> None:
                     "loudness_gain": gain,
                     "stable_postfilter": args.stable_postfilter,
                     "dehiss_postfilter": args.dehiss_postfilter,
+                    "airflow_postfilter": args.airflow_postfilter,
                     "noisy_si_sdr": row["noisy_si_sdr"],
                     "offline_si_sdr": row["enhanced_si_sdr"],
                     "realtime_si_sdr": row["enhanced_si_sdr"],
