@@ -4,21 +4,23 @@
 
 双麦端侧上行降噪原型。
 
-这个项目实现一个面向助听器/耳戴设备的双麦上行降噪原型：先做双麦空间前端，再用轻量 complex-mask TCN、DeepFilter 或 RNNoise-style TinyGRU 做端侧增强。
+这个项目实现一个面向助听器/耳戴设备的双麦上行降噪原型：先做双麦空间前端，再用轻量 DeepFilter TCN 做端侧增强。当前主线是 **coherence/MWF 空间前端 + Tiny DeepFilter + 保守 MWF teacher 蒸馏**，重点优化真实风噪/气流噪声下的底噪问题。
 
 ## Demo
 
 - 本地网页试听 demo：`http://127.0.0.1:38180/runs/audio_demo/index.html`
-- 当前 demo 包含多组 noisy/clean/enhanced 对比。建议先听 `tiny_complex_mask` 的 `Realtime`，这是当前主线复数谱模型；再对比 `tiny_deepfilter_coherence_mwf`、`deepfilter_dehiss` 和 `tiny_gru_h136`，观察底噪、人声响度和音乐噪声的取舍。
+- 当前 demo 包含多组 noisy/clean/enhanced 对比。建议先听 `teacher_deepfilter_conservative_on_wind_eval` 的 `Realtime`，这是当前风噪优化主线；再对比 `wind_finetune_on_wind_eval` 和 `teacher_deepfilter_aggressive_on_wind_eval`，观察保守 teacher 蒸馏、普通风噪微调、激进 teacher 蒸馏之间的差别。
 - 如果本地服务没启动，可在项目根目录运行 `python3 -m http.server 38180`，然后打开上面的链接。
 
 ## 当前结果
 
-- 推荐基线：CMU ARCTIC clean speech + DEMAND 多通道环境噪声。
-- 推荐部署方案：双麦 coherence-weighted spatial frontend + Tiny complex-mask TCN 后端；同时保留 Tiny DeepFilter 和 RNNoise-style TinyGRU 作为对比基线。
-- 模型规模：Tiny complex-mask TCN `92,018` 参数，Tiny DeepFilter `137,984` 参数，TinyGRU h136 `142,561` 参数，均满足 150K 目标。
+- 推荐基线：CMU ARCTIC clean speech + DEMAND 多通道环境噪声 + Zenodo Wind Noise Dataset 风噪片段。
+- 推荐模型：`runs/arctic_wind_teacher_deepfilter_mwf_conservative/best.pt`。
+- 推荐部署方案：双麦 coherence-weighted MWF spatial frontend + Tiny DeepFilter TCN 后端；激进 MWF teacher 版本和旧版 wind fine-tune 作为网页对照。
+- 模型规模：Tiny DeepFilter `137,984` 参数，满足 100-150K 目标；Tiny complex-mask TCN `92,018` 参数、TinyGRU h136 `142,561` 参数保留为历史对比基线。
 - 实时链路：16 kHz，256 点 FFT，64 samples hop，4 ms 步进。
-- Python eval：当前主力 `tiny_complex_mask` 固定 160 条验证集 SI-SDR improvement 约 `+9.59 dB`，输出/输入 RMS 比约 `0.94`；`tiny_deepfilter_coherence_mwf` 约 `+9.46 dB`；`coherence_mwf_smooth` 约 `+9.43 dB`；`stable_postfilter` 约 `+9.24 dB`。`deepfilter_dehiss`/`deepfilter_dehiss_aggressive` 不重新训练模型，在 DeepFilter 后压制高频残留呼呼声，约 `+9.38 dB`/`+9.26 dB`；`tiny_gru_h136` RNNoise-style 基线约 `+4.77 dB`。
+- Python eval：`teacher_deepfilter_conservative_on_wind_eval` 在 160 条 Zenodo wind eval 上 SI-SDR improvement 约 `+4.80 dB`，高于普通风噪微调版 `+4.35 dB`；在原 DEMAND eval 上约 `+6.63 dB`，低于普通风噪微调版 `+7.06 dB`。这说明当前版本更偏风噪/呼呼声抑制，通用环境噪声有轻微取舍。
+- 关键实验结论：oracle local MWF teacher 的上限很高，但不能直接强蒸馏给 138K 小模型；`teacher_blend=0.90` 的激进版本反而退化，`teacher_blend=0.25` 的保守版本更稳定。
 - C Q15 模型 reference：mean abs diff `0.01703`，streaming 与 batch Q15 完全一致。
 - C learned gate reference：gate abs diff `0.0000039` against Python gate。
 - C gated realtime DSP reference：mean abs diff `0.00078` against Python gated realtime reference。
@@ -30,10 +32,36 @@
 - 采样率：16 kHz。
 - 分帧：256 点 FFT，64 点 hop，算法步进 4 ms；模型严格因果，不使用未来帧。
 - 空间前端：双麦整数延时估计 + delay-and-sum，再用跨麦相干性做轻量 Wiener/Zelinski 风格抑制。
-- 后端模型：Tiny DeepFilter TCN，控制在 100-150K 参数预算内。
-- 训练目标：对 beamformed mono 做轻量复数滤波/增强，而不是只做频带 mask。
+- 后端模型：Tiny DeepFilter TCN，控制在 100-150K 参数预算内；输出频带 gain 和低频多帧复数滤波系数。
+- 训练目标：普通 clean speech 重建 + log-STFT/SI-SDR/residual-noise loss，再加入 oracle local MWF teacher 的软目标。当前推荐版本只使用 `25%` teacher blend，避免过强 teacher 目标压小人声。
 - 输出：对 beamformed mono 进行端侧可实现的增强重构。
 - 整型路径：`scripts/export_int8.py` 会导出 per-tensor INT8 权重、scale 和 C 头文件；端侧可用 int8 卷积 + int32 累加实现。
+
+## 当前主线实现
+
+详细设计见 `docs/conservative_mwf_teacher_deepfilter.md`。
+
+核心流程：
+
+1. 用双麦输入计算 STFT、IPD/coherence 等空间特征。
+2. 用 coherence-weighted MWF spatial frontend 生成模型参考通道。
+3. Tiny DeepFilter TCN 预测 band gain 和 deep-filter 复数系数。
+4. 训练时额外计算 oracle local MWF teacher waveform。
+5. 用 `teacher_blend=0.25` 将 teacher 与 clean mic0 混合作为软目标。
+6. 用 SI-SDR、log-STFT、waveform L1、残留噪声和静音区 loss 联合优化。
+7. 评估时生成 noisy/offline/realtime/clean 四路 wav，并通过网页 demo 试听。
+
+当前推荐听感入口：
+
+```text
+http://127.0.0.1:38180/runs/audio_demo/index.html
+```
+
+当前推荐 checkpoint：
+
+```text
+runs/arctic_wind_teacher_deepfilter_mwf_conservative/best.pt
+```
 
 ## 数据集建议
 
@@ -254,6 +282,7 @@ PYTHONPATH=src python scripts/evaluate.py --checkpoint runs/public_small/best.pt
 ## 目录
 
 - `docs/implementation_plan.md`：完整实现方案、端侧映射和下一步路线。
+- `docs/conservative_mwf_teacher_deepfilter.md`：当前保守 MWF teacher DeepFilter 主线的设计、训练和评估说明。
 - `docs/experiments.md`：训练数据选择、实验记录和指标。
 - `docs/performance.md`：PC 侧 C reference benchmark 和内存估算。
 - `docs/cmsis_porting.md`：CMSIS-DSP/CMSIS-NN 上板替换说明。
