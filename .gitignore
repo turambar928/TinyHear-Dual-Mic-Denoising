@@ -180,6 +180,10 @@ runs/arctic_wind_teacher_deepfilter_mwf_conservative/eval_demand_nomatch/*
 !runs/arctic_wind_teacher_deepfilter_mwf_conservative/eval_demand_nomatch/metrics.json
 !runs/arctic_wind_teacher_deepfilter_mwf_conservative/listening_eval_demand_nomatch/
 !runs/arctic_wind_teacher_deepfilter_mwf_conservative/listening_eval_demand_nomatch/**
+!runs/arctic_wind_teacher_deepfilter_mwf_conservative/analysis_wind_zenodo/
+!runs/arctic_wind_teacher_deepfilter_mwf_conservative/analysis_wind_zenodo/**
+!runs/arctic_wind_teacher_deepfilter_mwf_conservative/analysis_demand_nomatch/
+!runs/arctic_wind_teacher_deepfilter_mwf_conservative/analysis_demand_nomatch/**
 
 # Smoothed coherence-weighted DeepFilter metrics and small listening-eval demo set.
 !runs/arctic_demand_tiny_deepfilter_coherence_smooth/

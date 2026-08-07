@@ -271,6 +271,66 @@ PYTHONPATH=src python3 scripts/evaluate_deepfilter.py \
 
 结论：保守 teacher 版本对风噪更有效，但通用 DEMAND 噪声略有下降。它适合作为当前风噪/呼呼声问题的主线版本。
 
+## 失败样本分析
+
+为了避免只靠网页主观听感判断，新增了失败模式分析脚本：
+
+```bash
+PYTHONPATH=src python3 scripts/analyze_failure_modes.py \
+  --data data/arctic_wind_eval \
+  --split val \
+  --eval-audio runs/arctic_wind_teacher_deepfilter_mwf_conservative/eval_wind_zenodo \
+  --metrics runs/arctic_wind_teacher_deepfilter_mwf_conservative/eval_wind_zenodo/metrics.json \
+  --out runs/arctic_wind_teacher_deepfilter_mwf_conservative/analysis_wind_zenodo
+```
+
+脚本会生成：
+
+```text
+failure_analysis.json
+failure_analysis.csv
+failure_analysis.md
+```
+
+分析指标包括：
+
+- `speech_preservation_db`：语音活跃区域中 enhanced RMS 相对 clean RMS 的变化，越接近 0 越好，过低说明人声被压小。
+- `quiet_noise_reduction_db`：clean 静音/弱语音区域中 noisy 到 enhanced 的 RMS 降低量，越高说明静音段压噪越强。
+- `quiet_low_rms_dbfs`：静音段低频残留能量，用来定位风噪/气流类“呼呼声”。
+- `quiet_high_rms_dbfs`：静音段高频残留能量，用来定位 hiss 类噪声。
+- `failure_mode`：自动分类为 `ok`、`low_freq_wind`、`residual_noise`、`speech_too_small` 或 `regression`。
+
+当前主线在 Zenodo wind eval 上的分析结果：
+
+```text
+items: 160
+ok: 117
+low_freq_wind: 35
+regression: 7
+residual_noise: 1
+mean_speech_preservation_db: -0.96 dB
+mean_quiet_noise_reduction_db: 15.73 dB
+mean_quiet_low_rms_dbfs: -40.45 dBFS
+mean_quiet_high_rms_dbfs: -71.64 dBFS
+```
+
+这个结果说明：当前版本的人声整体没有被严重压小，主要残留问题集中在 **低频风噪/气流噪声**。后续优化应优先针对低频风噪残留，而不是继续大幅提高整体抑制强度。
+
+在原 DEMAND eval 上：
+
+```text
+items: 160
+ok: 117
+low_freq_wind: 26
+regression: 13
+residual_noise: 1
+speech_too_small: 3
+mean_speech_preservation_db: -1.62 dB
+mean_quiet_noise_reduction_db: 21.61 dB
+```
+
+这说明当前模型偏向风噪场景后，通用 DEMAND 场景存在更多回退样本，但人声过小不是主导问题。
+
 ## 网页试听
 
 启动服务：
