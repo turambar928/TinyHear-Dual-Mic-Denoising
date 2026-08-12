@@ -283,6 +283,7 @@ PYTHONPATH=src python scripts/evaluate.py --checkpoint runs/public_small/best.pt
 
 - `docs/implementation_plan.md`：完整实现方案、端侧映射和下一步路线。
 - `docs/current_progress_summary.md`：截至当前阶段的项目进展、指标、问题和下一步总结。
+- `docs/teacher_meeting_report.md`：面向老师汇报的讲稿式进展说明和展示顺序。
 - `docs/conservative_mwf_teacher_deepfilter.md`：当前保守 MWF teacher DeepFilter 主线的设计、训练和评估说明。
 - `docs/experiments.md`：训练数据选择、实验记录和指标。
 - `docs/performance.md`：PC 侧 C reference benchmark 和内存估算。
