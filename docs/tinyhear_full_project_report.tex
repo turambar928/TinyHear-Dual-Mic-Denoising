@@ -1,0 +1,750 @@
+\documentclass[UTF8,12pt,a4paper]{ctexart}
+
+\usepackage{geometry}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{listings}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{float}
+
+\geometry{left=2.4cm,right=2.4cm,top=2.4cm,bottom=2.4cm}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue,
+  urlcolor=blue,
+  citecolor=blue
+}
+
+\setlist[itemize]{leftmargin=2em}
+\setlist[enumerate]{leftmargin=2em}
+\renewcommand{\arraystretch}{1.25}
+
+\lstdefinestyle{code}{
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  frame=single,
+  backgroundcolor=\color{gray!5},
+  columns=fullflexible
+}
+\lstset{style=code}
+
+\title{\textbf{TinyHear 双麦端侧降噪项目完整说明文档}\\
+\large 面向助听器/耳戴设备上行链路的端侧 AI 降噪原型}
+\author{项目名称：TinyHear Dual-Mic Denoising（微听双麦降噪）}
+\date{更新时间：2026 年 8 月 24 日}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+\section{文档目的}
+
+本文档用于向上级或项目评审人员完整说明 TinyHear 双麦端侧降噪项目的背景、目标、技术路线、实现细节、实验迭代、当前效果、已完成工程内容、现存问题和后续计划。读者不需要预先了解本项目代码，即可通过本文从零理解项目现状。
+
+本项目不是单纯训练一个离线语音增强模型，而是围绕助听器/耳戴设备的端侧实时约束，构建一个从数据准备、模型训练、实时推理、网页试听、客观评估到部署验证的完整原型系统。
+
+\section{项目背景}
+
+\subsection{应用场景}
+
+项目面向助听器、耳戴设备和上行通话场景。在这类设备中，用户讲话时设备需要把语音上传给手机或通信链路，因此上行音频质量直接影响通话可懂度和使用体验。
+
+典型问题包括：
+
+\begin{itemize}
+  \item 环境噪声，例如街道、办公室、室内背景声；
+  \item 风噪和气流噪声，例如走动、户外风、佩戴设备周围气流；
+  \item 麦克风自噪声和摩擦噪声；
+  \item 近距双麦条件下空间差异弱，传统简单双麦处理效果有限；
+  \item 设备算力、内存、功耗和延迟都受限。
+\end{itemize}
+
+\subsection{为什么使用双麦}
+
+相较单麦，双麦系统可以利用两个麦克风之间的空间差异，例如相位差、相干性和局部空间统计信息。对于上行降噪，双麦信息有助于区分目标语音和空间上不同的噪声源。
+
+但助听器/耳戴设备上的麦克风距离通常很近，两个麦克风之间的幅度差（ILD, inter-channel level difference）不明显。因此，本项目后续重点使用：
+
+\begin{itemize}
+  \item IPD（inter-channel phase difference，相位差）；
+  \item coherence（双麦相干性）；
+  \item coherence-weighted MWF 风格空间前端；
+  \item 多帧/复数域滤波，而不是只做单帧幅度 mask。
+\end{itemize}
+
+\section{项目初始目标与约束}
+
+项目初始要求可以概括为：
+
+\begin{quote}
+做一个双麦克风上行降噪模型，模型大小控制在 100K--150K 参数左右，模型架构可自由设计，数据集可以先用公开数据集，最好能用整型运算完成。
+\end{quote}
+
+当前项目与这些要求的对应关系如表 \ref{tab:requirements} 所示。
+
+\begin{table}[H]
+\centering
+\caption{项目要求与当前状态}
+\label{tab:requirements}
+\begin{tabularx}{\textwidth}{p{3.8cm}p{3.0cm}X}
+\toprule
+\textbf{要求} & \textbf{当前状态} & \textbf{说明} \\
+\midrule
+双麦上行降噪 & 已满足 & 当前输入为双通道麦克风音频，输出单通道增强语音，并显式使用双麦空间特征。 \\
+模型大小 100K--150K & 已满足 & 当前推荐模型 TinyDeepFilterTCN 参数量为 137,984。 \\
+架构可自由设计 & 已完成多轮探索 & 已尝试 band-mask TCN、空间特征 TCN、DeepFilter、GRU、complex mask、MWF student、MWF teacher 蒸馏等路线。 \\
+公开数据集 & 已满足 & 当前主要使用 CMU ARCTIC、DEMAND 和 Zenodo Wind Noise Dataset。 \\
+整型运算 & 部分完成 & 早期 band-mask TCN 已做 INT8/C reference 验证；当前最佳 DeepFilter 版本仍需完成 INT8 导出和 C reference 对齐。 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{当前推荐版本概览}
+
+当前推荐版本为：
+
+\begin{lstlisting}
+teacher_deepfilter_conservative_on_wind_eval
+\end{lstlisting}
+
+对应 checkpoint：
+
+\begin{lstlisting}
+runs/arctic_wind_teacher_deepfilter_mwf_conservative/best.pt
+\end{lstlisting}
+
+该版本的核心方案是：
+
+\begin{lstlisting}
+coherence/MWF 双麦空间前端
+  + Tiny DeepFilter TCN
+  + conservative MWF teacher 蒸馏
+  + 风噪数据 fine-tune
+\end{lstlisting}
+
+需要特别说明的是，版本名中的 \texttt{teacher} 并不表示实际部署时运行 teacher 模型。Teacher 是训练阶段使用的 oracle local MWF 目标，用于指导小模型学习更接近强双麦滤波器的行为。实际推理和网页 demo 中的 Realtime 音频，运行的是 137,984 参数的 TinyDeepFilterTCN 小模型。
+
+\section{系统整体流程}
+
+\subsection{推理流程}
+
+当前主线推理流程如下：
+
+\begin{lstlisting}
+双麦 waveform
+  -> STFT
+  -> IPD / coherence 等空间特征
+  -> coherence-weighted MWF spatial frontend
+  -> Tiny DeepFilter TCN
+  -> band gain + low-frequency deep filtering
+  -> iSTFT / overlap-add
+  -> enhanced speech
+\end{lstlisting}
+
+推理时没有 clean 语音，也没有 oracle teacher。模型只接收双麦 mixture，并输出增强后的单通道语音。
+
+\subsection{展示流程}
+
+网页 demo 路径：
+
+\begin{lstlisting}
+runs/audio_demo/index.html
+\end{lstlisting}
+
+常用访问地址：
+
+\begin{lstlisting}
+http://127.0.0.1:38180/runs/audio_demo/index.html
+\end{lstlisting}
+
+网页中每个样本通常包含：
+
+\begin{itemize}
+  \item \textbf{Noisy}：输入噪声音频；
+  \item \textbf{Realtime / Enhanced}：当前模型实时链路输出，代表实际部署方向的效果；
+  \item \textbf{Clean}：干净语音参考，只用于对比，不参与实际推理。
+\end{itemize}
+
+\section{模型结构}
+
+\subsection{当前推荐模型}
+
+当前推荐模型为 \texttt{TinyDeepFilterTCN}，主要配置如表 \ref{tab:model_config} 所示。
+
+\begin{table}[H]
+\centering
+\caption{当前推荐模型配置}
+\label{tab:model_config}
+\begin{tabular}{ll}
+\toprule
+\textbf{项目} & \textbf{数值} \\
+\midrule
+模型类型 & TinyDeepFilterTCN \\
+参数量 & 137,984 \\
+采样率 & 16 kHz \\
+STFT & 256 点 FFT \\
+hop length & 64 samples，即 4 ms \\
+channels & 96 \\
+blocks & 8 \\
+kernel size & 5 \\
+df bins & 64 \\
+df order & 3 \\
+spatial frontend & coherence\_mwf \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{模型输入}
+
+模型输入不是单麦幅度谱，而是结合了：
+
+\begin{itemize}
+  \item 参考通道时频特征；
+  \item 双麦相位差；
+  \item 双麦相干性；
+  \item coherence/MWF 前端输出的参考信息。
+\end{itemize}
+
+这样做的目的，是避免模型退化成普通单麦降噪，让它能利用近距双麦中的空间信息。
+
+\subsection{模型输出}
+
+模型输出两类结果：
+
+\begin{enumerate}
+  \item \textbf{band gain}：用于整体谱幅度抑制，稳定且便于端侧实现；
+  \item \textbf{deep-filter complex coefficients}：主要作用于低频区域，用多帧复数滤波缓解只做幅度 mask 带来的相位问题和低频风噪残留。
+\end{enumerate}
+
+\section{数据集与数据构造}
+
+\subsection{使用的数据集}
+
+项目先后使用的数据集如表 \ref{tab:datasets} 所示。
+
+\begin{table}[H]
+\centering
+\caption{数据集演进}
+\label{tab:datasets}
+\begin{tabularx}{\textwidth}{p{3.2cm}p{3.2cm}p{3.5cm}X}
+\toprule
+\textbf{阶段} & \textbf{Clean speech} & \textbf{Noise} & \textbf{用途} \\
+\midrule
+synthetic baseline & 合成语音 & 合成噪声 & 快速打通训练和推理流程 \\
+YESNO + DEMAND & OpenSLR YESNO & DEMAND & 小规模公开数据 sanity check \\
+ARCTIC + DEMAND & CMU ARCTIC & DEMAND & 主基线 \\
+ARCTIC + DEMAND + wind & CMU ARCTIC & DEMAND + Zenodo Wind Noise & 当前风噪优化主线 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+当前主线训练目录：
+
+\begin{lstlisting}
+data/arctic_wind_demand_flat/
+\end{lstlisting}
+
+固定评估集：
+
+\begin{lstlisting}
+data/arctic_wind_eval/val
+data/arctic_demand_eval/val
+\end{lstlisting}
+
+原始下载数据和整理后的大数据目录不提交到 GitHub；仓库中主要保留代码、文档、checkpoint、metrics、少量 demo 音频和分析报告。
+
+\subsection{双麦数据构造}
+
+公开 clean speech 与 noise 数据本身不一定天然符合助听器双麦形式，因此项目中构造了双麦 mixture。大致逻辑包括：
+
+\begin{itemize}
+  \item clean speech 归一化到固定 RMS；
+  \item 按随机 SNR 混入 noise；
+  \item 根据随机入射方向和麦克风距离模拟双麦时间差；
+  \item 采样不同近距双麦距离，当前范围约为 0.015--0.024 m；
+  \item 加入自噪声和风噪增强；
+  \item 输出双通道 mixture 和对应 clean pair。
+\end{itemize}
+
+\section{MWF Teacher 蒸馏}
+
+\subsection{为什么引入 Teacher}
+
+早期版本虽然能降噪，但网页试听中反复暴露出两个问题：
+
+\begin{itemize}
+  \item 底噪和低频 ``呼呼声'' 仍明显；
+  \item 只靠 postfilter、dehiss、gate 或更换小模型，收益有限。
+\end{itemize}
+
+后续用 oracle local MWF 做上限验证时，发现强双麦前端在风噪评估集上明显更强：
+
+\begin{lstlisting}
+Oracle local MWF on Zenodo wind eval:
+Noisy SI-SDR:     5.39 dB
+Enhanced SI-SDR: 14.21 dB
+Improvement:     +8.82 dB
+\end{lstlisting}
+
+这说明强双麦前端/MWF 是有效方向。但 oracle MWF 依赖 clean/noise 信息，无法在真实部署时直接使用。因此，本项目把 oracle local MWF 作为训练阶段的 teacher，让小模型学习其滤波行为。
+
+\subsection{Teacher 与部署模型的区别}
+
+训练阶段可以拿到：
+
+\begin{itemize}
+  \item noisy 双麦；
+  \item clean 双麦。
+\end{itemize}
+
+因此可以构造 oracle local MWF teacher。实际部署时只有 noisy 双麦，没有 clean，因此 teacher 不会参与推理。
+
+可以概括为：
+
+\begin{lstlisting}
+训练阶段：noisy + clean -> oracle MWF teacher -> 指导 TinyDeepFilterTCN
+部署阶段：noisy 双麦 -> TinyDeepFilterTCN -> enhanced speech
+\end{lstlisting}
+
+\subsection{保守 Teacher 目标}
+
+项目中也尝试过 aggressive teacher，即让小模型大比例模仿 oracle MWF。但实验发现 teacher 太强会导致小模型学习不稳定，出现过度滤波、人声变小和通用噪声场景退化。
+
+因此当前推荐版本使用 conservative teacher：
+
+\begin{equation}
+\text{target} = 0.25 \cdot \text{oracle\_mwf\_teacher} + 0.75 \cdot \text{clean\_mic0}
+\end{equation}
+
+关键参数：
+
+\begin{lstlisting}
+teacher_blend: 0.25
+teacher_mask_weight: 0.35
+oracle_window: 9
+diagonal_loading: 0.01
+\end{lstlisting}
+
+\section{Loss 设计}
+
+当前训练没有只使用 MSE 或单一 SI-SDR，而是组合多个目标，以同时约束语音质量、谱幅度、残留噪声和滤波稳定性。
+
+\begin{table}[H]
+\centering
+\caption{当前训练 loss 组成}
+\label{tab:loss}
+\begin{tabularx}{\textwidth}{p{4.2cm}X}
+\toprule
+\textbf{Loss} & \textbf{作用} \\
+\midrule
+masked MSE & 约束预测 band gain 与目标 mask 的差异 \\
+waveform L1 loss & 约束增强波形与目标波形接近 \\
+STFT log magnitude loss & 约束听感相关的谱幅度结构 \\
+SI-SDR loss & 提升整体语音重建质量 \\
+coef energy loss & 限制 deep-filter 复数系数过大，减少不稳定伪影 \\
+residual noise loss & 对 clean 中能量较低的频点施加残留噪声惩罚 \\
+silence floor loss & 压低静音和弱语音区域的输出底噪 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+当前保守 teacher 版本关键权重：
+
+\begin{lstlisting}
+waveform_loss_weight: 0.70
+stft_mag_loss_weight: 0.22
+si_sdr_loss_weight: 0.04
+coef_reg_weight: 0.002
+residual_noise_loss_weight: 0.34
+silence_floor_weight: 0.28
+\end{lstlisting}
+
+\section{版本迭代过程}
+
+\subsection{初始 Tiny band-mask TCN}
+
+最早版本使用轻量 causal TCN 输出 32-band mask。优点是模型小、易于 INT8、易于 C reference，也能实现基本降噪。
+
+问题是：
+
+\begin{itemize}
+  \item 人声容易变小；
+  \item 底噪明显；
+  \item 只做幅度 mask，无法处理 noisy phase 和细粒度残留噪声。
+\end{itemize}
+
+\subsection{空间特征增强}
+
+后续加入 IPD、coherence 和双麦能量相关特征。原因是近距双麦下 ILD 差异较小，相位差和相干性更有价值。该阶段让模型真正利用双麦输入，而不是退化为单麦降噪。
+
+\subsection{Gate 与 Bypass}
+
+尝试使用 learned gate 或 high-SNR bypass，减少干净或高 SNR 场景下的过处理。这对部分样本有帮助，但不能根治底噪和风噪呼呼声。
+
+\subsection{Tiny DeepFilter}
+
+将后端从简单 band mask 升级为 Tiny DeepFilter。DeepFilter 不只输出频带增益，还输出低频复数滤波系数，可以做多帧复数域滤波。
+
+该路线让客观指标和主观听感明显优于早期 band-mask，但仍存在低频风噪残留。
+
+\subsection{coherence/MWF 空间前端}
+
+前端从简单 delay-sum 升级为 coherence-weighted MWF 风格空间前端，用双麦相干性生成更好的参考通道，再交给 DeepFilter 后端细化。
+
+这一方向成为后续主线。
+
+\subsection{后处理、GRU、Complex Mask 与 Student 分支}
+
+项目中还尝试过：
+
+\begin{itemize}
+  \item stable postfilter；
+  \item dehiss postfilter；
+  \item airflow residual filter；
+  \item RNNoise-style TinyGRU；
+  \item full-bin complex mask TCN；
+  \item MWF covariance student。
+\end{itemize}
+
+这些方法对局部指标或部分样本有改善，但主观听感不稳定，没有明显超过 DeepFilter + 强双麦前端主线。因此当前主线回到 Tiny DeepFilter + coherence/MWF frontend + conservative MWF teacher。
+
+\section{当前实验结果}
+
+\subsection{当前推荐 checkpoint}
+
+\begin{lstlisting}
+runs/arctic_wind_teacher_deepfilter_mwf_conservative/best.pt
+\end{lstlisting}
+
+\subsection{客观指标}
+
+当前推荐版本在两个固定评估集上的结果如表 \ref{tab:metrics} 所示。
+
+\begin{table}[H]
+\centering
+\caption{当前推荐版本客观指标}
+\label{tab:metrics}
+\begin{tabular}{lrrrr}
+\toprule
+\textbf{评估集} & \textbf{items} & \textbf{Noisy SI-SDR} & \textbf{Enhanced SI-SDR} & \textbf{Improvement} \\
+\midrule
+Zenodo wind eval & 160 & 5.39 dB & 10.19 dB & +4.80 dB \\
+Original DEMAND eval & 160 & 4.33 dB & 10.96 dB & +6.63 dB \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+输出/输入 RMS ratio：
+
+\begin{itemize}
+  \item wind eval：0.764；
+  \item DEMAND eval：0.690。
+\end{itemize}
+
+这些结果说明当前模型具备明确降噪能力。但从网页 demo 主观听感看，相比 clean 仍存在低频风噪/气流声残留。
+
+\subsection{关键版本对比}
+
+\begin{table}[H]
+\centering
+\caption{关键版本对比}
+\label{tab:version_compare}
+\begin{tabularx}{\textwidth}{p{4.0cm}p{2.2cm}p{2.2cm}X}
+\toprule
+\textbf{版本} & \textbf{Wind eval} & \textbf{DEMAND eval} & \textbf{结论} \\
+\midrule
+wind fine-tune & +4.35 dB & +7.06 dB & 通用噪声更稳，但风噪仍有明显残留。 \\
+aggressive teacher & +3.74 dB & +5.21 dB & teacher 太强，小模型学不稳，出现退化。 \\
+conservative teacher & +4.80 dB & +6.63 dB & 当前推荐，风噪指标和听感更均衡。 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+当前版本不是所有指标都最高，而是在风噪抑制、人声保持和模型稳定性之间更均衡。
+
+\section{失败样本分析}
+
+为避免只依赖主观听感，项目新增失败模式分析脚本：
+
+\begin{lstlisting}
+scripts/analyze_failure_modes.py
+\end{lstlisting}
+
+wind eval 的失败模式统计如表 \ref{tab:failure} 所示。
+
+\begin{table}[H]
+\centering
+\caption{Wind eval 失败模式统计}
+\label{tab:failure}
+\begin{tabular}{lr}
+\toprule
+\textbf{Failure mode} & \textbf{数量} \\
+\midrule
+ok & 117 \\
+low\_freq\_wind & 35 \\
+regression & 7 \\
+residual\_noise & 1 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+关键均值：
+
+\begin{itemize}
+  \item Mean SI-SDR improvement：+4.80 dB；
+  \item Mean speech preservation：-0.96 dB；
+  \item Mean quiet noise reduction：15.73 dB；
+  \item Mean quiet enhanced RMS：-44.32 dBFS。
+\end{itemize}
+
+这个分析说明，当前主要问题不是人声整体被严重压小，而是部分样本存在低频风噪/气流残留。因此后续不应该盲目提高全频抑制强度，而应该围绕 \texttt{low\_freq\_wind} 样本做定向优化。
+
+\section{工程实现与代码结构}
+
+项目核心目录如下：
+
+\begin{lstlisting}
+src/ha_denoise/                 # 核心模型、特征、数据和空间处理
+scripts/                        # 训练、评估、增强、demo 和分析脚本
+c_reference/                    # 早期 C reference 和 benchmark
+runs/                           # checkpoint、metrics、demo 音频和报告
+docs/                           # 项目文档、汇报材料和说明
+\end{lstlisting}
+
+关键文件：
+
+\begin{table}[H]
+\centering
+\caption{关键代码文件}
+\label{tab:files}
+\begin{tabularx}{\textwidth}{p{5.2cm}X}
+\toprule
+\textbf{文件} & \textbf{作用} \\
+\midrule
+\texttt{src/ha\_denoise/model.py} & TinyCausalTCN、TinyDeepFilterTCN 等模型结构 \\
+\texttt{src/ha\_denoise/features.py} & STFT、频带特征和时频处理 \\
+\texttt{src/ha\_denoise/spatial.py} & 双麦空间特征、coherence/MWF 前端相关逻辑 \\
+\texttt{src/ha\_denoise/dataset.py} & 动态双麦混音数据集构造 \\
+\texttt{scripts/train\_deepfilter.py} & 当前 DeepFilter 主线训练脚本，包含 MWF teacher 蒸馏 \\
+\texttt{scripts/evaluate\_deepfilter.py} & DeepFilter 评估脚本 \\
+\texttt{scripts/enhance\_realtime.py} & 实时增强链路脚本 \\
+\texttt{scripts/build\_audio\_demo.py} & 网页试听 demo 生成脚本 \\
+\texttt{scripts/analyze\_failure\_modes.py} & 失败模式分析脚本 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{训练与评估命令}
+
+当前推荐版本训练命令核心如下：
+
+\begin{lstlisting}
+PYTHONPATH=src python3 scripts/train_deepfilter.py \
+  --data data/arctic_wind_demand_flat \
+  --out runs/arctic_wind_teacher_deepfilter_mwf_conservative \
+  --resume runs/arctic_wind_demand_tiny_deepfilter_coherence_mwf/best.pt \
+  --reset-best-on-resume \
+  --epochs 4 \
+  --batch-size 8 \
+  --seconds 1.0 \
+  --on-the-fly \
+  --virtual-multiplier 2 \
+  --snr-min-db -12 \
+  --snr-max-db 8 \
+  --noise-mix-prob 0.65 \
+  --mic-distance-min-m 0.015 \
+  --mic-distance-max-m 0.024 \
+  --self-noise-prob 0.45 \
+  --self-noise-db -42 \
+  --wind-noise-prob 0.10 \
+  --wind-noise-db -32 \
+  --spatial-frontend coherence_mwf \
+  --teacher-mwf \
+  --teacher-mask-weight 0.35 \
+  --teacher-blend 0.25 \
+  --oracle-window 9 \
+  --diagonal-loading 0.01 \
+  --channels 96 \
+  --blocks 8 \
+  --kernel-size 5 \
+  --df-bins 64 \
+  --df-order 3 \
+  --waveform-loss-weight 0.70 \
+  --stft-mag-loss-weight 0.22 \
+  --si-sdr-loss-weight 0.04 \
+  --coef-reg-weight 0.002 \
+  --residual-noise-loss-weight 0.34 \
+  --silence-floor-weight 0.28 \
+  --min-gain 0.005 \
+  --lr 1e-4 \
+  --device cuda
+\end{lstlisting}
+
+网页 demo 启动方式：
+
+\begin{lstlisting}
+cd /home/taozifu2025/internship
+python3 -m http.server 38180 --bind 0.0.0.0
+\end{lstlisting}
+
+浏览器访问：
+
+\begin{lstlisting}
+http://127.0.0.1:38180/runs/audio_demo/index.html
+\end{lstlisting}
+
+如果使用远程服务器，需要确认 VSCode 端口转发或 SSH port forwarding 已经把本地端口转发到服务器的 38180。
+
+\section{当前成果}
+
+截至目前，项目已经完成：
+
+\begin{itemize}
+  \item 双麦端侧降噪项目定位和初始需求拆解；
+  \item 公开数据集准备，包括 CMU ARCTIC、DEMAND 和 Zenodo Wind Noise；
+  \item 动态双麦混音训练集构造；
+  \item Tiny band-mask TCN baseline；
+  \item Tiny DeepFilter TCN 主线模型；
+  \item IPD/coherence 双麦空间特征；
+  \item coherence/MWF 空间前端；
+  \item oracle local MWF teacher 蒸馏训练；
+  \item 风噪数据 fine-tune；
+  \item 多版本训练、评估和主观试听对比；
+  \item 网页 demo，可直接听 Noisy、Realtime、Clean；
+  \item failure analysis，用于定位低频风噪、回退、人声变小等问题；
+  \item 早期 INT8 导出和 C reference 验证链路；
+  \item README、项目报告、PPT 和汇报文档。
+\end{itemize}
+
+\section{当前不足}
+
+当前项目仍存在以下问题：
+
+\begin{enumerate}
+  \item \textbf{和 clean 仍有听感差距}：当前版本具备降噪能力，但部分样本仍有低频风噪和气流呼呼声。
+  \item \textbf{真实数据不足}：当前主要是公开 clean speech + noise 合成双麦数据，与真实助听器佩戴位置、麦克风自噪声、风噪和摩擦噪声存在 domain gap。
+  \item \textbf{风噪和通用噪声存在取舍}：conservative teacher 版本提升 wind eval，但 DEMAND eval 相比普通 wind fine-tune 略有下降。
+  \item \textbf{主观听感与 SI-SDR 不完全一致}：部分版本指标不错，但试听效果并不一定更好。
+  \item \textbf{当前最佳模型尚未完成完整整型部署闭环}：早期 band-mask TCN 已验证 INT8/C reference，但当前 TinyDeepFilterTCN 仍需完成导出、定点参考和 C 端对齐。
+\end{enumerate}
+
+\section{下一步计划}
+
+建议后续按以下优先级推进。
+
+\subsection{低频风噪定向优化}
+
+使用 failure analysis 中标记为 \texttt{low\_freq\_wind} 的样本作为固定失败集，重点优化低频风噪残留。
+
+具体方向：
+
+\begin{itemize}
+  \item 增加低频 residual wind loss；
+  \item 对静音/弱语音区域低频残留加约束；
+  \item 避免全频强压噪导致人声损伤。
+\end{itemize}
+
+\subsection{语音保持约束}
+
+继续压低风噪时，需要防止人声再次变小。
+
+方向：
+
+\begin{itemize}
+  \item speech-active RMS preservation；
+  \item speech-band loss；
+  \item 高 SNR 场景减少过处理。
+\end{itemize}
+
+\subsection{真实双麦数据补充}
+
+如果要进一步接近真实助听器效果，需要采集或引入更真实的双麦数据：
+
+\begin{itemize}
+  \item 佩戴位置双麦语音；
+  \item 真实风噪；
+  \item 走动气流；
+  \item 摩擦噪声；
+  \item 不同房间混响；
+  \item 设备麦克风自噪声。
+\end{itemize}
+
+即使数据量较小，也可以作为 fine-tune 数据或固定 failure set。
+
+\subsection{端侧部署闭环}
+
+当前推荐 TinyDeepFilterTCN 需要继续完成：
+
+\begin{itemize}
+  \item INT8 权重导出；
+  \item fixed-scale Python reference；
+  \item C reference 对齐；
+  \item 每帧耗时、状态内存和模型大小 benchmark；
+  \item 后续适配 CMSIS-DSP/CMSIS-NN。
+\end{itemize}
+
+\subsection{展示和评估完善}
+
+\begin{itemize}
+  \item 网页 demo 保持推荐版本在最前；
+  \item 增加固定风噪失败样本；
+  \item 汇报时同时展示 SI-SDR、failure analysis 和主观试听；
+  \item 建立固定听感评价流程。
+\end{itemize}
+
+\section{阶段性结论}
+
+本项目已经完成从初始轻量降噪模型到当前双麦 MWF teacher + Tiny DeepFilter 主线的完整迭代。当前推荐版本满足双麦输入、100K--150K 参数、小模型实时推理、公开数据训练和网页 demo 展示等核心要求。
+
+最重要的阶段性结论是：
+
+\begin{quote}
+项目现在的主要瓶颈不是 ``有没有降噪能力''，而是低频风噪残留、真实双麦数据匹配度，以及当前最佳模型的整型部署闭环。
+\end{quote}
+
+因此，后续不应无目的地频繁切换模型结构，而应围绕当前最有效主线继续收敛：
+
+\begin{lstlisting}
+coherence/MWF spatial frontend
+  + Tiny DeepFilter TCN
+  + conservative MWF teacher distillation
+\end{lstlisting}
+
+下一阶段重点是低频风噪定向优化、真实双麦数据补充和当前 DeepFilter 主线的 INT8/C reference 部署验证。
+
+\appendix
+
+\section{附录：汇报时推荐说法}
+
+可以用以下表述概括项目：
+
+\begin{quote}
+本项目面向助听器和耳戴设备上行链路，完成了一个双麦端侧 AI 降噪原型。当前推荐模型是 137,984 参数的 TinyDeepFilterTCN，利用 IPD/coherence 双麦空间特征、coherence/MWF 前端和 conservative MWF teacher 蒸馏训练。Teacher 只在训练阶段使用，实际部署时运行的是小模型。当前版本在 Zenodo wind eval 上达到 +4.80 dB SI-SDR improvement，在 DEMAND eval 上达到 +6.63 dB。项目已经具备网页试听和失败样本分析闭环，但相比 clean 仍有低频风噪残留，下一步重点是低频风噪定向优化、真实双麦数据和 INT8/C 端部署闭环。
+\end{quote}
+
+\section{附录：关键路径}
+
+\begin{lstlisting}
+README.md
+docs/current_progress_summary.md
+docs/conservative_mwf_teacher_deepfilter.md
+docs/optimization_history_report.md
+docs/teacher_meeting_report.md
+docs/presentation/tinyhear_project_intro.pptx
+runs/audio_demo/index.html
+runs/arctic_wind_teacher_deepfilter_mwf_conservative/best.pt
+runs/arctic_wind_teacher_deepfilter_mwf_conservative/eval_wind_zenodo/metrics.json
+runs/arctic_wind_teacher_deepfilter_mwf_conservative/analysis_wind_zenodo/failure_analysis.md
+\end{lstlisting}
+
+\end{document}
+
